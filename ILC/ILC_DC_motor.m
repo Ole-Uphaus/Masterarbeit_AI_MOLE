@@ -50,7 +50,8 @@ r_vec = omega_max*sin(2*pi/T_end.*t_vec');
 kp = 0.1;
 kd = 0.05;
 N_iter = 10;
-x0 = zeros(size(Ad,1),1); 
+x0 = [0;
+    0]; 
 
 % Initialisation
 ILC_PD = ILC_linear_SISO(r_vec, m_delay);
@@ -70,7 +71,7 @@ end
 %% ILC quadratic optimal design
 % Lifted system dynamics
 N = size(t_vec, 2);
-P = Lifted_dynamics_SISO(Ad, Bd, Cd, N, m_delay);
+P = Lifted_dynamics_linear_SISO(Ad, Bd, Cd, N, m_delay);
 
 % Parameters
 W = eye(size(P));

@@ -1,4 +1,4 @@
-function P = Lifted_dynamics_SISO(Ad, Bd, Cd, N, m)
+function P = Lifted_dynamics_linear_SISO(Ad, Bd, Cd, N, m)
 %LIFTED_DYNAMICS_SISO Construct lifted system matrix for a linear SISO system
 %   Inputs:
 %       Ad  - Discrete-time state matrix  (n_x × n_x)
