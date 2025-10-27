@@ -83,7 +83,7 @@ classdef ILC_SISO < handle
 
             % Optimal learning function (only if everything is given)
             if ~isempty(obj.P) && ~isempty(obj.W) && ~isempty(obj.S)
-                obj.L = inv(P'*W*P + S)*P'*W;
+                obj.L = (P'*W*P + S) \ (P'*W);
             else
                 obj.L = [];
             end
@@ -103,7 +103,7 @@ classdef ILC_SISO < handle
             if isempty(obj.P)
                 % Calculate L (current L -> Lc) using the given P
                 if nargin >= 3 && ~isempty(P)
-                    Lc = inv(P'*obj.W*P + obj.S)*P'*obj.W;
+                    Lc = (P'*obj.W*P + obj.S) \ (P'*obj.W);
                 end
             else
                 Lc = obj.L;

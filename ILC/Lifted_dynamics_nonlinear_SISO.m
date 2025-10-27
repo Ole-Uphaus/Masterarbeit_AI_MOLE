@@ -19,7 +19,7 @@ for k = 1:(N-m)
     A_pow = eye(nx);
     for i = (k):-1:1
         % Backwards
-        P(k, i) = Cd_seq{k+1} * A_pow * Bd_seq{i};
+        P(k, i) = Cd_seq{k+m} * A_pow * Bd_seq{i};
         A_pow = A_pow * Ad_seq{i};
     end
 end
