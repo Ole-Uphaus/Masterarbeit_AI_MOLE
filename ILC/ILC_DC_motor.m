@@ -54,7 +54,7 @@ x0 = [0;
     0]; 
 
 % Initialisation
-ILC_PD = ILC_linear_SISO(r_vec, m_delay);
+ILC_PD = ILC_SISO(r_vec, m_delay);
 ILC_PD.init_PD_type(kp, kd);
 
 % Update Loop
@@ -78,8 +78,8 @@ W = eye(size(P));
 S = 1.5*eye(size(P));
 
 % Initialisation
-ILC_Quadr = ILC_linear_SISO(r_vec, m_delay);
-ILC_Quadr.init_Quadr_type(P, W, S)
+ILC_Quadr = ILC_SISO(r_vec, m_delay);
+ILC_Quadr.init_Quadr_type(W, S, P)
 
 % Update Loop
 u_sim = [ILC_Quadr.u_vec; 0];
