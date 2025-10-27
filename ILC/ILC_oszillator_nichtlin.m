@@ -20,16 +20,39 @@ t_vec = 0:Ts:T_end;
 % Trajectory (no delay - delay is applied later)
 r_vec = x_max*sin(2*pi/T_end.*t_vec');
 
+%% ILC PD-Type design
+% Parameters
+kp = 0.1;
+kd = 0.05;
+m_delay = 1;
+N_iter = 10;
+x0 = [0;
+    0];
+
+% Initialisation
+ILC_PD = ILC_SISO(r_vec, m_delay);
+ILC_PD.init_PD_type(kp, kd);
+
+% Update Loop
+u_sim = [ILC_PD.u_vec; 0];
+[t_sim, x_sim] = ode45(@(t,x) oszillator_nonlinear(t, x, u_sim, Ts), t_vec, x0);
+y_sim = x_sim(:, 1);
+for i = 1:N_iter
+    % Update input
+    u_sim = [ILC_PD.PD_update(y_sim); 0];
+
+    % Simulate the system
+    [t_sim, x_sim] = ode45(@(t,x) oszillator_nonlinear(t, x, u_sim, Ts), t_vec, x0);
+    y_sim = x_sim(:, 1);
+end
+y_sim_pd = y_sim;
+
 %% ILC quadratic optimal design
 % Parameters
 N = size(t_vec, 2);
-N_iter = 30;
-x0 = [0;
-    0];
-m_delay = 1;
 
 W = eye(N-m_delay);
-S = 0.1*eye(N-m_delay);
+S = 0.0001*eye(N-m_delay);
 
 % Initialisation
 ILC_Quadr = ILC_SISO(r_vec, m_delay);
@@ -48,6 +71,7 @@ for i = 1:N_iter
     [t_sim, x_sim] = ode45(@(t,x) oszillator_nonlinear(t, x, u_sim, Ts), t_vec, x0);
     y_sim = x_sim(:, 1);
 end
+y_sim_quadratic = y_sim;
 
 % Plot results
 figure;
@@ -55,15 +79,17 @@ set(gcf, 'Position', [100 100 1200 500]);
 
 subplot(1,2,1);   % 1 Zeile, 2 Spalten, erster Plot
 plot(t_vec, r_vec, LineWidth=1, DisplayName='desired'); hold on;
-plot(t_vec, y_sim, LineWidth=1, DisplayName='ILC Quadr');
+plot(t_vec, y_sim_pd, LineWidth=1, DisplayName='ILC PD');
+plot(t_vec, y_sim_quadratic, LineWidth=1, DisplayName='ILC Quadr');
 grid on;
 xlabel('Zeit [s]'); 
-ylabel('\Omega [rad/s]');
+ylabel('x [m]');
 title('Compare desired and simulated Trajectory');
 legend()
 
 subplot(1,2,2);   % 1 Zeile, 2 Spalten, erster Plot
-plot(1:length(ILC_Quadr.RMSE_log), ILC_Quadr.RMSE_log, LineWidth=1, DisplayName='ILC Quadr');
+plot(1:length(ILC_Quadr.RMSE_log), ILC_Quadr.RMSE_log, LineWidth=1, DisplayName='ILC Quadr'); hold on;
+plot(1:length(ILC_PD.RMSE_log), ILC_PD.RMSE_log, LineWidth=1, DisplayName='ILC PD');
 grid on;
 xlabel('Iteration'); 
 ylabel('RMSE');
@@ -76,7 +102,7 @@ function dx = oszillator_nonlinear(t, x_vec, u_vec, Ts)
     m  = 2; % kg
     c1 = 2; % N/m
     c2 = 1; % N/m^3
-    d  = 1; % Ns/m
+    d  = 0.5; % Ns/m
 
     % Get current time index
     k = floor(t/Ts) + 1;
@@ -100,7 +126,7 @@ function [Ad, Bd, Cd, Dd] = linear_discrete_system(x_star, Ts)
     m  = 2; % kg
     c1 = 2; % N/m
     c2 = 1; % N/m^3
-    d  = 1; % Ns/m
+    d  = 0.5; % Ns/m
 
     % States
     x = x_star(1);
