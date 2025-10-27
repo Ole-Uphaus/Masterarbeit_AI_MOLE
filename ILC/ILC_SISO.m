@@ -1,4 +1,4 @@
-classdef ILC_linear_SISO < handle
+classdef ILC_SISO < handle
     %ILC_LINEAR_SISO Iterative Learning Control vor linear SISO Systems.
     %
     % The class implements different Methods of ILC (PD-Type and quadratic
@@ -19,7 +19,7 @@ classdef ILC_linear_SISO < handle
     end
     
     methods
-        function obj = ILC_linear_SISO(r_vec, m)
+        function obj = ILC_SISO(r_vec, m)
             %ILC_LINEAR_SISO Construct an instance of this class
             %
             %   Inputs:
@@ -59,12 +59,12 @@ classdef ILC_linear_SISO < handle
             % Log error
             obj.Log_error()
 
-            % Update unput u(k)
+            % Update input u(k)
             u_vec_new = obj.u_vec + obj.kp*obj.error_vec + obj.kd*d_error_vec;
             obj.u_vec = u_vec_new;
         end
 
-        function init_Quadr_type(obj, P, W, S)
+        function init_Quadr_type(obj, W, S, P)
             %init_Quadr_type Initialize quadratic optimal ILC parameters
             %
             %   Inputs:
@@ -72,12 +72,21 @@ classdef ILC_linear_SISO < handle
             %       W - Weighting matrix error
             %       S - Weighting matrix change of u
 
-            obj.P = P;
-            obj.W = W;
-            obj.S = S;
+            % Set W and S
+            if nargin >= 2 && ~isempty(W), obj.W = W; end
+            if nargin >= 3 && ~isempty(S), obj.S = S; end
+        
+            % Only set P if given
+            if nargin >= 4 && ~isempty(P)
+                obj.P = P;
+            end
 
-            % Optimal learning function
-            obj.L = inv(P'*W*P + S)*P'*W;
+            % Optimal learning function (only if everything is given)
+            if ~isempty(obj.P) && ~isempty(obj.W) && ~isempty(obj.S)
+                obj.L = inv(P'*W*P + S)*P'*W;
+            else
+                obj.L = [];
+            end
         end
 
         function u_vec_new = Quadr_update(obj, y_vec)
