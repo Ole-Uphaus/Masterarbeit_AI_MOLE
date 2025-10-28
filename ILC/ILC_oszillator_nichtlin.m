@@ -33,16 +33,23 @@ x0 = [0;
 ILC_PD = ILC_SISO(r_vec, m_delay);
 ILC_PD.init_PD_type(kp, kd);
 
+% Solver settings
+opts = odeset( ...
+    'RelTol', 1e-6, ...         % Tolerance
+    'AbsTol', [1e-8 1e-8], ...  % Tolerance
+    'MaxStep', Ts/5, ...        % Use smaller step size for better Results
+    'InitialStep', Ts/20);
+
 % Update Loop
 u_sim = [ILC_PD.u_vec; 0];
-[t_sim, x_sim] = ode45(@(t,x) oszillator_nonlinear(t, x, u_sim, Ts), t_vec, x0);
+[t_sim, x_sim] = ode45(@(t,x) oszillator_nonlinear(t, x, u_sim, Ts), t_vec, x0, opts);
 y_sim = x_sim(:, 1);
 for i = 1:N_iter
     % Update input
     u_sim = [ILC_PD.PD_update(y_sim); 0];
 
     % Simulate the system
-    [t_sim, x_sim] = ode45(@(t,x) oszillator_nonlinear(t, x, u_sim, Ts), t_vec, x0);
+    [t_sim, x_sim] = ode45(@(t,x) oszillator_nonlinear(t, x, u_sim, Ts), t_vec, x0, opts);
     y_sim = x_sim(:, 1);
 end
 y_sim_pd = y_sim;
@@ -57,13 +64,6 @@ S = 0*eye(N-m_delay);
 % Initialisation
 ILC_Quadr = ILC_SISO(r_vec, m_delay);
 ILC_Quadr.init_Quadr_type(W, S)
-
-% Solver settings
-opts = odeset( ...
-    'RelTol', 1e-6, ...         % Tolerance
-    'AbsTol', [1e-8 1e-8], ...  % Tolerance
-    'MaxStep', Ts/5, ...        % Use smaller step size for better Results
-    'InitialStep', Ts/20);
 
 % Update Loop
 u_sim = [ILC_Quadr.u_vec; 0];
