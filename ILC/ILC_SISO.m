@@ -1,5 +1,5 @@
 classdef ILC_SISO < handle
-    %ILC_LINEAR_SISO Iterative Learning Control vor linear SISO Systems.
+    %ILC_LINEAR_SISO Iterative Learning Control vor linear and nonlinear SISO Systems.
     %
     % The class implements different Methods of ILC (PD-Type and quadratic
     % optimal)
