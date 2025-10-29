@@ -19,9 +19,8 @@ t_step = 10;
 u_inp = zeros(size(t_vec));
 u_inp(t_vec >= t_step) = 1;
 
-
 % Simulation
-[t_sim, x_sim] = ode45(@(t,x) oszillator_nonlinear(t, x, u_inp, Ts), t_vec, x0);
+[t_sim, x_sim] = ode45(@(t,x) oszillator_nonlinear(t, x, u_inp, t_vec), t_vec, x0);
 y_sim = x_sim(:, 1);
 
 %% Lifted Dynamics
@@ -77,7 +76,7 @@ u_inp_test(t_vec >= t_step) = 1.3;
 delta_u_inp = u_inp_test - u_inp;
 
 % Simulate System
-[t_sim, x_sim_test] = ode45(@(t,x) oszillator_nonlinear(t, x, u_inp_test, Ts), t_vec, x0);
+[t_sim, x_sim_test] = ode45(@(t,x) oszillator_nonlinear(t, x, u_inp_test, t_vec), t_vec, x0);
 y_sim_test = x_sim_test(:, 1);
 
 % Calculate system response using the lifted dynamics
@@ -94,23 +93,19 @@ title('Response of Oszilator to Step');
 legend()
 
 %% Local Functions
-function dx = oszillator_nonlinear(t, x_vec, u_vec, Ts)
+function dx = oszillator_nonlinear(t, x_vec, u_vec, t_vec)
     % Simulation parameters
     m  = 2; % kg
     c1 = 2; % N/m
     c2 = 1; % N/m^3
     d  = 1; % Ns/m
 
-    % Get current time index
-    k = floor(t/Ts) + 1;
-    k = max(1, min(k, numel(u_vec)));   % Check if k ist valid
-
     % States
     x = x_vec(1);
     xp = x_vec(2);
 
     % Input
-    u = u_vec(k);
+    u = interp1(t_vec, u_vec, t, 'previous', 'extrap');
 
     % Dynamics
     dx = zeros(2, 1);

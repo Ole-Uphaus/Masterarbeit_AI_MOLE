@@ -42,14 +42,14 @@ opts = odeset( ...
 
 % Update Loop
 u_sim = [ILC_PD.u_vec; 0];
-[t_sim, x_sim] = ode45(@(t,x) oszillator_nonlinear(t, x, u_sim, Ts), t_vec, x0, opts);
+[t_sim, x_sim] = ode45(@(t,x) oszillator_nonlinear(t, x, u_sim, t_vec), t_vec, x0, opts);
 y_sim = x_sim(:, 1);
 for i = 1:N_iter
     % Update input
     u_sim = [ILC_PD.PD_update(y_sim); 0];
 
     % Simulate the system
-    [t_sim, x_sim] = ode45(@(t,x) oszillator_nonlinear(t, x, u_sim, Ts), t_vec, x0, opts);
+    [t_sim, x_sim] = ode45(@(t,x) oszillator_nonlinear(t, x, u_sim, t_vec), t_vec, x0, opts);
     y_sim = x_sim(:, 1);
 end
 y_sim_pd = y_sim;
@@ -67,7 +67,7 @@ ILC_Quadr.init_Quadr_type(W, S)
 
 % Update Loop
 u_sim = [ILC_Quadr.u_vec; 0];
-[t_sim, x_sim] = ode45(@(t,x) oszillator_nonlinear(t, x, u_sim, Ts), t_vec, x0, opts);
+[t_sim, x_sim] = ode45(@(t,x) oszillator_nonlinear(t, x, u_sim, t_vec), t_vec, x0, opts);
 y_sim = x_sim(:, 1);
 for i = 1:N_iter
     % Update input
@@ -75,7 +75,7 @@ for i = 1:N_iter
     u_sim = [ILC_Quadr.Quadr_update(y_sim, P); 0];
 
     % Simulate the system
-    [t_sim, x_sim] = ode45(@(t,x) oszillator_nonlinear(t, x, u_sim, Ts), t_vec, x0, opts);
+    [t_sim, x_sim] = ode45(@(t,x) oszillator_nonlinear(t, x, u_sim, t_vec), t_vec, x0, opts);
     y_sim = x_sim(:, 1);
 end
 y_sim_quadratic = y_sim;
@@ -104,23 +104,19 @@ title('Compare error development');
 legend()
 
 %% Local Functions
-function dx = oszillator_nonlinear(t, x_vec, u_vec, Ts)
+function dx = oszillator_nonlinear(t, x_vec, u_vec, t_vec)
     % Simulation parameters
     m  = 2; % kg
     c1 = 2; % N/m
     c2 = 2; % N/m^3
     d  = 0.5; % Ns/m
 
-    % Get current time index
-    k = floor(t/Ts) + 1;
-    k = max(1, min(k, numel(u_vec)));   % Check if k ist valid
-
     % States
     x = x_vec(1);
     xp = x_vec(2);
 
     % Input
-    u = u_vec(k);
+    u = interp1(t_vec, u_vec, t, 'previous', 'extrap');
 
     % Dynamics
     dx = zeros(2, 1);
