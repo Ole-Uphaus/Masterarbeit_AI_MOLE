@@ -30,8 +30,8 @@ a1 = [1, -alpha];
 w_A = filter(b1, a1, w_raw);
 w_A = w_A * (sigma_w / std(w_A));   % Bring back initial variance
 
-% Filter (Botterworth - 2. Order Lowpass)
-[bB, aB] = butter(2, fc/(fs/2), 'low');
+% Filter (Botterworth - 1. Order Lowpass)
+[bB, aB] = butter(1, fc/(fs/2), 'low');
 w_B = filter(bB, aB, w_raw);
 w_B = w_B * (sigma_w / std(w_B));
 
