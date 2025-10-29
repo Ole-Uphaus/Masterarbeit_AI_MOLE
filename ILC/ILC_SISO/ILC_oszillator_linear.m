@@ -8,6 +8,7 @@
 
 clc
 clear
+rng(42);
 
 %% System Dynamics
 % Simulation parameters
@@ -17,7 +18,13 @@ c2 = 1; % N/m^3
 d  = 0.5; % Ns/m
 m_delay = 1;
 
-% State space representation x = [i; omega]
+% Noise Parameters
+sigma_w = 0.05; % 0.05
+sigma_v = 0.1; % 0.1
+fc_w = 0.1;
+fc_v = 10;
+
+% State space representation 
 A = [0, 1;
     -c1/m, -d/m];
 B = [0;
@@ -36,7 +43,6 @@ sys_disc = c2d(sys_cont, Ts, 'zoh');
 %% Reference Trajectory
 % Parameters
 x_max = 0.5;
-Ts = 0.01;
 T_end = 5;
 
 t_vec = 0:Ts:T_end;
@@ -54,28 +60,45 @@ N_iter = 10;
 x0 = [0;
     0]; 
 W = eye(size(P));
-S = 0*eye(size(P));
+S = 0.01*eye(size(P));
+
+% Q-Filter
+Q_order = 2;
+Q_fc = 2;
 
 % Initialisation
 ILC_Quadr = ILC_SISO(r_vec, m_delay);
 ILC_Quadr.init_Quadr_type(W, S, P)
+ILC_Quadr.init_Q_lowpass(Q_fc, Q_order, Ts);
+
+% Solver settings
+opts = odeset( ...
+    'RelTol', 1e-6, ...         % Tolerance
+    'AbsTol', [1e-8 1e-8], ...  % Tolerance
+    'MaxStep', Ts/5, ...        % Use smaller step size for better Results
+    'InitialStep', Ts/20);
 
 % Update Loop
 u_sim = [ILC_Quadr.u_vec; 0];
-[y_vec_Quadr, ~, ~] = lsim(sys_disc, u_sim, t_vec, x0);
+[w_vec, v_vec] = proc_meas_noise(t_vec, fc_w, fc_v, sigma_w, sigma_v);
+[t_sim, x_sim] = ode45(@(t,x) oszillator_linear(t, x, u_sim, t_vec, w_vec), t_vec, x0, opts);
+y_sim = x_sim(:, 1) + v_vec;
 for i = 1:N_iter
     % Update input
-    u_sim = [ILC_Quadr.Quadr_update(y_vec_Quadr); 0];
+    u_sim = [ILC_Quadr.Quadr_update(y_sim); 0];
 
     % Simulate the system
-    [y_vec_Quadr, ~, ~] = lsim(sys_disc, u_sim, t_vec, x0);
+    [w_vec, v_vec] = proc_meas_noise(t_vec, fc_w, fc_v, sigma_w, sigma_v);
+    [t_sim, x_sim] = ode45(@(t,x) oszillator_linear(t, x, u_sim, t_vec, w_vec), t_vec, x0, opts);
+    y_sim = x_sim(:, 1) + v_vec;
 end
+y_vec_Quadr = y_sim;
 
-% Plot results
+%% Plot results
 figure;
-set(gcf, 'Position', [100 100 1200 500]);
+set(gcf, 'Position', [100 100 1200 800]);
 
-subplot(1,2,1);   % 1 Zeile, 2 Spalten, erster Plot
+subplot(2,2,1);
 plot(t_vec, r_vec, LineWidth=1, DisplayName='desired'); hold on;
 plot(t_vec, y_vec_Quadr, LineWidth=1, DisplayName='ILC Quadr');
 grid on;
@@ -84,12 +107,29 @@ ylabel('x [m]');
 title('Compare desired and simulated Trajectory');
 legend()
 
-subplot(1,2,2);   % 1 Zeile, 2 Spalten, erster Plot
+subplot(2,2,3);
 plot(1:length(ILC_Quadr.RMSE_log), ILC_Quadr.RMSE_log, LineWidth=1, DisplayName='ILC Quadr');
 grid on;
 xlabel('Iteration'); 
 ylabel('RMSE');
 title('Compare error development');
+legend()
+
+subplot(2,2,2);
+plot(t_vec, w_vec, LineWidth=1, DisplayName='proc'); hold on;
+plot(t_vec, v_vec, LineWidth=1, DisplayName='meas');
+grid on;
+xlabel('Zeit [s]'); 
+ylabel('x [m]');
+title('Compare process and measurement noise');
+legend()
+
+subplot(2,2,4);
+plot(t_vec, u_sim, LineWidth=1, DisplayName='u'); hold on;
+grid on;
+xlabel('Zeit [s]'); 
+ylabel('F [N]');
+title('Input Signal');
 legend()
 
 %% Compare lifted represetation
@@ -105,6 +145,26 @@ max_error_P = max(abs(P(:) - P_nonlin(:)));
 fprintf('Maximaler absoluter Unterschied bei der Bestimmung von P: %.3e\n', max_error_P);
 
 %% Local Functions
+function dx = oszillator_linear(t, x_vec, u_vec, t_vec, w_vec)
+    % Simulation parameters
+    m  = 2; % kg
+    c1 = 2; % N/m
+    d  = 0.5; % Ns/m
+
+    % State space representation 
+    A = [0, 1;
+        -c1/m, -d/m];
+    B = [0;
+        1/m];
+
+    % Input
+    u = interp1(t_vec, u_vec, t, 'previous', 'extrap');
+    w = interp1(t_vec, w_vec, t, 'previous', 'extrap');
+
+    % Dynamics
+    dx = A*x_vec + B*(u + w);
+end
+
 function [Ad, Bd, Cd, Dd] = linear_discrete_system(x_star, Ts)
     % Simulation parameters
     m  = 2; % kg
@@ -129,4 +189,10 @@ function [Ad, Bd, Cd, Dd] = linear_discrete_system(x_star, Ts)
     % Discrete
     sys_disc = c2d(sys_cont, Ts, 'zoh');
     [Ad, Bd, Cd, Dd] = ssdata(sys_disc);
+end
+
+function [w_vec, v_vec] = proc_meas_noise(t_vec, fc_w, fc_v, sigma_w, sigma_v)
+% Calculate Noises
+w_vec = Gen_noise_Butter(t_vec, sigma_w, fc_w);
+v_vec = Gen_noise_Butter(t_vec, sigma_v, fc_v);
 end
