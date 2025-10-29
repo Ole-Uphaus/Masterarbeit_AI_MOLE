@@ -16,6 +16,8 @@ classdef ILC_SISO < handle
         W           % Wheighting Matrix error
         S           % Wheighting Matrix change of u
         L           % Learning Matrix
+        a_Q         % Filter Parameter a
+        b_Q         % Filter Parameter b
     end
     
     methods
@@ -89,7 +91,7 @@ classdef ILC_SISO < handle
             end
         end
 
-        function u_vec_new = Quadr_update(obj, y_vec, P)
+        function u_vec_new_filt = Quadr_update(obj, y_vec, P)
             %Quadr_update Perform one Quadratic Optimal ILC iteration
             %
             %   Inputs:
@@ -115,9 +117,10 @@ classdef ILC_SISO < handle
             % Log error
             obj.Log_error()
 
-            % Update unput u(k)
+            % Update input u(k) and apply filter
             u_vec_new = obj.u_vec + Lc*obj.error_vec;
-            obj.u_vec = u_vec_new;
+            u_vec_new_filt = obj.apply_Q(u_vec_new);
+            obj.u_vec = u_vec_new_filt;
         end
 
         function Log_error(obj)
@@ -126,7 +129,27 @@ classdef ILC_SISO < handle
             % Calculate RMSE
             RMSE = sqrt(mean(obj.error_vec.^2));
             obj.RMSE_log(end+1) = RMSE;
-        end 
+        end
+
+        function init_Q_lowpass(obj, fc, order, Ts)
+            fs = 1/Ts;
+
+            % Butterworth lowpass
+            [b,a] = butter(order, fc/(fs/2));
+
+            % Set filter parameters
+            obj.a_Q = a;
+            obj.b_Q = b;
+        end
+
+        function x_filt = apply_Q(obj, x)
+            % Apply Q filter if initialized
+            if ~isempty(obj.a_Q) && ~isempty(obj.b_Q)
+                x_filt = filtfilt(obj.b_Q, obj.a_Q, x);
+            else
+                x_filt = x;
+            end
+        end
     end
 end
 
