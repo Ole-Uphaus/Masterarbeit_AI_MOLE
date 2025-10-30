@@ -62,7 +62,7 @@ classdef ILC_SISO < handle
             obj.Log_error()
 
             % Update input u(k)
-            u_vec_new = obj.u_vec + obj.kp*obj.error_vec + obj.kd*d_error_vec;
+            u_vec_new = obj.apply_Q(obj.u_vec + obj.kp*obj.error_vec + obj.kd*d_error_vec);
             obj.u_vec = u_vec_new;
         end
 
@@ -91,7 +91,7 @@ classdef ILC_SISO < handle
             end
         end
 
-        function u_vec_new_filt = Quadr_update(obj, y_vec, P)
+        function u_vec_new = Quadr_update(obj, y_vec, P)
             %Quadr_update Perform one Quadratic Optimal ILC iteration
             %
             %   Inputs:
@@ -118,9 +118,8 @@ classdef ILC_SISO < handle
             obj.Log_error()
 
             % Update input u(k) and apply filter
-            u_vec_new = obj.u_vec + Lc*obj.error_vec;
-            u_vec_new_filt = obj.apply_Q(u_vec_new);
-            obj.u_vec = u_vec_new_filt;
+            u_vec_new = obj.apply_Q(obj.u_vec + Lc*obj.error_vec);
+            obj.u_vec = u_vec_new;
         end
 
         function Log_error(obj)
