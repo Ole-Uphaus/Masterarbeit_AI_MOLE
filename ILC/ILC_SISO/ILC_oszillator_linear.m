@@ -14,7 +14,6 @@ rng(42);
 % Simulation parameters
 m  = 2; % kg
 c1 = 2; % N/m
-c2 = 1; % N/m^3
 d  = 0.5; % Ns/m
 m_delay = 1;
 
@@ -43,7 +42,7 @@ sys_disc = c2d(sys_cont, Ts, 'zoh');
 
 %% Reference Trajectory
 % Parameters
-x_max = 0.5;
+x_max = 0.1;
 T_end = 5;
 
 t_vec = 0:Ts:T_end;
@@ -68,7 +67,7 @@ w_rep_vec = Gen_noise_Butter(t_vec, sigma_w_rep, fc_w);
 
 % Q-Filter
 Q_order = 2;
-Q_fc = 2;
+Q_fc = 0.5;
 
 % Initialisation
 ILC_Quadr = ILC_SISO(r_vec, m_delay);
@@ -97,6 +96,34 @@ for i = 1:N_iter
     y_sim = x_sim(:, 1) + v_vec;
 end
 y_vec_Quadr = y_sim;
+u_sim_Quadr = u_sim;
+
+%% ILC PD-Type
+% Parameters
+kp = 1;
+kd = 0;
+
+% Initialisation
+ILC_PD = ILC_SISO(r_vec, m_delay);
+ILC_PD.init_PD_type(kp, kd);
+% ILC_PD.init_Q_lowpass(Q_fc, Q_order, Ts);
+
+% Update Loop
+u_sim = [ILC_PD.u_vec; 0];
+[w_vec, v_vec] = proc_meas_noise(t_vec, fc_w, fc_v, sigma_w, sigma_v);
+[t_sim, x_sim] = ode45(@(t,x) oszillator_linear(t, x, u_sim, t_vec, (w_vec + w_rep_vec)), t_vec, x0, opts);
+y_sim = x_sim(:, 1) + v_vec;
+for i = 1:N_iter
+    % Update input
+    u_sim = [ILC_PD.PD_update(y_sim); 0];
+
+    % Simulate the system
+    [w_vec, v_vec] = proc_meas_noise(t_vec, fc_w, fc_v, sigma_w, sigma_v);
+    [t_sim, x_sim] = ode45(@(t,x) oszillator_linear(t, x, u_sim, t_vec, (w_vec + w_rep_vec)), t_vec, x0, opts);
+    y_sim = x_sim(:, 1) + v_vec;
+end
+y_vec_PD = y_sim;
+u_sim_PD = u_sim;
 
 %% Plot results
 figure;
@@ -105,6 +132,7 @@ set(gcf, 'Position', [100 100 1200 800]);
 subplot(2,2,1);
 plot(t_vec, r_vec, LineWidth=1, DisplayName='desired'); hold on;
 plot(t_vec, y_vec_Quadr, LineWidth=1, DisplayName='ILC Quadr');
+plot(t_vec, y_vec_PD, LineWidth=1, DisplayName='ILC PD');
 grid on;
 xlabel('Zeit [s]'); 
 ylabel('x [m]');
@@ -112,7 +140,8 @@ title('Compare desired and simulated Trajectory');
 legend()
 
 subplot(2,2,3);
-plot(1:length(ILC_Quadr.RMSE_log), ILC_Quadr.RMSE_log, LineWidth=1, DisplayName='ILC Quadr');
+plot(1:length(ILC_Quadr.RMSE_log), ILC_Quadr.RMSE_log, LineWidth=1, DisplayName='ILC Quadr'); hold on;
+plot(1:length(ILC_PD.RMSE_log), ILC_PD.RMSE_log, LineWidth=1, DisplayName='ILC PD');
 grid on;
 xlabel('Iteration'); 
 ylabel('RMSE');
@@ -130,7 +159,8 @@ title('Compare process and measurement noise');
 legend()
 
 subplot(2,2,4);
-plot(t_vec, u_sim, LineWidth=1, DisplayName='u'); hold on;
+plot(t_vec, u_sim_Quadr, LineWidth=1, DisplayName='u quadr'); hold on;
+plot(t_vec, u_sim_PD, LineWidth=1, DisplayName='u pd');
 grid on;
 xlabel('Zeit [s]'); 
 ylabel('F [N]');
