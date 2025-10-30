@@ -13,15 +13,15 @@ rng(42);
 
 %% System Dynamics
 % Simulation parameters
-m  = 0.2; % kg
+m  = 2; % kg
 c1 = 2; % N/m
-d  = 1; % Ns/m
+d  = 0.5; % Ns/m
 m_delay = 1;
 
 % Noise Parameters
 sigma_w_rep = 0;  % Repeating process Noise (trial invariant)
 sigma_w = 0.05;     % Process Noise 0.05
-sigma_v = 0.1;      % Measurement Noise 0.1
+sigma_v = 0;      % Measurement Noise 0.1
 fc_w = 0.1;
 fc_v = 10;
 
@@ -61,7 +61,7 @@ N_iter = 10;
 x0 = [0;
     0]; 
 W = eye(size(P));
-S = 0.1*eye(size(P));
+S = 0.01*eye(size(P));
 
 % Init repeating process Noise
 w_rep_vec = Gen_noise_Butter(t_vec, sigma_w_rep, fc_w);
@@ -133,7 +133,7 @@ set(gcf, 'Position', [100 100 1200 800]);
 subplot(2,2,1);
 plot(t_vec, r_vec, LineWidth=1, DisplayName='desired'); hold on;
 plot(t_vec, y_vec_Quadr, LineWidth=1, DisplayName='ILC Quadr');
-plot(t_vec, y_vec_PD, LineWidth=1, DisplayName='ILC PD');
+% plot(t_vec, y_vec_PD, LineWidth=1, DisplayName='ILC PD');
 grid on;
 xlabel('Zeit [s]'); 
 ylabel('x [m]');
@@ -142,7 +142,7 @@ legend()
 
 subplot(2,2,3);
 plot(1:length(ILC_Quadr.RMSE_log), ILC_Quadr.RMSE_log, LineWidth=1, DisplayName='ILC Quadr'); hold on;
-plot(1:length(ILC_PD.RMSE_log), ILC_PD.RMSE_log, LineWidth=1, DisplayName='ILC PD');
+% plot(1:length(ILC_PD.RMSE_log), ILC_PD.RMSE_log, LineWidth=1, DisplayName='ILC PD');
 grid on;
 xlabel('Iteration'); 
 ylabel('RMSE');
@@ -161,7 +161,7 @@ legend()
 
 subplot(2,2,4);
 plot(t_vec, u_sim_Quadr, LineWidth=1, DisplayName='u quadr'); hold on;
-plot(t_vec, u_sim_PD, LineWidth=1, DisplayName='u pd');
+% plot(t_vec, u_sim_PD, LineWidth=1, DisplayName='u pd');
 grid on;
 xlabel('Zeit [s]'); 
 ylabel('F [N]');
@@ -183,9 +183,9 @@ fprintf('Maximaler absoluter Unterschied bei der Bestimmung von P: %.3e\n', max_
 %% Local Functions
 function dx = oszillator_linear(t, x_vec, u_vec, t_vec, w_vec)
     % Simulation parameters
-    m  = 0.2; % kg
+    m  = 2; % kg
     c1 = 2; % N/m
-    d  = 1; % Ns/m
+    d  = 0.5; % Ns/m
 
     % State space representation 
     A = [0, 1;
@@ -203,10 +203,10 @@ end
 
 function [Ad, Bd, Cd, Dd] = linear_discrete_system(x_star, Ts)
     % Simulation parameters
-    m  = 0.2; % kg
+    m  = 2; % kg
     c1 = 2; % N/m
     c2 = 0; % N/m^3
-    d  = 1; % Ns/m
+    d  = 0.5; % Ns/m
 
     % States
     x = x_star(1);
