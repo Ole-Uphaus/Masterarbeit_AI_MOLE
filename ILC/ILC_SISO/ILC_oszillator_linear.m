@@ -19,8 +19,9 @@ d  = 0.5; % Ns/m
 m_delay = 1;
 
 % Noise Parameters
-sigma_w = 0.05; % 0.05
-sigma_v = 0.1; % 0.1
+sigma_w_rep = 0;  % Repeating process Noise (trial invariant)
+sigma_w = 0.0;     % Process Noise 0.05
+sigma_v = 0;      % Measurement Noise 0.1
 fc_w = 0.1;
 fc_v = 10;
 
@@ -62,6 +63,9 @@ x0 = [0;
 W = eye(size(P));
 S = 0.01*eye(size(P));
 
+% Init repeating process Noise
+w_rep_vec = Gen_noise_Butter(t_vec, sigma_w_rep, fc_w);
+
 % Q-Filter
 Q_order = 2;
 Q_fc = 2;
@@ -69,7 +73,7 @@ Q_fc = 2;
 % Initialisation
 ILC_Quadr = ILC_SISO(r_vec, m_delay);
 ILC_Quadr.init_Quadr_type(W, S, P)
-ILC_Quadr.init_Q_lowpass(Q_fc, Q_order, Ts);
+% ILC_Quadr.init_Q_lowpass(Q_fc, Q_order, Ts);
 
 % Solver settings
 opts = odeset( ...
@@ -81,7 +85,7 @@ opts = odeset( ...
 % Update Loop
 u_sim = [ILC_Quadr.u_vec; 0];
 [w_vec, v_vec] = proc_meas_noise(t_vec, fc_w, fc_v, sigma_w, sigma_v);
-[t_sim, x_sim] = ode45(@(t,x) oszillator_linear(t, x, u_sim, t_vec, w_vec), t_vec, x0, opts);
+[t_sim, x_sim] = ode45(@(t,x) oszillator_linear(t, x, u_sim, t_vec, (w_vec + w_rep_vec)), t_vec, x0, opts);
 y_sim = x_sim(:, 1) + v_vec;
 for i = 1:N_iter
     % Update input
@@ -89,7 +93,7 @@ for i = 1:N_iter
 
     % Simulate the system
     [w_vec, v_vec] = proc_meas_noise(t_vec, fc_w, fc_v, sigma_w, sigma_v);
-    [t_sim, x_sim] = ode45(@(t,x) oszillator_linear(t, x, u_sim, t_vec, w_vec), t_vec, x0, opts);
+    [t_sim, x_sim] = ode45(@(t,x) oszillator_linear(t, x, u_sim, t_vec, (w_vec + w_rep_vec)), t_vec, x0, opts);
     y_sim = x_sim(:, 1) + v_vec;
 end
 y_vec_Quadr = y_sim;
@@ -117,6 +121,7 @@ legend()
 
 subplot(2,2,2);
 plot(t_vec, w_vec, LineWidth=1, DisplayName='proc'); hold on;
+plot(t_vec, w_rep_vec, LineWidth=1, DisplayName='proc rep');
 plot(t_vec, v_vec, LineWidth=1, DisplayName='meas');
 grid on;
 xlabel('Zeit [s]'); 
