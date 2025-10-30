@@ -8,6 +8,7 @@
 
 clc
 clear
+close all
 
 %% System Dynamics
 % Simulation parameters

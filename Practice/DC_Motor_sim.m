@@ -11,6 +11,7 @@
 
 clc
 clear
+close all
 
 %% Continuous System
 % Simulation parameters

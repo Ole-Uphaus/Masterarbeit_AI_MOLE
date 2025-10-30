@@ -8,6 +8,7 @@
 
 clc
 clear
+close all
 rng(42);
 
 %% System Dynamics

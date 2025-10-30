@@ -8,6 +8,7 @@
 
 clc
 clear
+close all
 
 %% Reference Trajectory
 % Parameters

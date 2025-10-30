@@ -7,6 +7,7 @@
 
 clc
 clear
+close all
 
 %% Noise Parameters
 % Time
