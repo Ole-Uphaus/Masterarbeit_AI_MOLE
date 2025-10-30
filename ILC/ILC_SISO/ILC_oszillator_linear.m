@@ -12,15 +12,15 @@ rng(42);
 
 %% System Dynamics
 % Simulation parameters
-m  = 2; % kg
+m  = 0.2; % kg
 c1 = 2; % N/m
-d  = 0.5; % Ns/m
+d  = 1; % Ns/m
 m_delay = 1;
 
 % Noise Parameters
 sigma_w_rep = 0;  % Repeating process Noise (trial invariant)
-sigma_w = 0.0;     % Process Noise 0.05
-sigma_v = 0;      % Measurement Noise 0.1
+sigma_w = 0.05;     % Process Noise 0.05
+sigma_v = 0.1;      % Measurement Noise 0.1
 fc_w = 0.1;
 fc_v = 10;
 
@@ -42,7 +42,7 @@ sys_disc = c2d(sys_cont, Ts, 'zoh');
 
 %% Reference Trajectory
 % Parameters
-x_max = 0.1;
+x_max = 0.5;
 T_end = 5;
 
 t_vec = 0:Ts:T_end;
@@ -60,14 +60,14 @@ N_iter = 10;
 x0 = [0;
     0]; 
 W = eye(size(P));
-S = 0.01*eye(size(P));
+S = 0.1*eye(size(P));
 
 % Init repeating process Noise
 w_rep_vec = Gen_noise_Butter(t_vec, sigma_w_rep, fc_w);
 
 % Q-Filter
 Q_order = 2;
-Q_fc = 0.5;
+Q_fc = 2;
 
 % Initialisation
 ILC_Quadr = ILC_SISO(r_vec, m_delay);
@@ -101,12 +101,12 @@ u_sim_Quadr = u_sim;
 %% ILC PD-Type
 % Parameters
 kp = 1;
-kd = 0;
+kd = 20;
 
 % Initialisation
 ILC_PD = ILC_SISO(r_vec, m_delay);
 ILC_PD.init_PD_type(kp, kd);
-% ILC_PD.init_Q_lowpass(Q_fc, Q_order, Ts);
+ILC_PD.init_Q_lowpass(Q_fc, Q_order, Ts);
 
 % Update Loop
 u_sim = [ILC_PD.u_vec; 0];
@@ -182,9 +182,9 @@ fprintf('Maximaler absoluter Unterschied bei der Bestimmung von P: %.3e\n', max_
 %% Local Functions
 function dx = oszillator_linear(t, x_vec, u_vec, t_vec, w_vec)
     % Simulation parameters
-    m  = 2; % kg
+    m  = 0.2; % kg
     c1 = 2; % N/m
-    d  = 0.5; % Ns/m
+    d  = 1; % Ns/m
 
     % State space representation 
     A = [0, 1;
@@ -202,10 +202,10 @@ end
 
 function [Ad, Bd, Cd, Dd] = linear_discrete_system(x_star, Ts)
     % Simulation parameters
-    m  = 2; % kg
+    m  = 0.2; % kg
     c1 = 2; % N/m
     c2 = 0; % N/m^3
-    d  = 0.5; % Ns/m
+    d  = 1; % Ns/m
 
     % States
     x = x_star(1);
