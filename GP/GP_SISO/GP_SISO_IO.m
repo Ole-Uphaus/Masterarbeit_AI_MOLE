@@ -7,6 +7,7 @@ classdef GP_SISO_IO < handle
         y_cell      % Cell containing training output Data (from each trial)
         u_cell      % Cell containing training input Data (from each trial)
         V           % Design matrix (containing u regression vectors)
+        z           % Target Vector (containing y target Values)
     end
     
     methods
@@ -24,22 +25,81 @@ classdef GP_SISO_IO < handle
             obj.y_cell = y_cell;
             obj.u_cell = u_cell;
 
-            % Design Matrix
-            obj.calc_design_matrix();
+            % Design Matrix V
+            obj.constr_design_matrix();
 
+            % Target Vector z
+            obj.constr_target_vector();
+
+            % Train GP
+            obj.GP = fitrgp( ...
+                obj.V, obj.z, ...
+                'BasisFunction','none', ...
+                'KernelFunction','squaredexponential');
 
         end
 
-        function calc_design_matrix(obj)
+        function [y_pred, y_std] = predict_trajectory(obj, u_test)
+            %GP_SISO_IO Construct an instance of this class
+            %   Detailed explanation goes here
+
+            u_test = u_test(:);  % Ensure column vector
+            
+            % Construct test Matrix
+            V_test = obj.constr_test_matrix(u_test);
+
+            % Prediction
+            [y_pred, y_std] = predict(obj.GP, V_test);
+
+        end
+
+        function constr_design_matrix(obj)
+            %GP_SISO_IO Construct an instance of this class
+            %   Detailed explanation goes here
+
+            N = length(obj.u_cell{1});
+            J = length(obj.u_cell);     % Nuber of training trials
+
+            % Empty design matrix
+            obj.V = zeros(J*N, N);
+
+            % Design Matrix
+            for i = 1:J
+                % Toeplitz Matrix
+                V_temp = toeplitz(zeros(N, 1), [0, obj.u_cell{1}(1:end-1)'])';
+
+                % Put Toeplitz into Design Matrix
+                obj.V(((i-1)*N + 1):(i*N), :) = V_temp;
+            end
+    
+        end
+
+        function constr_target_vector(obj)
+            %GP_SISO_IO Construct an instance of this class
+            %   Detailed explanation goes here
+
+            N = length(obj.y_cell{1});
+            J = length(obj.y_cell);     % Nuber of training trials
+
+            % Empty Target vector
+            obj.z = zeros(J*N, 1);
+
+            % Target Vector
+            for i = 1:J
+                obj.z(((i-1)*N + 1):(i*N), :) = obj.y_cell{1};
+            end
+        end
+
+        function V_test = constr_test_matrix(obj, u_test)
             %GP_SISO_IO Construct an instance of this class
             %   Detailed explanation goes here
 
             N = length(obj.u_cell{1});
 
-            % Toeplitz design Matrix
-            obj.V = toeplitz(zeros(N, 1), [0, obj.u_cell{1}(1:end-1)']);
-            
+            % Toeplitz test Matrix
+            V_test = toeplitz(zeros(N, 1), [0, u_test(1:end-1)'])';
         end
+
     end
 end
 
