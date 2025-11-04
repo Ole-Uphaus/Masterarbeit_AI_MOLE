@@ -35,8 +35,8 @@ classdef GP_SISO_IO < handle
             obj.GP = fitrgp( ...
                 obj.V, obj.z, ...
                 'BasisFunction','none', ...
-                'KernelFunction','squaredexponential');
-
+                'KernelFunction','squaredexponential', ...
+                'Standardize', false);
         end
 
         function [y_pred, y_std] = predict_trajectory(obj, u_test)
@@ -50,7 +50,33 @@ classdef GP_SISO_IO < handle
 
             % Prediction
             [y_pred, y_std] = predict(obj.GP, V_test);
+        end
 
+        function P = linearize_at_given_trajectory(obj, u_lin)
+            %GP_SISO_IO Construct an instance of this class
+            %   Detailed explanation goes here
+
+            N = length(obj.u_cell{1});
+
+            % Empty jacobi matrix
+            P = zeros(N, N);
+
+            % Construct linearisation Matrix
+            V_lin = obj.constr_test_matrix(u_lin);
+
+            % Iteratively compute gradients
+            for i = 1:N
+                % Extract regression Vector
+                vn = V_lin(i, :);
+
+                % Gradient of the GP w.r.t vn
+                dy_dv = obj.gradient_wrt_regression_vector(vn);
+
+                % Update jacobi matrix
+                for j = 1:(i-1)
+                    P(i, :) = dy_dv';
+                end
+            end
         end
 
         function constr_design_matrix(obj)
@@ -100,6 +126,44 @@ classdef GP_SISO_IO < handle
             V_test = toeplitz([0; u_test(1:end-1)], zeros(1, N));
         end
 
+        function dy_dv = gradient_wrt_regression_vector(obj, vn)
+            %GP_SISO_IO Construct an instance of this class
+            %   Detailed explanation goes here
+
+            % Kernel Parameters
+            k_params = obj.GP.KernelInformation.KernelParameters;
+            sigmaL = k_params(1);
+            sigmaF = k_params(2);
+
+            % Receive alpha vector a = [K + sigma^2*I]^-1 + y
+            alpha = obj.GP.Alpha;
+
+            N_alpha = length(alpha);
+            N_vn = length(vn);
+
+            % Derivative of the Kernel function dk(vn,V)/dvn
+            dk_dvn = zeros(N_vn, N_alpha);
+            x1 = vn(:);
+            for i = 1:N_alpha
+                x2 = obj.V(i, :);
+                x2 = x2(:);
+                dk_dvn(:, i) = -1/(sigmaL^2) * (x1 - x2) * obj.squared_exponantial_kernel(x1, x2, sigmaL, sigmaF);
+            end
+
+            % Gradient w.r.t regression vector
+            dy_dv = dk_dvn * alpha;
+        end
+
+        function k = squared_exponantial_kernel(obj, x1, x2, sigmaL, sigmaF)
+            %GP_SISO_IO Construct an instance of this class
+            %   Detailed explanation goes here
+
+            % Distance
+            r2 = sum((x1 - x2).^2);
+
+            % Kernel value
+            k = sigmaF^2 * exp(-0.5 * r2 / (sigmaL^2));
+        end
     end
 end
 
