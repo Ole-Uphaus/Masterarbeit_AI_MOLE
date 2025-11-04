@@ -22,13 +22,15 @@ t_vec = 0:Ts:T_end;
 % Input trajectorys
 u_scale_train = [1];
 N_traj = length(u_scale_train);
-u_scale_test = -2;
+u_scale_test = -1;
 
 u_vec_train_cell = cell(N_traj, 1);
 for i = 1:N_traj
     u_vec_train_cell{i} = u_scale_train(i)*sin(2*pi/T_end.*t_vec');
 end
-u_vec_test= u_scale_test*sin(2*pi/T_end.*t_vec');
+
+% u_vec_test= u_scale_test*sin(2*pi/T_end.*t_vec');
+u_vec_test = u_scale_test * (t_vec' >= 1) .* (t_vec' <= 3);
 
 %% Data generation
 % Solver settings
