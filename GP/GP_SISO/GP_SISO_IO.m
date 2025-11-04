@@ -31,7 +31,7 @@ classdef GP_SISO_IO < handle
             % Target Vector z
             obj.constr_target_vector();
 
-            % Train GP
+            % Train GP (only one lengthscale)
             obj.GP = fitrgp( ...
                 obj.V, obj.z, ...
                 'BasisFunction','none', ...
@@ -66,7 +66,7 @@ classdef GP_SISO_IO < handle
             % Design Matrix
             for i = 1:J
                 % Toeplitz Matrix
-                V_temp = toeplitz(zeros(N, 1), [0, obj.u_cell{1}(1:end-1)'])';
+                V_temp = toeplitz([0; obj.u_cell{1}(1:end-1)], zeros(1, N));
 
                 % Put Toeplitz into Design Matrix
                 obj.V(((i-1)*N + 1):(i*N), :) = V_temp;
@@ -97,7 +97,7 @@ classdef GP_SISO_IO < handle
             N = length(obj.u_cell{1});
 
             % Toeplitz test Matrix
-            V_test = toeplitz(zeros(N, 1), [0, u_test(1:end-1)'])';
+            V_test = toeplitz([0; u_test(1:end-1)], zeros(1, N));
         end
 
     end
