@@ -29,8 +29,8 @@ for i = 1:N_traj
     u_vec_train_cell{i} = u_scale_train(i)*sin(2*pi/T_end.*t_vec');
 end
 
-% u_vec_test= u_scale_test*sin(2*pi/T_end.*t_vec');
-u_vec_test = u_scale_test * (t_vec' >= 1) .* (t_vec' <= 3);
+u_vec_test= u_scale_test*sin(2*pi/T_end.*t_vec');
+% u_vec_test = u_scale_test * (t_vec' >= 1) .* (t_vec' <= 3);
 
 %% Data generation
 % Solver settings
@@ -62,6 +62,10 @@ GP_IO.train_GP_model(y_sim_train_cell, u_vec_train_cell);
 
 % Predict new Trajectory
 [y_pred_test, y_std_test] = GP_IO.predict_trajectory(u_vec_test);
+
+%% Linearize GP at given input trajectory
+% Linearisation
+P = GP_IO.linearize_at_given_trajectory(u_vec_train_cell{1});
 
 %% Plot
 figure;
