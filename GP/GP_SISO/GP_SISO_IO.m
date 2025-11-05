@@ -73,8 +73,9 @@ classdef GP_SISO_IO < handle
                 dy_dv = obj.gradient_wrt_regression_vector(vn);
 
                 % Update jacobi matrix
-                for j = 1:(i-1)
-                    P(i, :) = dy_dv';
+                J = i - 1;
+                for j = 1:J
+                    P(i, j) = dy_dv(i - j);
                 end
             end
         end
@@ -92,7 +93,7 @@ classdef GP_SISO_IO < handle
             % Design Matrix
             for i = 1:J
                 % Toeplitz Matrix
-                V_temp = toeplitz([0; obj.u_cell{1}(1:end-1)], zeros(1, N));
+                V_temp = toeplitz([0; obj.u_cell{i}(1:end-1)], zeros(1, N));
 
                 % Put Toeplitz into Design Matrix
                 obj.V(((i-1)*N + 1):(i*N), :) = V_temp;
@@ -112,7 +113,7 @@ classdef GP_SISO_IO < handle
 
             % Target Vector
             for i = 1:J
-                obj.z(((i-1)*N + 1):(i*N), :) = obj.y_cell{1};
+                obj.z(((i-1)*N + 1):(i*N), :) = obj.y_cell{i};
             end
         end
 
@@ -135,7 +136,7 @@ classdef GP_SISO_IO < handle
             sigmaL = k_params(1);
             sigmaF = k_params(2);
 
-            % Receive alpha vector a = [K + sigma^2*I]^-1 + y
+            % Receive alpha vector a = [K + sigma^2*I]^-1 * y
             alpha = obj.GP.Alpha;
 
             N_alpha = length(alpha);
