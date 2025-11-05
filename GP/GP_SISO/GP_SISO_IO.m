@@ -12,6 +12,11 @@ classdef GP_SISO_IO < handle
         u_cell      % Cell containing training input Data (from each trial)
         V           % Design matrix (containing u regression vectors)
         z           % Target Vector (containing y target Values)
+        sigmaF2     % Squared kernel parameter sigma_F^2
+        sigmaL2_inv % Squared inverse kernel parameter 1/l^2
+        alpha       % Constant term of the GP a = [K + sigma^2*I]^-1 * y
+        V_row_norm2 % Euklidean Norm of each row of obj.V
+        V_transp    % Transposed design Matrix
     end
     
     methods
@@ -155,9 +160,9 @@ classdef GP_SISO_IO < handle
             sigmaF = k_params(2);
 
             % Receive alpha vector a = [K + sigma^2*I]^-1 * y
-            alpha = obj.GP.Alpha;
+            alpha_vec = obj.GP.Alpha;
 
-            N_alpha = length(alpha);
+            N_alpha = length(alpha_vec);
             N_vn = length(vn);
 
             % Derivative of the Kernel function dk(vn,V)/dvn
@@ -170,7 +175,7 @@ classdef GP_SISO_IO < handle
             end
 
             % Gradient w.r.t regression vector
-            dy_dv = dk_dvn * alpha;
+            dy_dv = dk_dvn * alpha_vec;
         end
 
         function k = squared_exponantial_kernel(obj, x1, x2, sigmaL, sigmaF)
@@ -190,6 +195,78 @@ classdef GP_SISO_IO < handle
 
             % Kernel value
             k = sigmaF^2 * exp(-0.5 * r2 / (sigmaL^2));
+        end
+
+        function P = linearize_at_given_trajectory_fast(obj, u_lin)
+            %linearize_at_given_trajectory Compute local linearization (Jacobian) of GP at a trajectory.
+            %
+            %   Inputs:
+            %       u_lin : Input trajectory (column vector) around which the GP is linearized
+            %
+            %   Outputs:
+            %       P : Jacobian (linearization) matrix of size N×N, mapping input variations
+            %           Δu to output variations Δy near the trajectory u_lin
+
+            N = length(obj.u_cell{1});
+
+            % Empty jacobi matrix
+            P = zeros(N, N);
+
+            % Construct linearisation Matrix
+            V_lin = obj.constr_test_matrix(u_lin);
+
+            % Kernel Parameters
+            k_params = obj.GP.KernelInformation.KernelParameters;
+            obj.sigmaL2_inv = 1/(k_params(1)^2);
+            obj.sigmaF2 = k_params(2)^2;
+
+            % Receive alpha vector a = [K + sigma^2*I]^-1 * y
+            obj.alpha = obj.GP.Alpha;
+
+            % Precompute euklidean Norm of each row of obj.V and transposed
+            % design matrix (each column is one regression Vector)
+            obj.V_row_norm2 = sum(obj.V.^2, 2);
+            obj.V_transp = obj.V.'; % .' - no complex transposition
+
+            % Iteratively compute gradients
+            for i = 1:N
+                % Extract regression Vector
+                vn = V_lin(i, :);
+
+                % Gradient of the GP w.r.t vn
+                dy_dv = obj.gradient_wrt_regression_vector_fast(vn);
+
+                % Update jacobi matrix
+                if i > 1
+                    P(i, 1:(i-1)) = dy_dv((i-1):-1:1);
+                end
+            end
+        end
+
+        function dy_dv = gradient_wrt_regression_vector_fast(obj, vn)
+            %gradient_wrt_regression_vector Compute GP output gradient w.r.t. a regression vector.
+            %
+            %   Inputs:
+            %       vn : Current regression vector (column or row vector)
+            %
+            %   Outputs:
+            %       dy_dv : Gradient of GP output with respect to vn (column vector)
+
+            % Column Vector
+            vn = vn(:);
+
+            % Calculate euklidean norm between vn and every regression
+            % vector in V
+            vn_norm2 = sum(vn.^2);
+            Vv = obj.V*vn;          % vector containing V_i'*v
+            r2 = vn_norm2 + obj.V_row_norm2 - 2*Vv;
+
+            % Calculate kernel Vector (element-wise)
+            k = obj.sigmaF2 * exp(-0.5 * obj.sigmaL2_inv * r2);
+
+            % Calculate gradient
+            w = obj.alpha .* k;
+            dy_dv = -obj.sigmaL2_inv * (sum(w)*vn - obj.V_transp*w);
         end
     end
 end
