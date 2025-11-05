@@ -20,9 +20,9 @@ T_end = 5;
 t_vec = 0:Ts:T_end;
 
 % Input trajectorys
-u_scale_train = [1];
+u_scale_train = [1, 3];
 N_traj = length(u_scale_train);
-u_scale_test = -1;
+u_scale_test = 2;
 
 u_vec_train_cell = cell(N_traj, 1);
 for i = 1:N_traj
@@ -65,7 +65,46 @@ GP_IO.train_GP_model(y_sim_train_cell, u_vec_train_cell);
 
 %% Linearize GP at given input trajectory
 % Linearisation
+tic;
 P = GP_IO.linearize_at_given_trajectory(u_vec_train_cell{1});
+t = toc;
+fprintf('Dauer der Linearisierung: %g s\n', t);
+
+tic;
+P2 = GP_IO.linearize_at_given_trajectory_fast(u_vec_train_cell{1});
+t = toc;
+fprintf('Dauer der Linearisierung (fast): %g s\n', t);
+
+% Compare Fast and slow Computation
+error_P = P - P2;
+max_error_P = max(abs(P(:) - P2(:)));
+fprintf('Maximaler absoluter Unterschied bei der Bestimmung von P: %.3e\n', max_error_P);
+
+% Prediction with linearized gp model
+delta_u = u_vec_test - u_vec_train_cell{1};
+y_pred_lin_test = y_sim_train_cell{1} + P*delta_u;
+
+%% Finite difference check
+% Parameters
+u0 = u_vec_train_cell{1};
+[i,j,eps] = deal(50,20,1e-5);
+
+% First Prediction
+[y0,~] = GP_IO.predict_trajectory(u0);
+
+% Change one input value (index j)
+u1 = u0;
+u1(j) = u1(j) + eps;
+
+% Second Prediction (with changed input)
+[y1,~] = GP_IO.predict_trajectory(u1);
+
+% Calculate, how the change in u changes output y (at index i)
+num = (y1(i)-y0(i))/eps;
+
+% Compare Results
+fprintf('P(%d,%d): analytisch=%g | numerisch=%g | diff=%g\n', ...
+        i,j, P(i,j), num, abs(P(i,j)-num));
 
 %% Plot
 figure;
@@ -74,6 +113,7 @@ set(gcf, 'Position', [100 100 1200 500]);
 subplot(1,2,1);
 plot(t_vec, y_sim_test, LineWidth=1, DisplayName='y-sim-test'); hold on;
 plot(t_vec, y_pred_test, LineWidth=1, DisplayName='y-pred-test');
+plot(t_vec, y_pred_lin_test, LineWidth=1, DisplayName='y-pred-lin-test');
 for i = 1:N_traj
     plot(t_vec, y_sim_train_cell{i}, LineWidth=1, DisplayName=sprintf('y-sim-train%d', i));
 end
