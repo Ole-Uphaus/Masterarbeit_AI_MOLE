@@ -123,7 +123,7 @@ classdef ILC_SISO < handle
         end
 
         function Log_error(obj)
-            %init_Quadr_type Logs RMSE over iterations
+            %Log_error Compute and store RMSE of the current tracking error.
             
             % Calculate RMSE
             RMSE = sqrt(mean(obj.error_vec.^2));
@@ -131,6 +131,13 @@ classdef ILC_SISO < handle
         end
 
         function init_Q_lowpass(obj, fc, order, Ts)
+            %init_Q_lowpass Initialize an optional zero-phase low-pass Q-filter.
+            %
+            %   Inputs:
+            %       fc    : Cutoff frequency
+            %       order : Butterworth filter order
+            %       Ts    : Sampling time in seconds
+
             fs = 1/Ts;
 
             % Butterworth lowpass
@@ -142,6 +149,14 @@ classdef ILC_SISO < handle
         end
 
         function x_filt = apply_Q(obj, x)
+            %apply_Q Apply the optional Q-filter to a signal.
+            %
+            %   Inputs:
+            %       x : Column vector to be filtered (e.g., input update)
+            %
+            %   Outputs:
+            %       x_filt : Filtered signal if Q is initialized; otherwise x unchanged
+            
             % Apply Q filter if initialized
             if ~isempty(obj.a_Q) && ~isempty(obj.b_Q)
                 x_filt = filtfilt(obj.b_Q, obj.a_Q, x);
