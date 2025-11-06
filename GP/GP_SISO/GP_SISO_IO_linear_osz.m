@@ -46,11 +46,13 @@ x0 = [0;
 
 y_sim_train_cell = cell(N_traj, 1);
 for i = 1:N_traj
-    [~, x_sim] = ode45(@(t,x) oszillator_linear(t, x, u_vec_train_cell{i}, t_vec), t_vec, x0, opts);
+    % [~, x_sim] = ode45(@(t,x) oszillator_linear(t, x, u_vec_train_cell{i}, t_vec), t_vec, x0, opts);
+    [~, x_sim] = ode45(@(t,x) oszillator_nonlinear(t, x, u_vec_train_cell{i}, t_vec), t_vec, x0, opts);
     y_sim_train_cell{i} = x_sim(:, 1);
 end
 
-[~, x_sim] = ode45(@(t,x) oszillator_linear(t, x, u_vec_test, t_vec), t_vec, x0, opts);
+% [~, x_sim] = ode45(@(t,x) oszillator_linear(t, x, u_vec_test, t_vec), t_vec, x0, opts);
+[~, x_sim] = ode45(@(t,x) oszillator_nonlinear(t, x, u_vec_test, t_vec), t_vec, x0, opts);
 y_sim_test = x_sim(:, 1);
 
 %% Predict System Dynamics
@@ -153,4 +155,24 @@ function dx = oszillator_linear(t, x_vec, u_vec, t_vec)
 
     % Dynamics
     dx = A*x_vec + B*u;
+end
+
+function dx = oszillator_nonlinear(t, x_vec, u_vec, t_vec)
+    % Simulation parameters
+    m  = 2; % kg
+    c1 = 2; % N/m
+    c2 = 2; % N/m^3
+    d  = 0.5; % Ns/m
+
+    % States
+    x = x_vec(1);
+    xp = x_vec(2);
+
+    % Input
+    u = interp1(t_vec, u_vec, t, 'previous', 'extrap');
+
+    % Dynamics
+    dx = zeros(2, 1);
+    dx(1) = xp;
+    dx(2) = 1/m*(-c1*x - c2*x^3 - d*xp + u);
 end
