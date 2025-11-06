@@ -9,6 +9,7 @@
 clc
 clear
 close all
+rng(43);
 
 %% Reference Trajectory
 % Parameters
@@ -19,12 +20,13 @@ T_end = 5;
 t_vec = 0:Ts:T_end;
 
 % Trajectory (no delay - delay is applied later)
-r_vec = x_max*sin(2*pi/T_end.*t_vec');
+sigma = 1;
+[r_vec, ~, ~] = Random_C2_trajectory_1D(2, t_vec, sigma);
 
 %% ILC PD-Type design
 % Parameters
 kp = 0.1;
-kd = 0.05;
+kd = 100;
 m_delay = 1;
 N_iter = 10;
 x0 = [0;
@@ -60,7 +62,7 @@ y_sim_pd = y_sim;
 N = size(t_vec, 2);
 
 W = eye(N-m_delay);
-S = 0*eye(N-m_delay);
+S = 0.001*eye(N-m_delay);
 
 % Initialisation
 ILC_Quadr = ILC_SISO(r_vec, m_delay);
