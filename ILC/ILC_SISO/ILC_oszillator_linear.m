@@ -98,6 +98,8 @@ for i = 1:N_iter
     [t_sim, x_sim] = ode45(@(t,x) oszillator_linear(t, x, u_sim, t_vec, (w_vec + w_rep_vec)), t_vec, x0, opts);
     y_sim = x_sim(:, 1) + v_vec;
 end
+% Calculate and log final error
+ILC_Quadr.calculate_final_error(y_sim);
 y_vec_Quadr = y_sim;
 u_sim_Quadr = u_sim;
 
@@ -125,6 +127,8 @@ for i = 1:N_iter
     [t_sim, x_sim] = ode45(@(t,x) oszillator_linear(t, x, u_sim, t_vec, (w_vec + w_rep_vec)), t_vec, x0, opts);
     y_sim = x_sim(:, 1) + v_vec;
 end
+% Calculate and log final error
+ILC_PD.calculate_final_error(y_sim);
 y_vec_PD = y_sim;
 u_sim_PD = u_sim;
 
@@ -143,8 +147,8 @@ title('Compare desired and simulated Trajectory');
 legend()
 
 subplot(2,2,3);
-plot(1:length(ILC_Quadr.RMSE_log), ILC_Quadr.RMSE_log, LineWidth=1, DisplayName='ILC Quadr'); hold on;
-plot(1:length(ILC_PD.RMSE_log), ILC_PD.RMSE_log, LineWidth=1, DisplayName='ILC PD');
+plot(0:(length(ILC_Quadr.RMSE_log)-1), ILC_Quadr.RMSE_log, LineWidth=1, DisplayName='ILC Quadr'); hold on;
+plot(0:(length(ILC_PD.RMSE_log)-1), ILC_PD.RMSE_log, LineWidth=1, DisplayName='ILC PD');
 grid on;
 xlabel('Iteration'); 
 ylabel('RMSE');

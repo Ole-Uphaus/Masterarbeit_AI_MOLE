@@ -131,6 +131,20 @@ classdef ILC_SISO < handle
             obj.RMSE_log(end+1) = RMSE;
         end
 
+        function calculate_final_error(obj, y_vec);
+            %calculate_final_error Calculate and log the last error during
+            %Training
+            %
+            %   Inputs:
+            %       y_vec - Measured output signal of the current trial
+
+            % Calculate error e(k+1)
+            obj.error_vec = obj.r_vec((1+obj.m):end) - y_vec((1+obj.m):end);
+
+            % Log error
+            obj.Log_error()
+        end
+
         function init_Q_lowpass(obj, fc, order, Ts)
             %init_Q_lowpass Initialize an optional zero-phase low-pass Q-filter.
             %
