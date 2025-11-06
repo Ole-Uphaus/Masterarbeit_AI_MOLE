@@ -22,6 +22,7 @@ t_vec = 0:Ts:T_end;
 % Trajectory (no delay - delay is applied later)
 sigma = 1;
 [r_vec, ~, ~] = Random_C2_trajectory_1D(2, t_vec, sigma);
+u_init = zeros(size(r_vec, 1), 1);
 
 %% ILC PD-Type design
 % Parameters
@@ -33,7 +34,7 @@ x0 = [0;
     0];
 
 % Initialisation
-ILC_PD = ILC_SISO(r_vec, m_delay);
+ILC_PD = ILC_SISO(r_vec, m_delay, u_init);
 ILC_PD.init_PD_type(kp, kd);
 
 % Solver settings
@@ -65,7 +66,7 @@ W = eye(N-m_delay);
 S = 0.001*eye(N-m_delay);
 
 % Initialisation
-ILC_Quadr = ILC_SISO(r_vec, m_delay);
+ILC_Quadr = ILC_SISO(r_vec, m_delay, u_init);
 ILC_Quadr.init_Quadr_type(W, S)
 
 % Update Loop

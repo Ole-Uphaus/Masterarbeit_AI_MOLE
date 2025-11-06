@@ -51,6 +51,7 @@ t_vec = 0:Ts:T_end;
 % Trajectory (no delay - delay is applied later)
 sigma = 1;
 [r_vec, ~, ~] = Random_C2_trajectory_1D(2, t_vec, sigma);
+u_init = zeros(size(r_vec, 1), 1);
 
 %% ILC quadratic optimal design
 % Lifted system dynamics
@@ -72,7 +73,7 @@ Q_order = 2;
 Q_fc = 2;
 
 % Initialisation
-ILC_Quadr = ILC_SISO(r_vec, m_delay);
+ILC_Quadr = ILC_SISO(r_vec, m_delay, u_init);
 ILC_Quadr.init_Quadr_type(W, S, P)
 % ILC_Quadr.init_Q_lowpass(Q_fc, Q_order, Ts);
 
@@ -106,7 +107,7 @@ kp = 0.1;
 kd = 100;
 
 % Initialisation
-ILC_PD = ILC_SISO(r_vec, m_delay);
+ILC_PD = ILC_SISO(r_vec, m_delay, u_init);
 ILC_PD.init_PD_type(kp, kd);
 % ILC_PD.init_Q_lowpass(Q_fc, Q_order, Ts);
 

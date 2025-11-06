@@ -21,7 +21,7 @@ classdef ILC_SISO < handle
     end
     
     methods
-        function obj = ILC_SISO(r_vec, m)
+        function obj = ILC_SISO(r_vec, m, u_init)
             %ILC_LINEAR_SISO Construct an instance of this class
             %
             %   Inputs:
@@ -30,8 +30,9 @@ classdef ILC_SISO < handle
 
             obj.r_vec = r_vec;
             obj.m = m;
-            % Initiallize input vector u
-            obj.u_vec = zeros(size(r_vec, 1)-m, 1);
+
+            % Initialize input vector u
+            obj.u_vec = u_init(1:(size(r_vec, 1)-m), 1);
         end
         
         function init_PD_type(obj, kp, kd)
