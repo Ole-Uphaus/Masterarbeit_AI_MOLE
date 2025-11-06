@@ -9,7 +9,7 @@
 clc
 clear
 close all
-rng(42);
+rng(43);
 
 %% System Dynamics
 % Simulation parameters
@@ -20,7 +20,7 @@ m_delay = 1;
 
 % Noise Parameters
 sigma_w_rep = 0;  % Repeating process Noise (trial invariant)
-sigma_w = 0.05;     % Process Noise 0.05
+sigma_w = 0;     % Process Noise 0.05
 sigma_v = 0;      % Measurement Noise 0.1
 fc_w = 0.1;
 fc_v = 10;
@@ -49,7 +49,8 @@ T_end = 5;
 t_vec = 0:Ts:T_end;
 
 % Trajectory (no delay - delay is applied later)
-r_vec = x_max*sin(2*pi/T_end.*t_vec');
+sigma = 1;
+[r_vec, ~, ~] = Random_C2_trajectory_1D(2, t_vec, sigma);
 
 %% ILC quadratic optimal design
 % Lifted system dynamics
@@ -61,7 +62,7 @@ N_iter = 10;
 x0 = [0;
     0]; 
 W = eye(size(P));
-S = 0.01*eye(size(P));
+S = 0.001*eye(size(P));
 
 % Init repeating process Noise
 w_rep_vec = Gen_noise_Butter(t_vec, sigma_w_rep, fc_w);
@@ -101,13 +102,13 @@ u_sim_Quadr = u_sim;
 
 %% ILC PD-Type
 % Parameters
-kp = 1;
-kd = 20;
+kp = 0.1;
+kd = 100;
 
 % Initialisation
 ILC_PD = ILC_SISO(r_vec, m_delay);
 ILC_PD.init_PD_type(kp, kd);
-ILC_PD.init_Q_lowpass(Q_fc, Q_order, Ts);
+% ILC_PD.init_Q_lowpass(Q_fc, Q_order, Ts);
 
 % Update Loop
 u_sim = [ILC_PD.u_vec; 0];
@@ -133,7 +134,7 @@ set(gcf, 'Position', [100 100 1200 800]);
 subplot(2,2,1);
 plot(t_vec, r_vec, LineWidth=1, DisplayName='desired'); hold on;
 plot(t_vec, y_vec_Quadr, LineWidth=1, DisplayName='ILC Quadr');
-% plot(t_vec, y_vec_PD, LineWidth=1, DisplayName='ILC PD');
+plot(t_vec, y_vec_PD, LineWidth=1, DisplayName='ILC PD');
 grid on;
 xlabel('Zeit [s]'); 
 ylabel('x [m]');
@@ -142,7 +143,7 @@ legend()
 
 subplot(2,2,3);
 plot(1:length(ILC_Quadr.RMSE_log), ILC_Quadr.RMSE_log, LineWidth=1, DisplayName='ILC Quadr'); hold on;
-% plot(1:length(ILC_PD.RMSE_log), ILC_PD.RMSE_log, LineWidth=1, DisplayName='ILC PD');
+plot(1:length(ILC_PD.RMSE_log), ILC_PD.RMSE_log, LineWidth=1, DisplayName='ILC PD');
 grid on;
 xlabel('Iteration'); 
 ylabel('RMSE');
