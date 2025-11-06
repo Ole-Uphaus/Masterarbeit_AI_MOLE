@@ -18,5 +18,8 @@ way_pts(end) = 0;
 
 % Generate trajectory
 [q, qd, qdd] = quinticpolytraj(way_pts, time_pts, t_vec);
+q = q.';
+qd = qd.';
+qdd = qdd.';
 end
 
