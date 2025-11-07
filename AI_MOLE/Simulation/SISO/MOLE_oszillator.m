@@ -12,12 +12,18 @@ close all
 rng(43);
 
 %% Reference Trajectory
+tic;
 % Parameters
 x_max = 0.5;
 Ts = 0.01;
 T_end = 5;
 
 t_vec = 0:Ts:T_end;
+
+% Generate Dynamic file Path
+base_dir = fileparts(mfilename("fullpath"));
+ILC_path = fullfile(base_dir, '..', '..', '..', 'ILC', 'ILC_SISO');
+addpath(ILC_path);
 
 % Trajectory (no delay - delay is applied later)
 sigma = 1;
@@ -26,7 +32,8 @@ sigma = 1;
 %% Initialize AI-MOLE
 % Parameters
 m_delay = 1;
-N_iter = 10;
+N_iter = 5;
+H_trials = 3;
 x0 = [0;
     0];
 
@@ -42,24 +49,23 @@ sigma_I = 0.1;
 u_init = sigma_I*sin(2*pi/T_end.*t_vec');
 
 % Initialisation
-SISO_MOLE = SISO_MOLE_IO(r_vec, m_delay, u_init);
+SISO_MOLE = SISO_MOLE_IO(r_vec, m_delay, u_init, N_iter, H_trials);
 
 %% Run ILC
+% Update Loop
+u_sim = u_init;
+[t_sim, x_sim] = ode45(@(t,x) oszillator_nonlinear(t, x, u_sim, t_vec), t_vec, x0, opts);
+y_sim = x_sim(:, 1);
+for i = 1:N_iter
+    % Update input
+    u_sim = [SISO_MOLE.update_input(y_sim); 0];
 
-% % Update Loop
-% u_sim = u_init;
-% [t_sim, x_sim] = ode45(@(t,x) oszillator_nonlinear(t, x, u_sim, t_vec), t_vec, x0, opts);
-% y_sim = x_sim(:, 1);
-% for i = 1:N_iter
-%     % Update input
-%     P = Lifted_dynamics_nonlinear_SISO(@(x) linear_discrete_system(x, Ts), N, m_delay, x_sim);
-%     u_sim = [ILC_Quadr.Quadr_update(y_sim, P); 0];
-% 
-%     % Simulate the system
-%     [t_sim, x_sim] = ode45(@(t,x) oszillator_nonlinear(t, x, u_sim, t_vec), t_vec, x0, opts);
-%     y_sim = x_sim(:, 1);
-% end
-% y_sim_quadratic = y_sim;
+    % Simulate the system
+    [t_sim, x_sim] = ode45(@(t,x) oszillator_nonlinear(t, x, u_sim, t_vec), t_vec, x0, opts);
+    y_sim = x_sim(:, 1);
+end
+SISO_MOLE.save_final_trajectory(y_sim);
+y_sim_quadratic = y_sim;
 
 %% Plot Results
 figure;
@@ -67,16 +73,18 @@ set(gcf, 'Position', [100 100 1200 800]);
 
 subplot(2,2,1);   % 1 Zeile, 2 Spalten, erster Plot
 plot(t_vec, r_vec, LineWidth=1, DisplayName='desired'); hold on;
-plot(t_vec, y_sim_init, LineWidth=1, DisplayName='init');
+for i = 1:N_iter
+    plot(t_vec, SISO_MOLE.y_cell{i}, LineWidth=1, Color=[0.5 0.5 0.5], DisplayName=sprintf('Iteration %d', i-1));
+end
+plot(t_vec, SISO_MOLE.y_cell{N_iter+1}, LineWidth=1, DisplayName=sprintf('Iteration %d', N_iter));
 grid on;
 xlabel('Zeit [s]'); 
 ylabel('x [m]');
 title('Compare desired and simulated Trajectory');
-legend()
+legend('Location', 'best');
 
 subplot(2,2,3);   % 1 Zeile, 2 Spalten, erster Plot
-% plot(1:length(ILC_Quadr.RMSE_log), ILC_Quadr.RMSE_log, LineWidth=1, DisplayName='ILC Quadr'); hold on;
-% plot(1:length(ILC_PD.RMSE_log), ILC_PD.RMSE_log, LineWidth=1, DisplayName='ILC PD');
+plot(0:(length(SISO_MOLE.ILC_SISO.RMSE_log)-1), SISO_MOLE.ILC_SISO.RMSE_log, LineWidth=1, DisplayName='ILC Quadr');
 grid on;
 xlabel('Iteration'); 
 ylabel('RMSE');
@@ -84,12 +92,20 @@ title('Compare error development');
 legend()
 
 subplot(2,2,4);   % 1 Zeile, 2 Spalten, erster Plot
-plot(t_vec, u_init, LineWidth=1, DisplayName='u init'); hold on;
+hold on;
+for i = 1:N_iter
+    plot(t_vec, SISO_MOLE.u_cell{i}, LineWidth=1, Color=[0.5 0.5 0.5], DisplayName=sprintf('Iteration %d', i-1));
+end
+plot(t_vec, SISO_MOLE.u_cell{N_iter+1}, LineWidth=1, DisplayName=sprintf('Iteration %d', N_iter));
 grid on;
 xlabel('Zeit [s]'); 
 ylabel('F [N]');
 title('Input Signal');
-legend()
+legend('Location', 'best');
+
+% Zeitmessung und Ausgabe
+time = toc;
+fprintf('Dauer von AI-MOLE mit %d Iterationen, %d Trials Delay (H) und jeweils %d Datenpunkten pro Trial: %g s\n', N_iter, H_trials, length(t_vec), time);
 
 %% Local Functions
 function dx = oszillator_nonlinear(t, x_vec, u_vec, t_vec)
