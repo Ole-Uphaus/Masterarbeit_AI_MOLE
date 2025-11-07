@@ -65,7 +65,7 @@ y_sim_pd = y_sim;
 N = size(t_vec, 2);
 
 W = eye(N-m_delay);
-S = 0.001*eye(N-m_delay);
+S = 1*eye(N-m_delay);
 
 % Initialisation
 ILC_Quadr = ILC_SISO(r_vec, m_delay, u_init);
@@ -94,7 +94,7 @@ set(gcf, 'Position', [100 100 1200 500]);
 
 subplot(1,2,1);   % 1 Zeile, 2 Spalten, erster Plot
 plot(t_vec, r_vec, LineWidth=1, DisplayName='desired'); hold on;
-plot(t_vec, y_sim_pd, LineWidth=1, DisplayName='ILC PD');
+% plot(t_vec, y_sim_pd, LineWidth=1, DisplayName='ILC PD');
 plot(t_vec, y_sim_quadratic, LineWidth=1, DisplayName='ILC Quadr');
 grid on;
 xlabel('Zeit [s]'); 
@@ -104,7 +104,7 @@ legend()
 
 subplot(1,2,2);   % 1 Zeile, 2 Spalten, erster Plot
 plot(0:(length(ILC_Quadr.RMSE_log)-1), ILC_Quadr.RMSE_log, LineWidth=1, DisplayName='ILC Quadr'); hold on;
-plot(0:(length(ILC_PD.RMSE_log)-1), ILC_PD.RMSE_log, LineWidth=1, DisplayName='ILC PD');
+% plot(0:(length(ILC_PD.RMSE_log)-1), ILC_PD.RMSE_log, LineWidth=1, DisplayName='ILC PD');
 grid on;
 xlabel('Iteration'); 
 ylabel('RMSE');
