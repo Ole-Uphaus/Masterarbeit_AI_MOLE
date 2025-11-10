@@ -46,13 +46,11 @@ x0 = [0;
 
 y_sim_train_cell = cell(N_traj, 1);
 for i = 1:N_traj
-    % [~, x_sim] = ode45(@(t,x) oszillator_linear(t, x, u_vec_train_cell{i}, t_vec), t_vec, x0, opts);
-    [~, x_sim] = ode45(@(t,x) oszillator_nonlinear(t, x, u_vec_train_cell{i}, t_vec), t_vec, x0, opts);
+    [~, x_sim] = ode45(@(t,x) oszillator_linear(t, x, u_vec_train_cell{i}, t_vec), t_vec, x0, opts);
     y_sim_train_cell{i} = x_sim(:, 1);
 end
 
-% [~, x_sim] = ode45(@(t,x) oszillator_linear(t, x, u_vec_test, t_vec), t_vec, x0, opts);
-[~, x_sim] = ode45(@(t,x) oszillator_nonlinear(t, x, u_vec_test, t_vec), t_vec, x0, opts);
+[~, x_sim] = ode45(@(t,x) oszillator_linear(t, x, u_vec_test, t_vec), t_vec, x0, opts);
 y_sim_test = x_sim(:, 1);
 
 %% Predict System Dynamics
@@ -89,24 +87,34 @@ y_pred_lin_test = y_sim_train_cell{1} + P*delta_u;
 %% Finite difference check
 % Parameters
 u0 = u_vec_train_cell{1};
-[i,j,eps] = deal(50,20,1e-5);
+K = 3;
+h = 1e-6;
 
 % First Prediction
 [y0,~] = GP_IO.predict_trajectory(u0);
+N = length(u0);
 
-% Change one input value (index j)
-u1 = u0;
-u1(j) = u1(j) + eps;
+% Run Loop (one Direction per iteration)
+for i = 1:K
+    % Random Direction
+    v = randn(N, 1);
 
-% Second Prediction (with changed input)
-[y1,~] = GP_IO.predict_trajectory(u1);
+    % Normalize direction vector (vector norm increases with vector size)
+    v = v / norm(v);
 
-% Calculate, how the change in u changes output y (at index i)
-num = (y1(i)-y0(i))/eps;
+    % Calculate change in output via Finite-Differences
+    delta_y_fd = (GP_IO.predict_trajectory(u0 + h*v) - y0);
 
-% Compare Results
-fprintf('P(%d,%d): analytisch=%g | numerisch=%g | diff=%g\n', ...
-        i,j, P(i,j), num, abs(P(i,j)-num));
+    % Calculate Change in output via Linearized lifted Matrix
+    delta_y_lin = P*(h*v);
+
+    % Error
+    max_error_y = max(abs(delta_y_fd - delta_y_lin));
+    rel_error_y = norm(delta_y_fd - delta_y_lin) / max(1e-17, norm(delta_y_lin));
+
+    % Print
+    fprintf('Richtung %d: rel. Fehler = %.3e, max. abs. Fehler = %.3e\n', i, rel_error_y, max_error_y);
+end
 
 %% Plot
 figure;
@@ -155,24 +163,4 @@ function dx = oszillator_linear(t, x_vec, u_vec, t_vec)
 
     % Dynamics
     dx = A*x_vec + B*u;
-end
-
-function dx = oszillator_nonlinear(t, x_vec, u_vec, t_vec)
-    % Simulation parameters
-    m  = 2; % kg
-    c1 = 2; % N/m
-    c2 = 2; % N/m^3
-    d  = 0.5; % Ns/m
-
-    % States
-    x = x_vec(1);
-    xp = x_vec(2);
-
-    % Input
-    u = interp1(t_vec, u_vec, t, 'previous', 'extrap');
-
-    % Dynamics
-    dx = zeros(2, 1);
-    dx(1) = xp;
-    dx(2) = 1/m*(-c1*x - c2*x^3 - d*xp + u);
 end
