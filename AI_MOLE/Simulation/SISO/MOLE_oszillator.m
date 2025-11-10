@@ -32,7 +32,7 @@ sigma = 1;
 %% Initialize AI-MOLE
 % Parameters
 m_delay = 1;
-N_iter = 5;
+N_iter = 10;
 H_trials = 3;
 x0 = [0;
     0];

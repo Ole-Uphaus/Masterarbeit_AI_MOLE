@@ -82,7 +82,7 @@ classdef SISO_MOLE_IO < handle
 
             % Calculate weighting matrices
             W = eye(size(P));
-            S = 0.0001 * (norm(P, 2)^2) * eye(size(P));
+            S = 1 * (norm(P, 2)^2) * eye(size(P));
 
             % Perform ILC update
             obj.ILC_SISO.init_Quadr_type(W, S, P);
