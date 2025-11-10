@@ -1,6 +1,15 @@
 function [q, qd, qdd] = Random_C2_trajectory_1D(num_points, t_vec, sigma)
-%UNTITLED Summary of this function goes here
-%   Detailed explanation goes here
+%Random_C2_trajectory_1D Generate a smooth random 1D C2-continuous trajectory
+%
+%   Inputs:
+%       num_points : Number of interior random waypoints
+%       t_vec      : Time vector over which the trajectory is evaluated
+%       sigma      : Standard deviation of the random waypoint distribution
+%
+%   Outputs:
+%       q   : Position trajectory (column vector)
+%       qd  : Velocity trajectory (column vector)
+%       qdd : Acceleration trajectory (column vector)
 
 % Parameters
 t0 = t_vec(1);

@@ -1,21 +1,26 @@
 classdef SISO_MOLE_IO < handle
-    %SISO_MOLE_IO Summary of this class goes here
-    %   Detailed explanation goes here
+    %SISO_MOLE_IO Implementation of the AI-MOLE framework for SISO systems
     
     properties
-        GP_SISO
-        ILC_SISO
-        y_cell
-        u_cell
-        N_iter
-        H_trials
-        m_delay
+        GP_SISO         % Gaussian Process model for the SISO system
+        ILC_SISO        % Iterative Learning Control (ILC) instance
+        y_cell          % Cell array storing output trajectories (per iteration)
+        u_cell          % Cell array storing input trajectories (per iteration)
+        N_iter          % Total number of learning iterations
+        H_trials        % Number of previous trials used for GP training (history length)
+        m_delay         % System delay (in samples) - relative degree
     end
     
     methods
         function obj = SISO_MOLE_IO(r_vec, m_delay, u_init, N_iter, H_trials)
-            %SISO_MOLE_IO Construct an instance of this class
-            %   Detailed explanation goes here
+            %SISO_MOLE_IO Constructor for the SISO_MOLE_IO class
+            %
+            %   Inputs:
+            %       r_vec    : Reference trajectory (column vector)
+            %       m_delay  : System delay (integer)
+            %       u_init   : Initial input trajectory (column vector)
+            %       N_iter   : Number of learning iterations
+            %       H_trials : Number of previous trials used for GP training
             
             % Generate dynamic paths
             base_dir = fileparts(mfilename("fullpath"));
@@ -42,8 +47,13 @@ classdef SISO_MOLE_IO < handle
         end
 
         function u_vec_new = update_input(obj, y_vec)
-            %SISO_MOLE_IO Construct an instance of this class
-            %   Detailed explanation goes here
+            %update_input Perform one AI-MOLE iteration (GP + ILC update)
+            %
+            %   Inputs:
+            %       y_vec : Measured or simulated output signal of the current iteration
+            %
+            %   Outputs:
+            %       u_vec_new : Updated input signal for the next iteration
 
             % Get current iteration counter
             i_iter = sum(~cellfun(@isempty, obj.u_cell));
@@ -83,8 +93,10 @@ classdef SISO_MOLE_IO < handle
         end
 
         function save_final_trajectory(obj, y_vec)
-            %SISO_MOLE_IO Construct an instance of this class
-            %   Detailed explanation goes here
+            %save_final_trajectory Save the final output trajectory and log final error
+            %
+            %   Inputs:
+            %       y_vec : Measured or simulated output of the final iteration
 
             % Get current iteration counter
             i_iter = sum(~cellfun(@isempty, obj.u_cell));
