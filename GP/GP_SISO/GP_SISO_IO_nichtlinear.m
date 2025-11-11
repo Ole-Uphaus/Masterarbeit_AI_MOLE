@@ -4,7 +4,7 @@
 % Beschreibung:
 % In diesem skript werde ich die Klasse für den Gauß-Prozess evaluieren und
 % erproben, sodass sie zukünftig auch für AI_MOLE eingesetzt werden kann.
-% Dazu werde ich versuchen, das Systemverhalten eines linearen dynmiaschen
+% Dazu werde ich versuchen, das Systemverhalten eines nichtlinearen dynmiaschen
 % repetetiven Systems durch einen Gauß Prozess zu erlernen und anschließend
 % Prädiktionen durchzuführen.
 % -------------------------------------------------------------
@@ -24,6 +24,9 @@ Ts = 0.01;
 T_end = 5;
 t_vec = 0:Ts:T_end;
 
+N = length(t_vec);
+m_delay = 1;
+
 % Input trajectorys
 u_scale_train = [1, 3];
 N_traj = length(u_scale_train);
@@ -35,7 +38,6 @@ for i = 1:N_traj
 end
 
 u_vec_test= u_scale_test*sin(2*pi/T_end.*t_vec');
-% u_vec_test = u_scale_test * (t_vec' >= 1) .* (t_vec' <= 3);
 
 %% Data generation
 % Solver settings
@@ -50,12 +52,14 @@ x0 = [0;
     0];
 
 y_sim_train_cell = cell(N_traj, 1);
+x_sim_train_cell = cell(N_traj, 1);
 for i = 1:N_traj
-    [~, x_sim] = ode45(@(t,x) oszillator_linear(t, x, u_vec_train_cell{i}, t_vec), t_vec, x0, opts);
+    [~, x_sim] = ode45(@(t,x) oszillator_nonlinear(t, x, u_vec_train_cell{i}, t_vec), t_vec, x0, opts);
     y_sim_train_cell{i} = x_sim(:, 1);
+    x_sim_train_cell{i} = x_sim;
 end
 
-[~, x_sim] = ode45(@(t,x) oszillator_linear(t, x, u_vec_test, t_vec), t_vec, x0, opts);
+[~, x_sim] = ode45(@(t,x) oszillator_nonlinear(t, x, u_vec_test, t_vec), t_vec, x0, opts);
 y_sim_test = x_sim(:, 1);
 
 %% Predict System Dynamics
@@ -125,26 +129,10 @@ end
 fprintf('\n');
 
 %% Compare Lifted System representation
-% Simulation parameters
-m  = 2; % kg
-c1 = 2; % N/m
-d  = 0.5; % Ns/m
+P_analytic = Lifted_dynamics_nonlinear_SISO(@(x) linear_discrete_system(x, Ts), N, m_delay, x_sim_train_cell{1});
 
-% State space representation 
-A = [0, 1;
-    -c1/m, -d/m];
-B = [0;
-    1/m];
-C = [1, 0];
-D = 0;
-
-% Discrete System
-sys_cont = ss(A,B,C,D);
-sys_disc = c2d(sys_cont, Ts, 'zoh');
-[Ad,Bd,Cd,Dd] = ssdata(sys_disc);
-
-% Calculate analytic lifted Matrix
-P_analytic = Lifted_dynamics_linear_SISO(Ad, Bd, Cd, N, 1);
+% Predictions with analytic linearisation
+y_lin_test = y_sim_train_cell{1} + [0; P_analytic*delta_u(1:end-1)];
 
 % Compare lifted Matrices
 P_reduced_size = P(2:end, 1:end-1);
@@ -157,7 +145,7 @@ fprintf('Mittlerer absoluter Unterschied P_analytic und P_lin: %.3e\n', mean_err
 
 % Calculate prediction Error
 error_y_pred = abs(y_sim_test - y_pred_test);
-error_y_lin = abs(y_sim_test - y_pred_lin_test);
+error_y_lin = abs(y_lin_test - y_pred_lin_test);
 
 % Mean row-error P
 row_err_P = zeros(size(error_P2, 1), 1);
@@ -165,7 +153,7 @@ for i = 1:size(error_P2, 1)
     row_err_P(i) = mean(abs(error_P2(i, 1:i)));
 end
 
-%% Plot
+%% Plots
 figure;
 set(gcf, 'Position', [100 100 1200 500]);
 
@@ -179,8 +167,8 @@ ylabel('Output-Index');
 subplot(1,2,2);
 plot(t_vec, error_y_pred, LineWidth=2, DisplayName='error (y-sim - y-pred)');
 hold on;
-plot(t_vec, error_y_lin, LineWidth=2, DisplayName='error (y-sim - y-pred-lin)');
-% plot(t_vec(2:end), row_err_P, LineWidth=2, DisplayName='row-error (P-analyt - P-lin)');
+plot(t_vec, error_y_lin, LineWidth=2, DisplayName='error (y-lin - y-pred-lin)');
+plot(t_vec(2:end), row_err_P, LineWidth=2, DisplayName='row-error (P-analyt - P-lin)');
 grid on;
 xlabel('Zeit [s]'); 
 ylabel('x [m]');
@@ -194,6 +182,7 @@ subplot(1,2,1);
 plot(t_vec, y_sim_test, LineWidth=1, DisplayName='y-sim-test'); hold on;
 plot(t_vec, y_pred_test, LineWidth=1, DisplayName='y-pred-test');
 plot(t_vec, y_pred_lin_test, LineWidth=1, DisplayName='y-pred-lin-test');
+plot(t_vec, y_lin_test, LineWidth=1, DisplayName='y-lin-test');
 for i = 1:N_traj
     plot(t_vec, y_sim_train_cell{i}, LineWidth=1, DisplayName=sprintf('y-sim-train%d', i));
 end
@@ -216,21 +205,48 @@ title('Training and Testing Input u');
 legend()
 
 %% Local functions
-function dx = oszillator_linear(t, x_vec, u_vec, t_vec)
+function dx = oszillator_nonlinear(t, x_vec, u_vec, t_vec)
     % Simulation parameters
     m  = 2; % kg
     c1 = 2; % N/m
+    c2 = 2; % N/m^3
     d  = 0.5; % Ns/m
 
-    % State space representation 
-    A = [0, 1;
-        -c1/m, -d/m];
-    B = [0;
-        1/m];
+    % States
+    x = x_vec(1);
+    xp = x_vec(2);
 
     % Input
     u = interp1(t_vec, u_vec, t, 'previous', 'extrap');
 
     % Dynamics
-    dx = A*x_vec + B*u;
+    dx = zeros(2, 1);
+    dx(1) = xp;
+    dx(2) = 1/m*(-c1*x - c2*x^3 - d*xp + u);
+end
+
+function [Ad, Bd, Cd, Dd] = linear_discrete_system(x_star, Ts)
+    % Simulation parameters
+    m  = 2; % kg
+    c1 = 2; % N/m
+    c2 = 2; % N/m^3
+    d  = 0.5; % Ns/m
+
+    % States
+    x = x_star(1);
+    xp = x_star(2);
+
+    % Linearisation
+    A_lin = [0, 1;
+        (-c1/m - 3*c2/m*x^2), -d/m];
+    B_lin = [0;
+        1/m];
+    C_lin = [1, 0];
+    D_lin = 0;
+    
+    sys_cont = ss(A_lin, B_lin, C_lin, D_lin);
+    
+    % Discrete
+    sys_disc = c2d(sys_cont, Ts, 'zoh');
+    [Ad, Bd, Cd, Dd] = ssdata(sys_disc);
 end
