@@ -1,7 +1,6 @@
 function P = Lifted_dynamics_nonlinear_SISO(linear_discrete_system, N, m, x_sim)
 %LIFTED_DYNAMICS_NONLINEAR_SISO Construct lifted system Matrix for
 %nonlinear SISO System. The system is linearized along a given Trajectory.
-%   Detailed explanation goes here
 %
 %   Inputs:
 %       linear_discrete_system - Function handle that returns the

@@ -65,7 +65,7 @@ y_sim_pd = y_sim;
 N = size(t_vec, 2);
 
 W = eye(N-m_delay);
-S = 0.01*eye(N-m_delay);
+S = 0.001*eye(N-m_delay);
 
 % Initialisation
 ILC_Quadr = ILC_SISO(r_vec, m_delay, u_init);

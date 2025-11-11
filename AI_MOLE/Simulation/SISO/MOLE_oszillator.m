@@ -11,6 +11,11 @@ clear
 close all
 rng(43);
 
+% Generate Dynamic file Path
+base_dir = fileparts(mfilename("fullpath"));
+ILC_path = fullfile(base_dir, '..', '..', '..', 'ILC', 'ILC_SISO');
+addpath(ILC_path);
+
 %% Reference Trajectory
 tic;
 % Parameters
@@ -20,11 +25,6 @@ T_end = 5;
 
 t_vec = 0:Ts:T_end;
 
-% Generate Dynamic file Path
-base_dir = fileparts(mfilename("fullpath"));
-ILC_path = fullfile(base_dir, '..', '..', '..', 'ILC', 'ILC_SISO');
-addpath(ILC_path);
-
 % Trajectory (no delay - delay is applied later)
 sigma = 1;
 [r_vec, ~, ~] = Random_C2_trajectory_1D(2, t_vec, sigma);
@@ -32,7 +32,7 @@ sigma = 1;
 %% Initialize AI-MOLE
 % Parameters
 m_delay = 1;
-N_iter = 10;
+N_iter = 1000;
 H_trials = 3;
 x0 = [0;
     0];
@@ -74,7 +74,7 @@ set(gcf, 'Position', [100 100 1200 800]);
 subplot(2,2,1);   % 1 Zeile, 2 Spalten, erster Plot
 plot(t_vec, r_vec, LineWidth=1, DisplayName='desired'); hold on;
 for i = 1:N_iter
-    plot(t_vec, SISO_MOLE.y_cell{i}, LineWidth=1, Color=[0.5 0.5 0.5], DisplayName=sprintf('Iteration %d', i-1));
+    % plot(t_vec, SISO_MOLE.y_cell{i}, LineWidth=1, Color=[0.5 0.5 0.5], DisplayName=sprintf('Iteration %d', i-1));
 end
 plot(t_vec, SISO_MOLE.y_cell{N_iter+1}, LineWidth=1, DisplayName=sprintf('Iteration %d', N_iter));
 grid on;
@@ -94,7 +94,7 @@ legend()
 subplot(2,2,4);   % 1 Zeile, 2 Spalten, erster Plot
 hold on;
 for i = 1:N_iter
-    plot(t_vec, SISO_MOLE.u_cell{i}, LineWidth=1, Color=[0.5 0.5 0.5], DisplayName=sprintf('Iteration %d', i-1));
+    % plot(t_vec, SISO_MOLE.u_cell{i}, LineWidth=1, Color=[0.5 0.5 0.5], DisplayName=sprintf('Iteration %d', i-1));
 end
 plot(t_vec, SISO_MOLE.u_cell{N_iter+1}, LineWidth=1, DisplayName=sprintf('Iteration %d', N_iter));
 grid on;
