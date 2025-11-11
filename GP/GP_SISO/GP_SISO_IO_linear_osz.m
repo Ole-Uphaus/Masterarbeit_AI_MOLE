@@ -148,7 +148,7 @@ P_analytic = Lifted_dynamics_linear_SISO(Ad, Bd, Cd, N, 1);
 
 % Compare lifted Matrices
 P_reduced_size = P(2:end, 1:end-1);
-error_P2 = P_analytic - P_reduced_size;
+error_P2 = abs(P_analytic - P_reduced_size);
 max_error_P2 = max(abs(P_analytic(:) - P_reduced_size(:)));
 mean_error_P2 = mean(abs(P_analytic(:) - P_reduced_size(:)));
 
