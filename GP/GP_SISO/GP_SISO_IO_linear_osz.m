@@ -82,7 +82,7 @@ fprintf('Maximaler absoluter Unterschied bei der Bestimmung von P: %.3e\n', max_
 
 % Prediction with linearized gp model
 delta_u = u_vec_test - u_vec_train_cell{1};
-y_pred_lin_test = y_sim_train_cell{1} + P*delta_u;
+y_pred_lin_test = GP_IO.predict_trajectory(u_vec_train_cell{1}) + P*delta_u;
 
 %% Finite difference check
 % Parameters
@@ -102,8 +102,10 @@ for i = 1:K
     % Normalize direction vector (vector norm increases with vector size)
     v = v / norm(v);
 
-    % Calculate change in output via Finite-Differences
-    delta_y_fd = (GP_IO.predict_trajectory(u0 + h*v) - y0);
+    % Calculate change in output via Finite-Differences (from both sides)
+    y_plus = GP_IO.predict_trajectory(u0 + h*v);
+    y_minus = GP_IO.predict_trajectory(u0 - h*v);
+    delta_y_fd = 0.5*(y_plus - y_minus);
 
     % Calculate Change in output via Linearized lifted Matrix
     delta_y_lin = P*(h*v);
