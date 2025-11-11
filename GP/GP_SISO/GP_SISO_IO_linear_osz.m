@@ -13,6 +13,11 @@ clc
 clear
 close all
 
+% Generate Dynamic file Path
+base_dir = fileparts(mfilename("fullpath"));
+ILC_path = fullfile(base_dir, '..', '..', 'ILC', 'ILC_SISO');
+addpath(ILC_path);
+
 %% Parameters
 % Time
 Ts = 0.01;
@@ -73,12 +78,12 @@ fprintf('Dauer der Linearisierung: %g s\n', t);
 tic;
 P2 = GP_IO.linearize_at_given_trajectory_fast(u_vec_train_cell{1});
 t = toc;
-fprintf('Dauer der Linearisierung (fast): %g s\n', t);
+fprintf('Dauer der Linearisierung (fast): %g s\n\n', t);
 
 % Compare Fast and slow Computation
-error_P = P - P2;
-max_error_P = max(abs(P(:) - P2(:)));
-fprintf('Maximaler absoluter Unterschied bei der Bestimmung von P: %.3e\n', max_error_P);
+error_P1 = P - P2;
+max_error_P1 = max(abs(P(:) - P2(:)));
+fprintf('Maximaler absoluter Unterschied bei der Bestimmung von P: %.3e\n\n', max_error_P1);
 
 % Prediction with linearized gp model
 delta_u = u_vec_test - u_vec_train_cell{1};
@@ -117,8 +122,69 @@ for i = 1:K
     % Print
     fprintf('Richtung %d: rel. Fehler = %.3e, max. abs. Fehler = %.3e\n', i, rel_error_y, max_error_y);
 end
+fprintf('\n');
+
+%% Compare Lifted System representation
+% Simulation parameters
+m  = 2; % kg
+c1 = 2; % N/m
+d  = 0.5; % Ns/m
+
+% State space representation 
+A = [0, 1;
+    -c1/m, -d/m];
+B = [0;
+    1/m];
+C = [1, 0];
+D = 0;
+
+% Discrete System
+sys_cont = ss(A,B,C,D);
+sys_disc = c2d(sys_cont, Ts, 'zoh');
+[Ad,Bd,Cd,Dd] = ssdata(sys_disc);
+
+% Calculate analytic lifted Matrix
+P_analytic = Lifted_dynamics_linear_SISO(Ad, Bd, Cd, N, 1);
+
+% Compare lifted Matrices
+P_reduced_size = P(2:end, 1:end-1);
+error_P2 = P_analytic - P_reduced_size;
+max_error_P2 = max(abs(P_analytic(:) - P_reduced_size(:)));
+mean_error_P2 = mean(abs(P_analytic(:) - P_reduced_size(:)));
+
+fprintf('Maximaler absoluter Unterschied P_analytic und P_lin: %.3e\n', max_error_P2);
+fprintf('Mittlerer absoluter Unterschied P_analytic und P_lin: %.3e\n', mean_error_P2);
+
+% Calculate prediction Error
+error_y_pred = abs(y_sim_test - y_pred_test);
+
+% Mean row-error P
+row_err_P = zeros(size(error_P2, 1), 1);
+for i = 1:size(error_P2, 1)
+    row_err_P(i) = mean(abs(error_P2(i, 1:i)));
+end
 
 %% Plot
+figure;
+set(gcf, 'Position', [100 100 1200 500]);
+
+subplot(1,2,1);
+imagesc(error_P2);
+colorbar;
+title('error P_{analytic} - P_{lin}');
+xlabel('Input-Index');
+ylabel('Output-Index');
+
+subplot(1,2,2);
+semilogy(t_vec, error_y_pred, LineWidth=2, DisplayName='error (y-sim - y-pred)');
+hold on;
+semilogy(t_vec(2:end), row_err_P, LineWidth=2, DisplayName='row-error (P-analyt - P-lin)');
+grid on;
+xlabel('Zeit [s]'); 
+ylabel('x [m]');
+title('Prediction Error');
+legend()
+
 figure;
 set(gcf, 'Position', [100 100 1200 500]);
 
