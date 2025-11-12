@@ -26,8 +26,8 @@ T_end = 5;
 t_vec = 0:Ts:T_end;
 
 % Noise Parameters
-sigma_v = 0.05;      % Measurement Noise 0.1
-fc_v = 10;
+sigma_v = 0.05;      % Measurement Noise 0.5
+fc_v = 20;
 
 % Input trajectorys
 u_scale_train = [1, 3];

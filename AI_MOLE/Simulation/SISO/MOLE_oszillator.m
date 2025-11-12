@@ -25,7 +25,7 @@ T_end = 5;
 t_vec = 0:Ts:T_end;
 
 % Noise Parameters
-sigma_v = 0.0;      % Measurement Noise 0.1
+sigma_v = 0.01;      % Measurement Noise 0.1
 fc_v = 20;
 
 % Trajectory (no delay - delay is applied later)
