@@ -82,6 +82,8 @@ classdef SISO_MOLE_IO < handle
 
             % Calculate weighting matrices
             W = eye(size(P));
+            % W = 1/obj.GP_SISO.GP.Sigma * eye(size(P));
+            disp(obj.GP_SISO.GP.Sigma);
             S = 1 * (norm(P, 2)^2) * eye(size(P));
 
             % Perform ILC update
