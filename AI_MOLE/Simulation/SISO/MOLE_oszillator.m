@@ -24,6 +24,10 @@ T_end = 5;
 
 t_vec = 0:Ts:T_end;
 
+% Noise Parameters
+sigma_v = 0.0;      % Measurement Noise 0.1
+fc_v = 20;
+
 % Trajectory (no delay - delay is applied later)
 sigma = 1;
 [r_vec, ~, ~] = Random_C2_trajectory_1D(2, t_vec, sigma);
@@ -54,15 +58,17 @@ SISO_MOLE = SISO_MOLE_IO(r_vec, m_delay, u_init, N_iter, H_trials);
 tic;
 % Update Loop
 u_sim = u_init;
+v_vec = Gen_noise_Butter(t_vec, sigma_v, fc_v);
 [t_sim, x_sim] = ode45(@(t,x) oszillator_nonlinear(t, x, u_sim, t_vec), t_vec, x0, opts);
-y_sim = x_sim(:, 1);
+y_sim = x_sim(:, 1) + v_vec;
 for i = 1:N_iter
     % Update input
     u_sim = [SISO_MOLE.update_input(y_sim); 0];
 
     % Simulate the system
+    v_vec = Gen_noise_Butter(t_vec, sigma_v, fc_v);
     [t_sim, x_sim] = ode45(@(t,x) oszillator_nonlinear(t, x, u_sim, t_vec), t_vec, x0, opts);
-    y_sim = x_sim(:, 1);
+    y_sim = x_sim(:, 1) + v_vec;
 end
 SISO_MOLE.save_final_trajectory(y_sim);
 y_sim_quadratic = y_sim;
@@ -106,6 +112,14 @@ xlabel('Zeit [s]');
 ylabel('F [N]');
 title('Input Signal');
 legend('Location', 'best');
+
+subplot(2,2,2);
+plot(t_vec, v_vec, LineWidth=1, DisplayName='meas');
+grid on;
+xlabel('Zeit [s]'); 
+ylabel('x [m]');
+title('Noise');
+legend()
 
 %% Local Functions
 function dx = oszillator_nonlinear(t, x_vec, u_vec, t_vec)
