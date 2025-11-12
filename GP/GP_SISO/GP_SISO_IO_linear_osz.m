@@ -67,6 +67,8 @@ GP_IO.train_GP_model(y_sim_train_cell, u_vec_train_cell);
 
 % Predict new Trajectory
 [y_pred_test, y_std_test] = GP_IO.predict_trajectory(u_vec_test);
+y_pred_test_upper = y_pred_test + 2*y_std_test;
+y_pred_test_lower = y_pred_test - 2*y_std_test;
 
 %% Linearize GP at given input trajectory
 % Linearisation
@@ -188,9 +190,21 @@ title('Prediction Error');
 legend()
 
 figure;
-set(gcf, 'Position', [100 100 1200 500]);
+set(gcf, 'Position', [100 100 1200 800]);
 
-subplot(1,2,1);
+subplot(2,2,1);
+plot(t_vec, y_sim_test, LineWidth=1, DisplayName='y-sim-test'); hold on;
+plot(t_vec, y_pred_test, LineWidth=1, DisplayName='y-pred-test');
+fill([t_vec, fliplr(t_vec)], [y_pred_test_upper', fliplr(y_pred_test_lower')], ...
+     [0.4 0.7 1], 'FaceAlpha', 0.25, 'EdgeColor', 'none', ...
+     'DisplayName','±2σ-Band');
+grid on;
+xlabel('Zeit [s]'); 
+ylabel('x [m]');
+title('Simulated and Predicted Results with confidence (2*sigma)');
+legend()
+
+subplot(2,2,3);
 plot(t_vec, y_sim_test, LineWidth=1, DisplayName='y-sim-test'); hold on;
 plot(t_vec, y_pred_test, LineWidth=1, DisplayName='y-pred-test');
 plot(t_vec, y_pred_lin_test, LineWidth=1, DisplayName='y-pred-lin-test');
@@ -203,7 +217,7 @@ ylabel('x [m]');
 title('Simulated and Predicted Results');
 legend()
 
-subplot(1,2,2);
+subplot(2,2,4);
 plot(t_vec, u_vec_test, LineWidth=1, DisplayName='u-test'); hold on;
 for i = 1:N_traj
     plot(t_vec, u_vec_train_cell{i}, LineWidth=1, DisplayName=sprintf('u-train%d', i));
