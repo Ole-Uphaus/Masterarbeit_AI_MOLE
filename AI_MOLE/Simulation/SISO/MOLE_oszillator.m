@@ -17,7 +17,6 @@ ILC_path = fullfile(base_dir, '..', '..', '..', 'ILC', 'ILC_SISO');
 addpath(ILC_path);
 
 %% Reference Trajectory
-tic;
 % Parameters
 x_max = 0.5;
 Ts = 0.01;
@@ -32,7 +31,7 @@ sigma = 1;
 %% Initialize AI-MOLE
 % Parameters
 m_delay = 1;
-N_iter = 1000;
+N_iter = 10;
 H_trials = 3;
 x0 = [0;
     0];
@@ -52,6 +51,7 @@ u_init = sigma_I*sin(2*pi/T_end.*t_vec');
 SISO_MOLE = SISO_MOLE_IO(r_vec, m_delay, u_init, N_iter, H_trials);
 
 %% Run ILC
+tic;
 % Update Loop
 u_sim = u_init;
 [t_sim, x_sim] = ode45(@(t,x) oszillator_nonlinear(t, x, u_sim, t_vec), t_vec, x0, opts);
@@ -67,6 +67,10 @@ end
 SISO_MOLE.save_final_trajectory(y_sim);
 y_sim_quadratic = y_sim;
 
+% Zeitmessung und Ausgabe
+time = toc;
+fprintf('Dauer von AI-MOLE mit %d Iterationen, %d Trials Delay (H) und jeweils %d Datenpunkten pro Trial: %g s\n', N_iter, H_trials, length(t_vec), time);
+
 %% Plot Results
 figure;
 set(gcf, 'Position', [100 100 1200 800]);
@@ -74,7 +78,7 @@ set(gcf, 'Position', [100 100 1200 800]);
 subplot(2,2,1);   % 1 Zeile, 2 Spalten, erster Plot
 plot(t_vec, r_vec, LineWidth=1, DisplayName='desired'); hold on;
 for i = 1:N_iter
-    % plot(t_vec, SISO_MOLE.y_cell{i}, LineWidth=1, Color=[0.5 0.5 0.5], DisplayName=sprintf('Iteration %d', i-1));
+    plot(t_vec, SISO_MOLE.y_cell{i}, LineWidth=1, Color=[0.5 0.5 0.5], DisplayName=sprintf('Iteration %d', i-1));
 end
 plot(t_vec, SISO_MOLE.y_cell{N_iter+1}, LineWidth=1, DisplayName=sprintf('Iteration %d', N_iter));
 grid on;
@@ -94,7 +98,7 @@ legend()
 subplot(2,2,4);   % 1 Zeile, 2 Spalten, erster Plot
 hold on;
 for i = 1:N_iter
-    % plot(t_vec, SISO_MOLE.u_cell{i}, LineWidth=1, Color=[0.5 0.5 0.5], DisplayName=sprintf('Iteration %d', i-1));
+    plot(t_vec, SISO_MOLE.u_cell{i}, LineWidth=1, Color=[0.5 0.5 0.5], DisplayName=sprintf('Iteration %d', i-1));
 end
 plot(t_vec, SISO_MOLE.u_cell{N_iter+1}, LineWidth=1, DisplayName=sprintf('Iteration %d', N_iter));
 grid on;
@@ -102,10 +106,6 @@ xlabel('Zeit [s]');
 ylabel('F [N]');
 title('Input Signal');
 legend('Location', 'best');
-
-% Zeitmessung und Ausgabe
-time = toc;
-fprintf('Dauer von AI-MOLE mit %d Iterationen, %d Trials Delay (H) und jeweils %d Datenpunkten pro Trial: %g s\n', N_iter, H_trials, length(t_vec), time);
 
 %% Local Functions
 function dx = oszillator_nonlinear(t, x_vec, u_vec, t_vec)
