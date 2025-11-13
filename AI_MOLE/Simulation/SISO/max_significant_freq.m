@@ -5,6 +5,7 @@ function f0 = max_significant_freq(r_vec, Ts)
 N = length(r_vec);
 r_vec = r_vec(:);
 Fs = 1/Ts;
+plot_fft = false;
 
 % Remove DC-part (zero mean) --> no peak at 0 Hz
 r_vec_ZM = r_vec - mean(r_vec);
@@ -30,14 +31,16 @@ else
 end
 
 % Plot FFT
-figure;
-plot(f_vec, R_abs_SS, LineWidth=1, DisplayName='FFT'); hold on;
-plot(f_vec, threshold*ones(size(f_vec)), LineWidth=1, Color='r', DisplayName='threshold');
-plot([f0, f0], [0, max(R_abs_SS)], LineWidth=1, Color='g', DisplayName='f0');
-grid on;
-xlabel('Frequency [Hz]'); 
-ylabel('x [m]');
-title('FFT of reference Trajectory');
-legend('Location', 'best');
+if plot_fft
+    figure;
+    plot(f_vec, R_abs_SS, LineWidth=1, DisplayName='FFT'); hold on;
+    plot(f_vec, threshold*ones(size(f_vec)), LineWidth=1, Color='r', DisplayName='threshold');
+    plot([f0, f0], [0, max(R_abs_SS)], LineWidth=1, Color='g', DisplayName='f0');
+    grid on;
+    xlabel('Frequency [Hz]'); 
+    ylabel('x [m]');
+    title('FFT of reference Trajectory');
+    legend('Location', 'best');
+end
 end
 
