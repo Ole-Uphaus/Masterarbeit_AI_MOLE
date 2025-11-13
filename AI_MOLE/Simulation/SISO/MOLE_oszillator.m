@@ -21,24 +21,10 @@ addpath(ILC_path);
 x_max = 0.5;
 Ts = 0.01;
 T_end = 5;
-
-t_vec = 0:Ts:T_end;
-
-% Noise Parameters
-sigma_v = 0.01;      % Measurement Noise 0.1
-fc_v = 20;
-
-% Trajectory (no delay - delay is applied later)
-sigma = 1;
-[r_vec, ~, ~] = Random_C2_trajectory_1D(2, t_vec, sigma);
-
-%% Initialize AI-MOLE
-% Parameters
-m_delay = 1;
-N_iter = 10;
-H_trials = 3;
 x0 = [0;
     0];
+
+t_vec = 0:Ts:T_end;
 
 % Solver settings
 opts = odeset( ...
@@ -47,9 +33,62 @@ opts = odeset( ...
     'MaxStep', Ts/5, ...        % Use smaller step size for better Results
     'InitialStep', Ts/20);
 
-% Initial input Trajectory (simple sin)
+% Noise Parameters
+sigma_v = 0.01;      % Measurement Noise 0.01
+fc_v = 20;
+
+% Trajectory (no delay - delay is applied later)
+sigma = 1;
+[r_vec, ~, ~] = Random_C2_trajectory_1D(2, t_vec, sigma);
+
+%% Determine initial input Trajectory
+% Parameters
+alpha = 0.3;   % Initial alpha (percentage of amplitude of reference signal)
+growth_factor = 1.5;
+max_iter = 10;
+
+% Criterium var(y) > k * var(noise)
+k_sign_var = 5;
+
+% Run Loop
+for i = 1:max_iter
+    % Calculate sigmaI from alpha and reference amplitude
+    sigmaI = alpha * max(abs(r_vec));
+
+    % Initial input Trajectory
+    u_init_auto = Initial_input_trajectory(r_vec, Ts, sigmaI);
+
+    % System Simulation
+    v_vec = Gen_noise_Butter(t_vec, sigma_v, fc_v);
+    [t_sim, x_sim] = ode45(@(t,x) oszillator_nonlinear(t, x, u_init_auto, t_vec), t_vec, x0, opts);
+    y_sim = x_sim(:, 1) + v_vec;
+
+    % Calculate output variance
+    y_var = var(y_sim);
+
+    fprintf('Iter %d: alpha=%.3f, Var(y)=%.4e, NoiseVar=%.4e\n', ...
+            i, alpha, y_var, sigma_v^2);
+
+    % Test if variance is high enough
+    if y_var >= k_sign_var * sigma_v^2
+        fprintf('Ausreichende Anregung erreicht.\n\n');
+        break;
+    else
+        % Update alpha
+        alpha = alpha * growth_factor;
+    end
+end
+
+%% Initialize AI-MOLE
+% Parameters
+m_delay = 1;
+N_iter = 10;
+H_trials = 3;
+
+% Initial input Trajectory (simple sin or automatic generated)
 sigma_I = 0.1;
-u_init = sigma_I*sin(2*pi/T_end.*t_vec');
+u_init_sin = sigma_I*sin(2*pi/T_end.*t_vec');
+u_init = u_init_auto;        % u_init_sin / u_init_auto
 
 % Initialisation
 SISO_MOLE = SISO_MOLE_IO(r_vec, m_delay, u_init, N_iter, H_trials);
