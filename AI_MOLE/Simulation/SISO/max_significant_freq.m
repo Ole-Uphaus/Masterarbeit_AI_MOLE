@@ -1,6 +1,12 @@
 function f0 = max_significant_freq(r_vec, Ts)
-%UNTITLED Summary of this function goes here
-%   Detailed explanation goes here
+%max_significant_freq Identify the highest significant frequency component
+%
+%   Inputs:
+%       r_vec : Input reference trajectory (time-domain signal)
+%       Ts    : Sampling time [s]
+%
+%   Output:
+%       f0    : Highest significant frequency component [Hz]
 
 N = length(r_vec);
 r_vec = r_vec(:);

@@ -1,6 +1,13 @@
 function u_init = Initial_input_trajectory(r_vec, Ts, sigmaI)
-%INITIAL_INPUT_TRAJECTORY Summary of this function goes here
-%   Detailed explanation goes here
+%Initial_input_trajectory Generate an initial excitation input trajectory
+% 
+%   Inputs:
+%       r_vec  : Reference trajectory (time-domain signal)
+%       Ts     : Sampling time [s]
+%       sigmaI : Standard deviation of the excitation noise before filtering
+%
+%   Output:
+%       u_init : Initial excitation input trajectory (low-pass filtered)
 
 N = length(r_vec);
 r_vec = r_vec(:);
