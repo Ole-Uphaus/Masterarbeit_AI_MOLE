@@ -77,11 +77,17 @@ S = 0.5*eye(N-m_delay);
 ILC_Quadr = ILC_SISO(r_vec, m_delay, u_init);
 ILC_Quadr.init_Quadr_type(W, S)
 
+% Track Results
+y_cell_quadr = cell(N_iter+1, 1);
+u_cell_quadr = cell(N_iter+1, 1);
+
 % Update Loop
 u_sim = [ILC_Quadr.u_vec; 0];
 v_vec = Gen_noise_Butter(t_vec, sigma_v, fc_v);
 [t_sim, x_sim] = ode45(@(t,x) oszillator_nonlinear(t, x, u_sim, t_vec), t_vec, x0, opts);
 y_sim = x_sim(:, 1) + v_vec;
+y_cell_quadr{1} = y_sim;
+u_cell_quadr{1} = u_sim;
 for i = 1:N_iter
     % Update input
     P = Lifted_dynamics_nonlinear_SISO(@(x) linear_discrete_system(x, Ts), N, m_delay, x_sim);
@@ -91,11 +97,11 @@ for i = 1:N_iter
     v_vec = Gen_noise_Butter(t_vec, sigma_v, fc_v);
     [t_sim, x_sim] = ode45(@(t,x) oszillator_nonlinear(t, x, u_sim, t_vec), t_vec, x0, opts);
     y_sim = x_sim(:, 1) + v_vec;
+    y_cell_quadr{i+1} = y_sim;
+    u_cell_quadr{i+1} = u_sim;
 end
 % Calculate and log final error
 ILC_Quadr.calculate_final_error(y_sim);
-y_sim_quadratic = y_sim;
-u_sim_Quadr = u_sim;
 
 %% Plot results
 figure;
@@ -103,8 +109,10 @@ set(gcf, 'Position', [100 100 1200 800]);
 
 subplot(2,2,1);   % 1 Zeile, 2 Spalten, erster Plot
 plot(t_vec, r_vec, LineWidth=1, DisplayName='desired'); hold on;
-% plot(t_vec, y_sim_pd, LineWidth=1, DisplayName='ILC PD');
-plot(t_vec, y_sim_quadratic, LineWidth=1, DisplayName='ILC Quadr');
+for i = 1:N_iter
+    plot(t_vec, y_cell_quadr{i}, LineWidth=1, Color=[0.5 0.5 0.5], DisplayName=sprintf('Iteration %d', i-1));
+end
+plot(t_vec, y_cell_quadr{N_iter+1}, LineWidth=1, DisplayName=sprintf('Iteration %d', N_iter));
 grid on;
 xlabel('Zeit [s]'); 
 ylabel('x [m]');
@@ -129,8 +137,11 @@ title('Noise');
 legend()
 
 subplot(2,2,4);
-plot(t_vec, u_sim_Quadr, LineWidth=1, DisplayName='u quadr'); hold on;
-% plot(t_vec, u_sim_PD, LineWidth=1, DisplayName='u pd');
+hold on;
+for i = 1:N_iter
+    plot(t_vec, u_cell_quadr{i}, LineWidth=1, Color=[0.5 0.5 0.5], DisplayName=sprintf('Iteration %d', i-1));
+end
+plot(t_vec, u_cell_quadr{N_iter+1}, LineWidth=1, DisplayName=sprintf('Iteration %d', N_iter));
 grid on;
 xlabel('Zeit [s]'); 
 ylabel('F [N]');

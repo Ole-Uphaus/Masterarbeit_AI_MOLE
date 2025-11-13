@@ -65,6 +65,10 @@ x0 = [0;
 W = eye(size(P));
 S = 0.001*eye(size(P));
 
+% Track Results
+y_cell_quadr = cell(N_iter+1, 1);
+u_cell_quadr = cell(N_iter+1, 1);
+
 % Init repeating process Noise
 w_rep_vec = Gen_noise_Butter(t_vec, sigma_w_rep, fc_w);
 
@@ -89,6 +93,8 @@ u_sim = [ILC_Quadr.u_vec; 0];
 [w_vec, v_vec] = proc_meas_noise(t_vec, fc_w, fc_v, sigma_w, sigma_v);
 [t_sim, x_sim] = ode45(@(t,x) oszillator_linear(t, x, u_sim, t_vec, (w_vec + w_rep_vec)), t_vec, x0, opts);
 y_sim = x_sim(:, 1) + v_vec;
+y_cell_quadr{1} = y_sim;
+u_cell_quadr{1} = u_sim;
 for i = 1:N_iter
     % Update input
     u_sim = [ILC_Quadr.Quadr_update(y_sim); 0];
@@ -97,11 +103,11 @@ for i = 1:N_iter
     [w_vec, v_vec] = proc_meas_noise(t_vec, fc_w, fc_v, sigma_w, sigma_v);
     [t_sim, x_sim] = ode45(@(t,x) oszillator_linear(t, x, u_sim, t_vec, (w_vec + w_rep_vec)), t_vec, x0, opts);
     y_sim = x_sim(:, 1) + v_vec;
+    y_cell_quadr{i+1} = y_sim;
+    u_cell_quadr{i+1} = u_sim;
 end
 % Calculate and log final error
 ILC_Quadr.calculate_final_error(y_sim);
-y_vec_Quadr = y_sim;
-u_sim_Quadr = u_sim;
 
 %% ILC PD-Type
 % Parameters
@@ -138,8 +144,10 @@ set(gcf, 'Position', [100 100 1200 800]);
 
 subplot(2,2,1);
 plot(t_vec, r_vec, LineWidth=1, DisplayName='desired'); hold on;
-plot(t_vec, y_vec_Quadr, LineWidth=1, DisplayName='ILC Quadr');
-plot(t_vec, y_vec_PD, LineWidth=1, DisplayName='ILC PD');
+for i = 1:N_iter
+    plot(t_vec, y_cell_quadr{i}, LineWidth=1, Color=[0.5 0.5 0.5], DisplayName=sprintf('Iteration %d', i-1));
+end
+plot(t_vec, y_cell_quadr{N_iter+1}, LineWidth=1, DisplayName=sprintf('Iteration %d', N_iter));
 grid on;
 xlabel('Zeit [s]'); 
 ylabel('x [m]');
@@ -148,7 +156,7 @@ legend()
 
 subplot(2,2,3);
 plot(0:(length(ILC_Quadr.RMSE_log)-1), ILC_Quadr.RMSE_log, LineWidth=1, DisplayName='ILC Quadr'); hold on;
-plot(0:(length(ILC_PD.RMSE_log)-1), ILC_PD.RMSE_log, LineWidth=1, DisplayName='ILC PD');
+% plot(0:(length(ILC_PD.RMSE_log)-1), ILC_PD.RMSE_log, LineWidth=1, DisplayName='ILC PD');
 grid on;
 xlabel('Iteration'); 
 ylabel('RMSE');
@@ -166,8 +174,11 @@ title('Compare process and measurement noise');
 legend()
 
 subplot(2,2,4);
-plot(t_vec, u_sim_Quadr, LineWidth=1, DisplayName='u quadr'); hold on;
-% plot(t_vec, u_sim_PD, LineWidth=1, DisplayName='u pd');
+hold on;
+for i = 1:N_iter
+    plot(t_vec, u_cell_quadr{i}, LineWidth=1, Color=[0.5 0.5 0.5], DisplayName=sprintf('Iteration %d', i-1));
+end
+plot(t_vec, u_cell_quadr{N_iter+1}, LineWidth=1, DisplayName=sprintf('Iteration %d', N_iter));
 grid on;
 xlabel('Zeit [s]'); 
 ylabel('F [N]');
