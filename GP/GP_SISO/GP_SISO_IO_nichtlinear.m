@@ -13,10 +13,12 @@ clc
 clear
 close all
 
-% Generate Dynamic file Path
+% Generate Dynamic file Paths
 base_dir = fileparts(mfilename("fullpath"));
 ILC_path = fullfile(base_dir, '..', '..', 'ILC', 'ILC_SISO');
+Model_Path = fullfile(base_dir, '..', '..', 'System_Models');
 addpath(ILC_path);
+addpath(Model_Path);
 
 %% Parameters
 % Time
@@ -129,7 +131,7 @@ end
 fprintf('\n');
 
 %% Compare Lifted System representation
-P_analytic = Lifted_dynamics_nonlinear_SISO(@(x) linear_discrete_system(x, Ts), N, m_delay, x_sim_train_cell{1});
+P_analytic = Lifted_dynamics_nonlinear_SISO(@(x) oszillator_linearized_discrete(x, Ts), N, m_delay, x_sim_train_cell{1});
 
 % Predictions with analytic linearisation
 y_lin_test = y_sim_train_cell{1} + [0; P_analytic*delta_u(1:end-1)];
@@ -203,50 +205,3 @@ xlabel('Zeit [s]');
 ylabel('u [N]');
 title('Training and Testing Input u');
 legend()
-
-%% Local functions
-function dx = oszillator_nonlinear(t, x_vec, u_vec, t_vec)
-    % Simulation parameters
-    m  = 2; % kg
-    c1 = 2; % N/m
-    c2 = 2; % N/m^3
-    d  = 0.5; % Ns/m
-
-    % States
-    x = x_vec(1);
-    xp = x_vec(2);
-
-    % Input
-    u = interp1(t_vec, u_vec, t, 'previous', 'extrap');
-
-    % Dynamics
-    dx = zeros(2, 1);
-    dx(1) = xp;
-    dx(2) = 1/m*(-c1*x - c2*x^3 - d*xp + u);
-end
-
-function [Ad, Bd, Cd, Dd] = linear_discrete_system(x_star, Ts)
-    % Simulation parameters
-    m  = 2; % kg
-    c1 = 2; % N/m
-    c2 = 2; % N/m^3
-    d  = 0.5; % Ns/m
-
-    % States
-    x = x_star(1);
-    xp = x_star(2);
-
-    % Linearisation
-    A_lin = [0, 1;
-        (-c1/m - 3*c2/m*x^2), -d/m];
-    B_lin = [0;
-        1/m];
-    C_lin = [1, 0];
-    D_lin = 0;
-    
-    sys_cont = ss(A_lin, B_lin, C_lin, D_lin);
-    
-    % Discrete
-    sys_disc = c2d(sys_cont, Ts, 'zoh');
-    [Ad, Bd, Cd, Dd] = ssdata(sys_disc);
-end

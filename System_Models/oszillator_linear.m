@@ -1,4 +1,4 @@
-function dx = oszillator_linear(t, x_vec, u_vec, t_vec, w_vec)
+function dx = oszillator_linear(t, x_vec, u_vec, t_vec)
     % Simulation parameters
     m  = 2; % kg
     c1 = 2; % N/m
@@ -12,8 +12,7 @@ function dx = oszillator_linear(t, x_vec, u_vec, t_vec, w_vec)
 
     % Input
     u = interp1(t_vec, u_vec, t, 'previous', 'extrap');
-    w = interp1(t_vec, w_vec, t, 'previous', 'extrap');
 
     % Dynamics
-    dx = A*x_vec + B*(u + w);
+    dx = A*x_vec + B*u;
 end

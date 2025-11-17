@@ -2,7 +2,7 @@ function [Ad, Bd, Cd, Dd] = oszillator_linearized_discrete(x_star, Ts)
     % Simulation parameters
     m  = 2; % kg
     c1 = 2; % N/m
-    c2 = 0; % N/m^3
+    c2 = 2; % N/m^3
     d  = 0.5; % Ns/m
 
     % States

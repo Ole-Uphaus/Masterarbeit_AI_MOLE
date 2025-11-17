@@ -14,10 +14,12 @@ clear
 close all
 rng(43);
 
-% Generate Dynamic file Path
+% Generate Dynamic file Paths
 base_dir = fileparts(mfilename("fullpath"));
 ILC_path = fullfile(base_dir, '..', '..', 'ILC', 'ILC_SISO');
+Model_Path = fullfile(base_dir, '..', '..', 'System_Models');
 addpath(ILC_path);
+addpath(Model_Path);
 
 %% Parameters
 % Time
@@ -234,23 +236,3 @@ xlabel('Zeit [s]');
 ylabel('u [N]');
 title('Training and Testing Input u');
 legend()
-
-%% Local functions
-function dx = oszillator_linear(t, x_vec, u_vec, t_vec)
-    % Simulation parameters
-    m  = 2; % kg
-    c1 = 2; % N/m
-    d  = 0.5; % Ns/m
-
-    % State space representation 
-    A = [0, 1;
-        -c1/m, -d/m];
-    B = [0;
-        1/m];
-
-    % Input
-    u = interp1(t_vec, u_vec, t, 'previous', 'extrap');
-
-    % Dynamics
-    dx = A*x_vec + B*u;
-end
