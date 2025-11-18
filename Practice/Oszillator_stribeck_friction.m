@@ -20,7 +20,7 @@ t_vec = 0:Ts:T_end;
 N = length(t_vec);
 
 % Input Trajectory
-u_scale = 1;
+u_scale = 2;
 
 u_sim= u_scale*sin(2*pi/T_end.*t_vec');
 
