@@ -30,6 +30,7 @@ t_vec = 0:Ts:T_end;
 % Noise Parameters
 sigma_v = 0.05;      % Measurement Noise 0.5
 fc_v = 20;
+white = true;       % if white == true -> white noise is sampled - no filter
 
 % Input trajectorys
 u_scale_train = [1, 3];
@@ -58,7 +59,7 @@ x0 = [0;
 
 y_sim_train_cell = cell(N_traj, 1);
 for i = 1:N_traj
-    v_vec = Gen_noise_Butter(t_vec, sigma_v, fc_v);
+    v_vec = Gen_noise_Butter(t_vec, sigma_v, fc_v, white);
     [~, x_sim] = ode45(@(t,x) oszillator_linear(t, x, u_vec_train_cell{i}, t_vec), t_vec, x0, opts);
     y_sim_train_cell{i} = x_sim(:, 1) + v_vec;
 end

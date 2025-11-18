@@ -1,4 +1,4 @@
-function w_filt = Gen_noise_Butter(t_vec, sigma, fc)
+function w_filt = Gen_noise_Butter(t_vec, sigma, fc, white)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -11,7 +11,13 @@ fs = 1 / Ts;
 
 % Calculate Noise
 w_raw = randn(numel(t_vec),1);
-w_filt = filter(b, a, w_raw);
+
+% Apply filter if desired
+if ~white
+    w_filt = filter(b, a, w_raw);
+else
+    w_filt = w_raw;
+end
 w_filt = sigma * w_filt / std(w_filt);
 end
 
