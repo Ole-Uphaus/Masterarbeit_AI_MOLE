@@ -33,18 +33,16 @@ sigma = 1;
 [r_vec, ~, ~] = Random_C2_trajectory_1D(2, t_vec, sigma);
 u_init = zeros(size(r_vec, 1), 1);
 
-%% ILC PD-Type design
+%% ILC quadratic optimal design
 % Parameters
-kp = 0.1;
-kd = 100;
+N = size(t_vec, 2);
 m_delay = 1;
 N_iter = 10;
 x0 = [0;
     0];
 
-% Initialisation
-ILC_PD = ILC_SISO(r_vec, m_delay, u_init);
-ILC_PD.init_PD_type(kp, kd);
+W = eye(N-m_delay);
+S = 0.5*eye(N-m_delay);
 
 % Solver settings
 opts = odeset( ...
@@ -52,31 +50,6 @@ opts = odeset( ...
     'AbsTol', [1e-8 1e-8], ...  % Tolerance
     'MaxStep', Ts/5, ...        % Use smaller step size for better Results
     'InitialStep', Ts/20);
-
-% Update Loop
-u_sim = [ILC_PD.u_vec; 0];
-v_vec = Gen_noise_Butter(t_vec, sigma_v, fc_v);
-[t_sim, x_sim] = ode45(@(t,x) oszillator_nonlinear(t, x, u_sim, t_vec), t_vec, x0, opts);
-y_sim = x_sim(:, 1) + v_vec;
-for i = 1:N_iter
-    % Update input
-    u_sim = [ILC_PD.PD_update(y_sim); 0];
-
-    % Simulate the system
-    v_vec = Gen_noise_Butter(t_vec, sigma_v, fc_v);
-    [t_sim, x_sim] = ode45(@(t,x) oszillator_nonlinear(t, x, u_sim, t_vec), t_vec, x0, opts);
-    y_sim = x_sim(:, 1) + v_vec;
-end
-% Calculate and log final error
-ILC_PD.calculate_final_error(y_sim);
-y_sim_pd = y_sim;
-
-%% ILC quadratic optimal design
-% Parameters
-N = size(t_vec, 2);
-
-W = eye(N-m_delay);
-S = 0.5*eye(N-m_delay);
 
 % Initialisation
 ILC_Quadr = ILC_SISO(r_vec, m_delay, u_init);
@@ -126,7 +99,6 @@ legend()
 
 subplot(2,2,3);   % 1 Zeile, 2 Spalten, erster Plot
 plot(0:(length(ILC_Quadr.RMSE_log)-1), ILC_Quadr.RMSE_log, LineWidth=1, DisplayName='ILC Quadr'); hold on;
-% plot(0:(length(ILC_PD.RMSE_log)-1), ILC_PD.RMSE_log, LineWidth=1, DisplayName='ILC PD');
 grid on;
 xlabel('Iteration'); 
 ylabel('RMSE');

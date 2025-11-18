@@ -114,35 +114,6 @@ end
 % Calculate and log final error
 ILC_Quadr.calculate_final_error(y_sim);
 
-%% ILC PD-Type
-% Parameters
-kp = 0.1;
-kd = 100;
-
-% Initialisation
-ILC_PD = ILC_SISO(r_vec, m_delay, u_init);
-ILC_PD.init_PD_type(kp, kd);
-% ILC_PD.init_Q_lowpass(Q_fc, Q_order, Ts);
-
-% Update Loop
-u_sim = [ILC_PD.u_vec; 0];
-[w_vec, v_vec] = proc_meas_noise(t_vec, fc_w, fc_v, sigma_w, sigma_v);
-[t_sim, x_sim] = ode45(@(t,x) oszillator_linear(t, x, (u_sim + w_vec + w_rep_vec), t_vec), t_vec, x0, opts);
-y_sim = x_sim(:, 1) + v_vec;
-for i = 1:N_iter
-    % Update input
-    u_sim = [ILC_PD.PD_update(y_sim); 0];
-
-    % Simulate the system
-    [w_vec, v_vec] = proc_meas_noise(t_vec, fc_w, fc_v, sigma_w, sigma_v);
-    [t_sim, x_sim] = ode45(@(t,x) oszillator_linear(t, x, (u_sim + w_vec + w_rep_vec), t_vec), t_vec, x0, opts);
-    y_sim = x_sim(:, 1) + v_vec;
-end
-% Calculate and log final error
-ILC_PD.calculate_final_error(y_sim);
-y_vec_PD = y_sim;
-u_sim_PD = u_sim;
-
 %% Plot results
 figure;
 set(gcf, 'Position', [100 100 1200 800]);
@@ -161,7 +132,6 @@ legend()
 
 subplot(2,2,3);
 plot(0:(length(ILC_Quadr.RMSE_log)-1), ILC_Quadr.RMSE_log, LineWidth=1, DisplayName='ILC Quadr'); hold on;
-% plot(0:(length(ILC_PD.RMSE_log)-1), ILC_PD.RMSE_log, LineWidth=1, DisplayName='ILC PD');
 grid on;
 xlabel('Iteration'); 
 ylabel('RMSE');
