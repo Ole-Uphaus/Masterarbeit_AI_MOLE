@@ -27,6 +27,7 @@ t_vec = 0:Ts:T_end;
 % Noise Parameters
 sigma_v = 0.0;      % Measurement Noise 0.1
 fc_v = 20;
+white = true;       % if white == true -> white noise is sampled - no filter
 
 % Trajectory (no delay - delay is applied later)
 sigma = 1;
@@ -61,7 +62,7 @@ u_cell_quadr = cell(N_iter+1, 1);
 
 % Update Loop
 u_sim = [ILC_Quadr.u_vec; 0];
-v_vec = Gen_noise_Butter(t_vec, sigma_v, fc_v);
+v_vec = Gen_noise_Butter(t_vec, sigma_v, fc_v, white);
 [t_sim, x_sim] = ode45(@(t,x) oszillator_nonlinear(t, x, u_sim, t_vec), t_vec, x0, opts);
 y_sim = x_sim(:, 1) + v_vec;
 y_cell_quadr{1} = y_sim;
@@ -72,7 +73,7 @@ for i = 1:N_iter
     u_sim = [ILC_Quadr.Quadr_update(y_sim, P); 0];
 
     % Simulate the system
-    v_vec = Gen_noise_Butter(t_vec, sigma_v, fc_v);
+    v_vec = Gen_noise_Butter(t_vec, sigma_v, fc_v, white);
     [t_sim, x_sim] = ode45(@(t,x) oszillator_nonlinear(t, x, u_sim, t_vec), t_vec, x0, opts);
     y_sim = x_sim(:, 1) + v_vec;
     y_cell_quadr{i+1} = y_sim;

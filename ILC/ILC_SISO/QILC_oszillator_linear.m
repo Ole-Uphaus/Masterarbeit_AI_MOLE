@@ -26,9 +26,10 @@ m_delay = 1;
 % Noise Parameters
 sigma_w_rep = 0;  % Repeating process Noise (trial invariant)
 sigma_w = 0;     % Process Noise 0.05
-sigma_v = 0;      % Measurement Noise 0.1
+sigma_v = 0.0;      % Measurement Noise 0.1
 fc_w = 0.1;
 fc_v = 10;
+white = true;       % if white == true -> white noise is sampled - no filter
 
 % State space representation 
 A = [0, 1;
@@ -75,7 +76,7 @@ y_cell_quadr = cell(N_iter+1, 1);
 u_cell_quadr = cell(N_iter+1, 1);
 
 % Init repeating process Noise
-w_rep_vec = Gen_noise_Butter(t_vec, sigma_w_rep, fc_w);
+w_rep_vec = Gen_noise_Butter(t_vec, sigma_w_rep, fc_w, white);
 
 % Q-Filter
 Q_order = 2;
@@ -95,7 +96,7 @@ opts = odeset( ...
 
 % Update Loop
 u_sim = [ILC_Quadr.u_vec; 0];
-[w_vec, v_vec] = proc_meas_noise(t_vec, fc_w, fc_v, sigma_w, sigma_v);
+[w_vec, v_vec] = proc_meas_noise(t_vec, fc_w, fc_v, sigma_w, sigma_v, white);
 [t_sim, x_sim] = ode45(@(t,x) oszillator_linear(t, x, (u_sim + w_vec + w_rep_vec), t_vec), t_vec, x0, opts);
 y_sim = x_sim(:, 1) + v_vec;
 y_cell_quadr{1} = y_sim;
@@ -105,7 +106,7 @@ for i = 1:N_iter
     u_sim = [ILC_Quadr.Quadr_update(y_sim); 0];
 
     % Simulate the system
-    [w_vec, v_vec] = proc_meas_noise(t_vec, fc_w, fc_v, sigma_w, sigma_v);
+    [w_vec, v_vec] = proc_meas_noise(t_vec, fc_w, fc_v, sigma_w, sigma_v, white);
     [t_sim, x_sim] = ode45(@(t,x) oszillator_linear(t, x, (u_sim + w_vec + w_rep_vec), t_vec), t_vec, x0, opts);
     y_sim = x_sim(:, 1) + v_vec;
     y_cell_quadr{i+1} = y_sim;
@@ -204,8 +205,8 @@ function [Ad, Bd, Cd, Dd] = linear_discrete_system(x_star, Ts)
     [Ad, Bd, Cd, Dd] = ssdata(sys_disc);
 end
 
-function [w_vec, v_vec] = proc_meas_noise(t_vec, fc_w, fc_v, sigma_w, sigma_v)
+function [w_vec, v_vec] = proc_meas_noise(t_vec, fc_w, fc_v, sigma_w, sigma_v, white)
 % Calculate Noises
-w_vec = Gen_noise_Butter(t_vec, sigma_w, fc_w);
-v_vec = Gen_noise_Butter(t_vec, sigma_v, fc_v);
+w_vec = Gen_noise_Butter(t_vec, sigma_w, fc_w, white);
+v_vec = Gen_noise_Butter(t_vec, sigma_v, fc_v, white);
 end
