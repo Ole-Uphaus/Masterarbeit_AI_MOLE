@@ -36,8 +36,9 @@ opts = odeset( ...
     'InitialStep', Ts/20);
 
 % Noise Parameters
-sigma_v = 0.0;      % Measurement Noise 0.01
+sigma_v = 0.01;      % Measurement Noise 0.01
 fc_v = 20;
+white = true;       % if white == true -> white noise is sampled - no filter
 
 % Trajectory (no delay - delay is applied later)
 sigma = 1;
@@ -61,7 +62,7 @@ for i = 1:max_iter
     u_init_auto = Initial_input_trajectory(r_vec, Ts, sigmaI);
 
     % System Simulation
-    v_vec = Gen_noise_Butter(t_vec, sigma_v, fc_v);
+    v_vec = Gen_noise_Butter(t_vec, sigma_v, fc_v, white);
     [t_sim, x_sim] = ode45(@(t,x) oszillator_nonlinear(t, x, u_init_auto, t_vec), t_vec, x0, opts);
     y_sim = x_sim(:, 1) + v_vec;
 
@@ -99,7 +100,7 @@ SISO_MOLE = SISO_MOLE_IO(r_vec, m_delay, u_init, N_iter, H_trials);
 tic;
 % Update Loop
 u_sim = u_init;
-v_vec = Gen_noise_Butter(t_vec, sigma_v, fc_v);
+v_vec = Gen_noise_Butter(t_vec, sigma_v, fc_v, white);
 [t_sim, x_sim] = ode45(@(t,x) oszillator_nonlinear(t, x, u_sim, t_vec), t_vec, x0, opts);
 y_sim = x_sim(:, 1) + v_vec;
 for i = 1:N_iter
@@ -107,7 +108,7 @@ for i = 1:N_iter
     u_sim = [SISO_MOLE.update_input(y_sim); 0];
 
     % Simulate the system
-    v_vec = Gen_noise_Butter(t_vec, sigma_v, fc_v);
+    v_vec = Gen_noise_Butter(t_vec, sigma_v, fc_v, white);
     [t_sim, x_sim] = ode45(@(t,x) oszillator_nonlinear(t, x, u_sim, t_vec), t_vec, x0, opts);
     y_sim = x_sim(:, 1) + v_vec;
 end
