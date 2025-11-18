@@ -11,6 +11,11 @@ clear
 close all
 rng(43);
 
+% Generate Dynamic file Paths
+base_dir = fileparts(mfilename("fullpath"));
+Model_Path = fullfile(base_dir, '..', '..', 'System_Models');
+addpath(Model_Path);
+
 %% Reference Trajectory
 % Parameters
 x_max = 0.5;
@@ -20,7 +25,7 @@ T_end = 5;
 t_vec = 0:Ts:T_end;
 
 % Noise Parameters
-sigma_v = 0.01;      % Measurement Noise 0.1
+sigma_v = 0.0;      % Measurement Noise 0.1
 fc_v = 20;
 
 % Trajectory (no delay - delay is applied later)
@@ -90,7 +95,7 @@ y_cell_quadr{1} = y_sim;
 u_cell_quadr{1} = u_sim;
 for i = 1:N_iter
     % Update input
-    P = Lifted_dynamics_nonlinear_SISO(@(x) linear_discrete_system(x, Ts), N, m_delay, x_sim);
+    P = Lifted_dynamics_nonlinear_SISO(@(x) oszillator_linearized_discrete(x, Ts), N, m_delay, x_sim);
     u_sim = [ILC_Quadr.Quadr_update(y_sim, P); 0];
 
     % Simulate the system
@@ -147,50 +152,3 @@ xlabel('Zeit [s]');
 ylabel('F [N]');
 title('Input Signal');
 legend()
-
-%% Local Functions
-function dx = oszillator_nonlinear(t, x_vec, u_vec, t_vec)
-    % Simulation parameters
-    m  = 2; % kg
-    c1 = 2; % N/m
-    c2 = 2; % N/m^3
-    d  = 0.5; % Ns/m
-
-    % States
-    x = x_vec(1);
-    xp = x_vec(2);
-
-    % Input
-    u = interp1(t_vec, u_vec, t, 'previous', 'extrap');
-
-    % Dynamics
-    dx = zeros(2, 1);
-    dx(1) = xp;
-    dx(2) = 1/m*(-c1*x - c2*x^3 - d*xp + u);
-end
-
-function [Ad, Bd, Cd, Dd] = linear_discrete_system(x_star, Ts)
-    % Simulation parameters
-    m  = 2; % kg
-    c1 = 2; % N/m
-    c2 = 2; % N/m^3
-    d  = 0.5; % Ns/m
-
-    % States
-    x = x_star(1);
-    xp = x_star(2);
-
-    % Linearisation
-    A_lin = [0, 1;
-        (-c1/m - 3*c2/m*x^2), -d/m];
-    B_lin = [0;
-        1/m];
-    C_lin = [1, 0];
-    D_lin = 0;
-    
-    sys_cont = ss(A_lin, B_lin, C_lin, D_lin);
-    
-    % Discrete
-    sys_disc = c2d(sys_cont, Ts, 'zoh');
-    [Ad, Bd, Cd, Dd] = ssdata(sys_disc);
-end

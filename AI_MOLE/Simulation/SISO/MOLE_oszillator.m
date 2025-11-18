@@ -14,7 +14,9 @@ rng(43);
 % Generate Dynamic file Path
 base_dir = fileparts(mfilename("fullpath"));
 ILC_path = fullfile(base_dir, '..', '..', '..', 'ILC', 'ILC_SISO');
+Model_Path = fullfile(base_dir, '..', '..', '..', 'System_Models');
 addpath(ILC_path);
+addpath(Model_Path);
 
 %% Reference Trajectory
 % Parameters
@@ -34,7 +36,7 @@ opts = odeset( ...
     'InitialStep', Ts/20);
 
 % Noise Parameters
-sigma_v = 0.01;      % Measurement Noise 0.01
+sigma_v = 0.0;      % Measurement Noise 0.01
 fc_v = 20;
 
 % Trajectory (no delay - delay is applied later)
@@ -88,7 +90,7 @@ H_trials = 3;
 % Initial input Trajectory (simple sin or automatic generated)
 sigma_I = 0.1;
 u_init_sin = sigma_I*sin(2*pi/T_end.*t_vec');
-u_init = u_init_auto;        % u_init_sin / u_init_auto
+u_init = u_init_sin;        % u_init_sin / u_init_auto
 
 % Initialisation
 SISO_MOLE = SISO_MOLE_IO(r_vec, m_delay, u_init, N_iter, H_trials);
@@ -159,24 +161,3 @@ xlabel('Zeit [s]');
 ylabel('x [m]');
 title('Noise');
 legend()
-
-%% Local Functions
-function dx = oszillator_nonlinear(t, x_vec, u_vec, t_vec)
-    % Simulation parameters
-    m  = 2; % kg
-    c1 = 2; % N/m
-    c2 = 2; % N/m^3
-    d  = 0.5; % Ns/m
-
-    % States
-    x = x_vec(1);
-    xp = x_vec(2);
-
-    % Input
-    u = interp1(t_vec, u_vec, t, 'previous', 'extrap');
-
-    % Dynamics
-    dx = zeros(2, 1);
-    dx(1) = xp;
-    dx(2) = 1/m*(-c1*x - c2*x^3 - d*xp + u);
-end

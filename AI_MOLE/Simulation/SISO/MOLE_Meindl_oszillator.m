@@ -15,8 +15,10 @@ rng(43);
 base_dir = fileparts(mfilename("fullpath"));
 Meindl_path = fullfile(base_dir, '..', '..', '..', '..', 'Repo_Meindl_AI_MOLE', '1_matlab_ws', '1_SISO_MOLE', '0_lib');
 ILC_path = fullfile(base_dir, '..', '..', '..', 'ILC', 'ILC_SISO');
+Model_Path = fullfile(base_dir, '..', '..', '..', 'System_Models');
 addpath(Meindl_path);
 addpath(ILC_path);
+addpath(Model_Path);
 
 %% Reference Trajectory
 tic;
@@ -82,26 +84,6 @@ title('System Input');
 legend()
 
 %% Local Functions
-function dx = oszillator_nonlinear(t, x_vec, u_vec, t_vec)
-    % Simulation parameters
-    m  = 2; % kg
-    c1 = 2; % N/m
-    c2 = 2; % N/m^3
-    d  = 0.5; % Ns/m
-
-    % States
-    x = x_vec(1);
-    xp = x_vec(2);
-
-    % Input
-    u = interp1(t_vec, u_vec, t, 'previous', 'extrap');
-
-    % Dynamics
-    dx = zeros(2, 1);
-    dx(1) = xp;
-    dx(2) = 1/m*(-c1*x - c2*x^3 - d*xp + u);
-end
-
 function y = solve_ODE(u, t_vec)
     % Fill u Vector for Simulation to match Dimensions
     u_sim = [u; 0];

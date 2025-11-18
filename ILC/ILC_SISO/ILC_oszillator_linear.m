@@ -11,6 +11,11 @@ clear
 close all
 rng(43);
 
+% Generate Dynamic file Paths
+base_dir = fileparts(mfilename("fullpath"));
+Model_Path = fullfile(base_dir, '..', '..', 'System_Models');
+addpath(Model_Path);
+
 %% System Dynamics
 % Simulation parameters
 m  = 2; % kg
@@ -91,7 +96,7 @@ opts = odeset( ...
 % Update Loop
 u_sim = [ILC_Quadr.u_vec; 0];
 [w_vec, v_vec] = proc_meas_noise(t_vec, fc_w, fc_v, sigma_w, sigma_v);
-[t_sim, x_sim] = ode45(@(t,x) oszillator_linear(t, x, u_sim, t_vec, (w_vec + w_rep_vec)), t_vec, x0, opts);
+[t_sim, x_sim] = ode45(@(t,x) oszillator_linear(t, x, (u_sim + w_vec + w_rep_vec), t_vec), t_vec, x0, opts);
 y_sim = x_sim(:, 1) + v_vec;
 y_cell_quadr{1} = y_sim;
 u_cell_quadr{1} = u_sim;
@@ -101,7 +106,7 @@ for i = 1:N_iter
 
     % Simulate the system
     [w_vec, v_vec] = proc_meas_noise(t_vec, fc_w, fc_v, sigma_w, sigma_v);
-    [t_sim, x_sim] = ode45(@(t,x) oszillator_linear(t, x, u_sim, t_vec, (w_vec + w_rep_vec)), t_vec, x0, opts);
+    [t_sim, x_sim] = ode45(@(t,x) oszillator_linear(t, x, (u_sim + w_vec + w_rep_vec), t_vec), t_vec, x0, opts);
     y_sim = x_sim(:, 1) + v_vec;
     y_cell_quadr{i+1} = y_sim;
     u_cell_quadr{i+1} = u_sim;
@@ -122,7 +127,7 @@ ILC_PD.init_PD_type(kp, kd);
 % Update Loop
 u_sim = [ILC_PD.u_vec; 0];
 [w_vec, v_vec] = proc_meas_noise(t_vec, fc_w, fc_v, sigma_w, sigma_v);
-[t_sim, x_sim] = ode45(@(t,x) oszillator_linear(t, x, u_sim, t_vec, (w_vec + w_rep_vec)), t_vec, x0, opts);
+[t_sim, x_sim] = ode45(@(t,x) oszillator_linear(t, x, (u_sim + w_vec + w_rep_vec), t_vec), t_vec, x0, opts);
 y_sim = x_sim(:, 1) + v_vec;
 for i = 1:N_iter
     % Update input
@@ -130,7 +135,7 @@ for i = 1:N_iter
 
     % Simulate the system
     [w_vec, v_vec] = proc_meas_noise(t_vec, fc_w, fc_v, sigma_w, sigma_v);
-    [t_sim, x_sim] = ode45(@(t,x) oszillator_linear(t, x, u_sim, t_vec, (w_vec + w_rep_vec)), t_vec, x0, opts);
+    [t_sim, x_sim] = ode45(@(t,x) oszillator_linear(t, x, (u_sim + w_vec + w_rep_vec), t_vec), t_vec, x0, opts);
     y_sim = x_sim(:, 1) + v_vec;
 end
 % Calculate and log final error
@@ -198,27 +203,12 @@ max_error_P = max(abs(P(:) - P_nonlin(:)));
 fprintf('Maximaler absoluter Unterschied bei der Bestimmung von P: %.3e\n', max_error_P);
 
 %% Local Functions
-function dx = oszillator_linear(t, x_vec, u_vec, t_vec, w_vec)
-    % Simulation parameters
-    m  = 2; % kg
-    c1 = 2; % N/m
-    d  = 0.5; % Ns/m
-
-    % State space representation 
-    A = [0, 1;
-        -c1/m, -d/m];
-    B = [0;
-        1/m];
-
-    % Input
-    u = interp1(t_vec, u_vec, t, 'previous', 'extrap');
-    w = interp1(t_vec, w_vec, t, 'previous', 'extrap');
-
-    % Dynamics
-    dx = A*x_vec + B*(u + w);
-end
-
 function [Ad, Bd, Cd, Dd] = linear_discrete_system(x_star, Ts)
+%linear_discrete_system this function is just used for comparison of the
+%lifted matrices. It is used as a local function, because the nonlinearity
+%is set to zero to compare to linear system. Otherwise we could have used
+%the global function.
+
     % Simulation parameters
     m  = 2; % kg
     c1 = 2; % N/m
