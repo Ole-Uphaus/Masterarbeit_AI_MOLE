@@ -12,7 +12,7 @@ classdef SISO_MOLE_IO < handle
     end
     
     methods
-        function obj = SISO_MOLE_IO(r_vec, m_delay, u_init, N_iter, H_trials)
+        function obj = SISO_MOLE_IO(r_vec, m_delay, u_init, N_iter, H_trials, sigma_n)
             %SISO_MOLE_IO Constructor for the SISO_MOLE_IO class
             %
             %   Inputs:
@@ -31,8 +31,14 @@ classdef SISO_MOLE_IO < handle
             addpath(GP_path);
             addpath(ILC_path);
 
-            % Initialize Classes
-            obj.GP_SISO = GP_SISO_IO();
+            % Initialize GP (use fixed sigma_n if given)
+            if nargin < 6 || isempty(sigma_n)
+                obj.GP_SISO = GP_SISO_IO();
+            else
+                obj.GP_SISO = GP_SISO_IO(sigma_n);
+            end
+
+            % Initialize ILC
             obj.ILC_SISO = ILC_SISO(r_vec, m_delay, u_init);
 
             % Storage cells

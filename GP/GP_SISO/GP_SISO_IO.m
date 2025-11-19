@@ -17,11 +17,22 @@ classdef GP_SISO_IO < handle
         alpha       % Constant term of the GP a = [K + sigma^2*I]^-1 * y
         V_row_norm2 % Euklidean Norm of each row of obj.V
         V_transp    % Transposed design Matrix
+
+        sigma_n     % Optional: Noise standard deviation sigma_n
     end
     
     methods
-        function obj = GP_SISO_IO()
-            %GP_SISO_IO Constructor.            
+        function obj = GP_SISO_IO(sigma_n)
+            %GP_SISO_IO Constructor.
+            %
+            %   Optional:
+            %       sigma_n : Noise standard deviation sigma_n (Skalar).
+
+            if nargin < 1 || isempty(sigma_n)
+                obj.sigma_n = [];
+            else
+                obj.sigma_n = sigma_n;
+            end
         end
         
         function train_GP_model(obj, y_cell, u_cell)
@@ -42,11 +53,25 @@ classdef GP_SISO_IO < handle
             obj.constr_target_vector();
 
             % Train GP (only one lengthscale)
-            obj.GP = fitrgp( ...
-                obj.V, obj.z, ...
-                'BasisFunction','none', ...
-                'KernelFunction','squaredexponential', ...
-                'Standardize', false);
+            if ~isempty(obj.sigma_n)
+                % Train GP and just optimize the kernel parameters (exclude
+                % sigma_n)
+                obj.GP = fitrgp( ...
+                    obj.V, obj.z, ...
+                    'BasisFunction','none', ...
+                    'KernelFunction','squaredexponential', ...
+                    'Standardize', false, ...
+                    'Sigma', obj.sigma_n, ...
+                    'ConstantSigma', true);
+            else
+                % Train GP and optimize all Hyperparameters (including
+                % sigma_n)
+                obj.GP = fitrgp( ...
+                    obj.V, obj.z, ...
+                    'BasisFunction','none', ...
+                    'KernelFunction','squaredexponential', ...
+                    'Standardize', false);
+            end
         end
 
         function constr_design_matrix(obj)
