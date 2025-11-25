@@ -8,8 +8,6 @@ classdef ILC_SISO < handle
         r_vec       % Reference Trajectory
         m           % System delay
         u_vec       % System input
-        kp          % P Gain
-        kd          % D Gain
         error_vec   % Tracking error
         RMSE_log    % Error log
         P           % Lifted Dynamics
@@ -33,38 +31,6 @@ classdef ILC_SISO < handle
 
             % Initialize input vector u
             obj.u_vec = u_init(1:(size(r_vec, 1)-m), 1);
-        end
-        
-        function init_PD_type(obj, kp, kd)
-            %init_PD_type Initialize parameters for PD-type ILC
-            %
-            %   Inputs:
-            %       kp - Proportional gain
-            %       kd - Derivative gain
-
-            obj.kp = kp;
-            obj.kd = kd;
-        end
-
-        function u_vec_new = PD_update(obj, y_vec)
-            %PD_update Perform one PD-type ILC iteration
-            %
-            %   Inputs:
-            %       y_vec - Measured output signal of the current trial
-            %
-            %   Outputs:
-            %       u_vec_new - Updated input signal for the next trial
-
-            % Calculate error e(k+1), e(k)
-            obj.error_vec = obj.r_vec((1+obj.m):end) - y_vec((1+obj.m):end);
-            d_error_vec = [obj.error_vec(1); diff(obj.error_vec)];
-
-            % Log error
-            obj.Log_error()
-
-            % Update input u(k)
-            u_vec_new = obj.apply_Q(obj.u_vec + obj.kp*obj.error_vec + obj.kd*d_error_vec);
-            obj.u_vec = u_vec_new;
         end
 
         function init_Quadr_type(obj, W, S, P)
@@ -119,7 +85,7 @@ classdef ILC_SISO < handle
             obj.Log_error()
 
             % Update input u(k) and apply filter
-            u_vec_new = obj.apply_Q(obj.u_vec + Lc*obj.error_vec);
+            u_vec_new = obj.apply_Q_lowpass(obj.u_vec + Lc*obj.error_vec);
             obj.u_vec = u_vec_new;
         end
 
@@ -131,7 +97,7 @@ classdef ILC_SISO < handle
             obj.RMSE_log(end+1) = RMSE;
         end
 
-        function calculate_final_error(obj, y_vec);
+        function calculate_final_error(obj, y_vec)
             %calculate_final_error Calculate and log the last error during
             %Training
             %
@@ -163,8 +129,8 @@ classdef ILC_SISO < handle
             obj.b_Q = b;
         end
 
-        function x_filt = apply_Q(obj, x)
-            %apply_Q Apply the optional Q-filter to a signal.
+        function x_filt = apply_Q_lowpass(obj, x)
+            %apply_Q_lowpass Apply the optional Q-filter to a signal.
             %
             %   Inputs:
             %       x : Column vector to be filtered (e.g., input update)
