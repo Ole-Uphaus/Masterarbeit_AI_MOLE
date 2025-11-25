@@ -58,25 +58,14 @@ classdef ILC_SISO < handle
             end
         end
 
-        function u_vec_new = Quadr_update(obj, y_vec, P)
+        function u_vec_new = Quadr_update(obj, y_vec)
             %Quadr_update Perform one Quadratic Optimal ILC iteration
             %
             %   Inputs:
             %       y_vec - Measured output signal of the current trial
-            %       P     - Lifted system (Plant) matrix
             %
             %   Outputs:
             %       u_vec_new - Updated input signal for the next trial
-
-            % If P is not defined
-            if isempty(obj.P)
-                % Calculate L (current L -> Lc) using the given P
-                if nargin >= 3 && ~isempty(P)
-                    Lc = (P'*obj.W*P + obj.S) \ (P'*obj.W);
-                end
-            else
-                Lc = obj.L;
-            end
 
             % Calculate error e(k+1)
             obj.error_vec = obj.r_vec((1+obj.m):end) - y_vec((1+obj.m):end);
@@ -85,7 +74,7 @@ classdef ILC_SISO < handle
             obj.Log_error()
 
             % Update input u(k) and apply filter
-            u_vec_new = obj.apply_Q_lowpass(obj.u_vec + Lc*obj.error_vec);
+            u_vec_new = obj.apply_Q_lowpass(obj.u_vec + obj.L*obj.error_vec);
             obj.u_vec = u_vec_new;
         end
 

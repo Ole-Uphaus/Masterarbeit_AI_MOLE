@@ -43,7 +43,7 @@ x0 = [0;
     0];
 
 W = eye(N-m_delay);
-S = 0.5*eye(N-m_delay);
+S = 0.001*eye(N-m_delay);
 
 % Solver settings
 opts = odeset( ...
@@ -54,7 +54,6 @@ opts = odeset( ...
 
 % Initialisation
 ILC_Quadr = ILC_SISO(r_vec, m_delay, u_init);
-ILC_Quadr.init_Quadr_type(W, S)
 
 % Track Results
 y_cell_quadr = cell(N_iter+1, 1);
@@ -70,7 +69,8 @@ u_cell_quadr{1} = u_sim;
 for i = 1:N_iter
     % Update input
     P = Lifted_dynamics_nonlinear_SISO(@(x) oszillator_linearized_discrete(x, Ts), N, m_delay, x_sim);
-    u_sim = [ILC_Quadr.Quadr_update(y_sim, P); 0];
+    ILC_Quadr.init_Quadr_type(W, S, P);
+    u_sim = [ILC_Quadr.Quadr_update(y_sim); 0];
 
     % Simulate the system
     v_vec = Gen_noise_Butter(t_vec, sigma_v, fc_v, white);
