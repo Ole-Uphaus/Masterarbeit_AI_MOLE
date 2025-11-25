@@ -203,25 +203,6 @@ classdef GP_SISO_IO < handle
             dy_dv = dk_dvn * alpha_vec;
         end
 
-        function k = squared_exponantial_kernel(obj, x1, x2, sigmaL, sigmaF)
-            %squared_exponantial_kernel Compute squared exponential (RBF) kernel value.
-            %
-            %   Inputs:
-            %       x1 : First input vector (column vector)
-            %       x2 : Second input vector (column vector)
-            %       sigmaL : Length scale parameter (positive scalar)
-            %       sigmaF : Signal standard deviation (positive scalar)
-            %
-            %   Outputs:
-            %       k : Kernel value (scalar)
-
-            % Distance
-            r2 = sum((x1 - x2).^2);
-
-            % Kernel value
-            k = sigmaF^2 * exp(-0.5 * r2 / (sigmaL^2));
-        end
-
         function P = linearize_at_given_trajectory_fast(obj, u_lin)
             %linearize_at_given_trajectory Compute local linearization (Jacobian) of GP at a trajectory.
             %
@@ -292,6 +273,27 @@ classdef GP_SISO_IO < handle
             % Calculate gradient
             w = obj.alpha .* k;
             dy_dv = -obj.sigmaL2_inv * (sum(w)*vn - obj.V_transp*w);
+        end
+    end
+
+    methods (Static)
+        function k = squared_exponantial_kernel(x1, x2, sigmaL, sigmaF)
+            %squared_exponantial_kernel Compute squared exponential (RBF) kernel value.
+            %
+            %   Inputs:
+            %       x1 : First input vector (column vector)
+            %       x2 : Second input vector (column vector)
+            %       sigmaL : Length scale parameter (positive scalar)
+            %       sigmaF : Signal standard deviation (positive scalar)
+            %
+            %   Outputs:
+            %       k : Kernel value (scalar)
+
+            % Distance
+            r2 = sum((x1 - x2).^2);
+
+            % Kernel value
+            k = sigmaF^2 * exp(-0.5 * r2 / (sigmaL^2));
         end
     end
 end
