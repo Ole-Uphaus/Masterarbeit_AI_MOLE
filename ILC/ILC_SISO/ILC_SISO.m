@@ -13,7 +13,9 @@ classdef ILC_SISO < handle
         P           % Lifted Dynamics
         W           % Wheighting Matrix error
         S           % Wheighting Matrix change of u
-        L           % Learning Matrix
+        R           % Wheighting Matrix input u
+        L           % Optimal Learning Matrix
+        Q           % Optimal Q-Operator
         a_Q         % Filter Parameter a
         b_Q         % Filter Parameter b
     end
@@ -33,28 +35,37 @@ classdef ILC_SISO < handle
             obj.u_vec = u_init(1:(size(r_vec, 1)-m), 1);
         end
 
-        function init_Quadr_type(obj, W, S, P)
+        function init_Quadr_type(obj, W, S, R, P)
             %init_Quadr_type Initialize quadratic optimal ILC parameters
             %
             %   Inputs:
             %       W - Weighting matrix error
             %       S - Weighting matrix change of u
+            %       R - Wheighting Matrix input u
             %       P - Lifted system (Plant) matrix
 
-            % Set W and S
+            % Set W, S, R, P
             if nargin >= 2 && ~isempty(W), obj.W = W; end
             if nargin >= 3 && ~isempty(S), obj.S = S; end
-        
-            % Only set P if given
-            if nargin >= 4 && ~isempty(P)
-                obj.P = P;
-            end
+            if nargin >= 4 && ~isempty(R), obj.R = R; end
+            if nargin >= 5 && ~isempty(P), obj.P = P; end
 
             % Optimal learning function (only if everything is given)
-            if ~isempty(obj.P) && ~isempty(obj.W) && ~isempty(obj.S)
-                obj.L = (P'*W*P + S) \ (P'*W);
+            if ~isempty(obj.P) && ~isempty(obj.W) && ~isempty(obj.S) && ~isempty(obj.R)
+                % Use the notation from norm optimal ILC Papers (apply the
+                % Q-Operator on u and the L-Operator on e - seperate)
+
+                % Calculation Matrix
+                M = obj.P'*obj.W*obj.P + obj.R + obj.S;
+
+                % Optimal Q-Operator
+                obj.Q = M \ (obj.P'*obj.W*obj.P + obj.S);
+
+                % Optimal L-Operator
+                obj.L = M \ (obj.P'*obj.W);
             else
                 obj.L = [];
+                obj.Q = [];
             end
         end
 
@@ -74,7 +85,7 @@ classdef ILC_SISO < handle
             obj.Log_error()
 
             % Update input u(k) and apply filter
-            u_vec_new = obj.apply_Q_lowpass(obj.u_vec + obj.L*obj.error_vec);
+            u_vec_new = obj.apply_Q_lowpass(obj.Q*obj.u_vec + obj.L*obj.error_vec);
             obj.u_vec = u_vec_new;
         end
 

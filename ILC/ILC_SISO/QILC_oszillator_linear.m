@@ -70,6 +70,7 @@ x0 = [0;
     0]; 
 W = eye(size(P));
 S = 0.001*eye(size(P));
+R = 0.00001*eye(size(P));
 
 % Track Results
 y_cell_quadr = cell(N_iter+1, 1);
@@ -84,7 +85,7 @@ Q_fc = 2;
 
 % Initialisation
 ILC_Quadr = ILC_SISO(r_vec, m_delay, u_init);
-ILC_Quadr.init_Quadr_type(W, S, P)
+ILC_Quadr.init_Quadr_type(W, S, R, P)
 % ILC_Quadr.init_Q_lowpass(Q_fc, Q_order, Ts);
 
 % Solver settings
