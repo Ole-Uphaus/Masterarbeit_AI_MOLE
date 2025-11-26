@@ -92,14 +92,14 @@ t = toc;
 fprintf('Dauer der Linearisierung (fast): %g s\n\n', t);
 
 tic;
-P3 = GP_IO.approx_linearisation_at_given_trajectory(u_vec_train_cell{1});
+[P3, Var_P3] = GP_IO.approx_linearisation_at_given_trajectory(u_vec_train_cell{1});
 t = toc;
 fprintf('Dauer der Linearisierung (approximiert): %g s\n\n', t);
 
 % Compare Fast and slow Computation
 error_P1 = P - P2;
 max_error_P1 = max(abs(P(:) - P2(:)));
-fprintf('Maximaler absoluter Unterschied bei der Bestimmung von P (fast vs. slow): %.3e\n\n', max_error_P1);
+fprintf('Maximaler absoluter Unterschied bei der Bestimmung von P (fast vs. slow): %.3e\n', max_error_P1);
 
 % Compare analytic and approx Computation
 error_P3 = P - P3;
@@ -188,16 +188,16 @@ end
 
 %% Plot
 figure;
-set(gcf, 'Position', [100 100 1200 500]);
+set(gcf, 'Position', [100 100 1200 800]);
 
-subplot(1,2,1);
+subplot(2,2,1);
 imagesc(error_P2);
 colorbar;
 title('error P_{analytic} - P_{lin}');
 xlabel('Input-Index');
 ylabel('Output-Index');
 
-subplot(1,2,2);
+subplot(2,2,2);
 plot(t_vec, error_y_pred, LineWidth=2, DisplayName='error (y-sim - y-pred)');
 hold on;
 plot(t_vec, error_y_lin, LineWidth=2, DisplayName='error (y-sim - y-pred-lin)');
@@ -207,6 +207,13 @@ xlabel('Zeit [s]');
 ylabel('x [m]');
 title('Prediction Error');
 legend()
+
+subplot(2,2,3);
+imagesc(Var_P3);
+colorbar;
+title('Var P (approximiert)');
+xlabel('Input-Index');
+ylabel('Output-Index');
 
 figure;
 set(gcf, 'Position', [100 100 1200 800]);
