@@ -275,7 +275,7 @@ classdef GP_SISO_IO < handle
             dy_dv = -obj.sigmaL2_inv * (sum(w)*vn - obj.V_transp*w);
         end
 
-        function P = approx_linearisation_at_given_trajectory(obj, u_lin)
+        function [P, Var_P] = approx_linearisation_at_given_trajectory(obj, u_lin)
             %approx_linearisation_at_given_trajectory Compute local approximated linearization (Jacobian) of GP at a trajectory.
             %
             %   Inputs:
@@ -287,14 +287,20 @@ classdef GP_SISO_IO < handle
 
             N = length(obj.u_cell{1});
 
-            % Empty jacobi matrix
+            % Empty jacobi matrix (and Variance)
             P = zeros(N, N);
+            Var_P = zeros(N, N);
 
             % Construct linearisation Matrix
             V_lin = obj.constr_test_matrix(u_lin);
 
+            % Kernel Parameters
+            k_params = obj.GP.KernelInformation.KernelParameters;
+            obj.sigmaL2_inv = 1/(k_params(1)^2);
+            obj.sigmaF2 = k_params(2)^2;
+
             % Step-size
-            h = 1e-5;
+            h = 1e-1;
 
             % Iteratively compute gradients
             for i = 1:N
@@ -302,16 +308,18 @@ classdef GP_SISO_IO < handle
                 vn = V_lin(i, :);
 
                 % Gradient of the GP w.r.t vn
-                dy_dv = obj.approx_gradient_wrt_regression_vector(vn, h, N);
+                [dy_dv, Cov_dy_dv] = obj.approx_gradient_wrt_regression_vector(vn, h, N);
+                var_dy_dv = diag(Cov_dy_dv);
 
                 % Update jacobi matrix
                 if i > 1
                     P(i, 1:(i-1)) = dy_dv((i-1):-1:1);
+                    Var_P(i, 1:(i-1)) = var_dy_dv((i-1):-1:1);
                 end
             end
         end
 
-        function dy_dv = approx_gradient_wrt_regression_vector(obj, vn, h, N)
+        function [dy_dv, Cov_dy_dv] = approx_gradient_wrt_regression_vector(obj, vn, h, N)
             %approx_gradient_wrt_regression_vector Compute approximated GP output gradient w.r.t. a regression vector.
             %
             %   Inputs:
@@ -329,18 +337,50 @@ classdef GP_SISO_IO < handle
             % Input Matrix with negative step-size (one input vector unit vector)
             X_minus = X - h*eye(N);
 
-            % Perform gp Prediction for positive and negative input
-            [f_plus, ~] = predict(obj.GP, X_plus);
-            [f_minus, ~] = predict(obj.GP, X_minus);
-
-            % Concatenate Vectors
-            f = [f_plus; f_minus];
+            % Perform gp Prediction for positive and negative input (X* =
+            % X_plus_minus)
+            X_plus_minus = [X_plus; X_minus];
+            f = predict(obj.GP, X_plus_minus);
 
             % Calculation Matrix
             A = [1/(2*h)*eye(N), -1/(2*h)*eye(N)];
 
             % Compute approximated Gradient
             dy_dv = A*f;
+
+            % Compute kernel Value (X* = X_plus_minus, K** = K(x*, X*))
+            K_pm_pm = obj.squared_exponantial_kernel_cross(X_plus_minus, X_plus_minus);
+
+            % Compute kernel Value (K* = K(X*, X_train))
+            K_pm_tr = obj.squared_exponantial_kernel_cross(obj.V, X_plus_minus);
+
+            % Efficient computation of the covariance (unsing cholesky
+            % factors)
+            L_chol = obj.GP.Impl.LFactor;   % (K + sigma^2*I) = LL^T
+            B = L_chol \ K_pm_tr;           % B = L^-1 * K*
+            K_f = K_pm_pm - B.' * B;        % K_f = K** - B^T*B = K** - K*^T [K + sigma^2*I] K*
+
+            % Covariance Matrix
+            Cov_dy_dv = A*K_f*A.';
+        end
+
+        function K = squared_exponantial_kernel_cross(obj, X1, X2)
+            %squared_exponantial_kernel_cross Compute squared exponential (RBF) kernel matrix for set of input vectors.
+            %
+            %   Inputs:
+            %       X1 : First set of input vectors
+            %       X2 : Second set of input vector
+            %       sigmaL : Length scale parameter (positive scalar)
+            %       sigmaF : Signal standard deviation (positive scalar)
+            %
+            %   Outputs:
+            %       K : Kernel Matrix
+
+            % Squared euclidean distances
+            D2 = pdist2(X1, X2, 'squaredeuclidean');
+
+            % Squared exponential Kernel
+            K = obj.sigmaF2 * exp(-0.5 * D2 * obj.sigmaL2_inv);
         end
     end
 
