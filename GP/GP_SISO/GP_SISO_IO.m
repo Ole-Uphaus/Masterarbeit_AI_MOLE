@@ -274,6 +274,74 @@ classdef GP_SISO_IO < handle
             w = obj.alpha .* k;
             dy_dv = -obj.sigmaL2_inv * (sum(w)*vn - obj.V_transp*w);
         end
+
+        function P = approx_linearisation_at_given_trajectory(obj, u_lin)
+            %approx_linearisation_at_given_trajectory Compute local approximated linearization (Jacobian) of GP at a trajectory.
+            %
+            %   Inputs:
+            %       u_lin : Input trajectory (column vector) around which the GP is linearized
+            %
+            %   Outputs:
+            %       P : Jacobian (linearization) matrix of size N×N, mapping input variations
+            %           Δu to output variations Δy near the trajectory u_lin
+
+            N = length(obj.u_cell{1});
+
+            % Empty jacobi matrix
+            P = zeros(N, N);
+
+            % Construct linearisation Matrix
+            V_lin = obj.constr_test_matrix(u_lin);
+
+            % Step-size
+            h = 1e-5;
+
+            % Iteratively compute gradients
+            for i = 1:N
+                % Extract regression Vector
+                vn = V_lin(i, :);
+
+                % Gradient of the GP w.r.t vn
+                dy_dv = obj.approx_gradient_wrt_regression_vector(vn, h, N);
+
+                % Update jacobi matrix
+                if i > 1
+                    P(i, 1:(i-1)) = dy_dv((i-1):-1:1);
+                end
+            end
+        end
+
+        function dy_dv = approx_gradient_wrt_regression_vector(obj, vn, h, N)
+            %approx_gradient_wrt_regression_vector Compute approximated GP output gradient w.r.t. a regression vector.
+            %
+            %   Inputs:
+            %       vn : Current regression vector (column or row vector)
+            %
+            %   Outputs:
+            %       dy_dv : Gradient of GP output with respect to vn (column vector)
+
+            % General input Matrix containing the regression vector N times
+            X = repmat(vn, N, 1);
+
+            % Input Matrix with positive step-size (one input vector unit vector)
+            X_plus = X + h*eye(N);
+
+            % Input Matrix with negative step-size (one input vector unit vector)
+            X_minus = X - h*eye(N);
+
+            % Perform gp Prediction for positive and negative input
+            [f_plus, ~] = predict(obj.GP, X_plus);
+            [f_minus, ~] = predict(obj.GP, X_minus);
+
+            % Concatenate Vectors
+            f = [f_plus; f_minus];
+
+            % Calculation Matrix
+            A = [1/(2*h)*eye(N), -1/(2*h)*eye(N)];
+
+            % Compute approximated Gradient
+            dy_dv = A*f;
+        end
     end
 
     methods (Static)
