@@ -322,7 +322,7 @@ classdef GP_SISO_IO < handle
             d = sum(G .* B, 1);
 
             % Calculate varianve
-            Var_dy_dv = obj.sigmaF2 * obj.sigmaL2_inv * ones(N, 1) + d(:);
+            Var_dy_dv = obj.sigmaF2 * obj.sigmaL2_inv * ones(N, 1) - d(:);
         end
 
         function [P, Var_P] = approx_linearisation_at_given_trajectory(obj, u_lin)
