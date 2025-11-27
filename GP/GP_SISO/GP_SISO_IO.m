@@ -12,11 +12,13 @@ classdef GP_SISO_IO < handle
         u_cell      % Cell containing training input Data (from each trial)
         V           % Design matrix (containing u regression vectors)
         z           % Target Vector (containing y target Values)
+
         sigmaF2     % Squared kernel parameter sigma_F^2
         sigmaL2_inv % Squared inverse kernel parameter 1/l^2
         alpha       % Constant term of the GP a = [K + sigma^2*I]^-1 * y
         V_row_norm2 % Euklidean Norm of each row of obj.V
         V_transp    % Transposed design Matrix
+        L_chol      % Cholesky Factor of (K + sigma_N^2*I)
 
         sigma_n     % Optional: Noise standard deviation sigma_n
     end
@@ -203,8 +205,8 @@ classdef GP_SISO_IO < handle
             dy_dv = dk_dvn * alpha_vec;
         end
 
-        function P = linearize_at_given_trajectory_fast(obj, u_lin)
-            %linearize_at_given_trajectory Compute local linearization (Jacobian) of GP at a trajectory.
+        function [P, Var_P] = linearize_at_given_trajectory_fast(obj, u_lin)
+            %linearize_at_given_trajectory_fast Compute local linearization (Jacobian) of GP at a trajectory.
             %
             %   Inputs:
             %       u_lin : Input trajectory (column vector) around which the GP is linearized
@@ -217,6 +219,7 @@ classdef GP_SISO_IO < handle
 
             % Empty jacobi matrix
             P = zeros(N, N);
+            Var_P = zeros(N, N);
 
             % Construct linearisation Matrix
             V_lin = obj.constr_test_matrix(u_lin);
@@ -229,6 +232,9 @@ classdef GP_SISO_IO < handle
             % Receive alpha vector a = [K + sigma^2*I]^-1 * y
             obj.alpha = obj.GP.Alpha;
 
+            % Receive Cholesky Factor of (K + sigma_N^2*I)
+            obj.L_chol = obj.GP.Impl.LFactor;
+
             % Precompute euklidean Norm of each row of obj.V and transposed
             % design matrix (each column is one regression Vector)
             obj.V_row_norm2 = sum(obj.V.^2, 2);
@@ -239,18 +245,20 @@ classdef GP_SISO_IO < handle
                 % Extract regression Vector
                 vn = V_lin(i, :);
 
-                % Gradient of the GP w.r.t vn
+                % Gradient and Variance of the GP w.r.t vn
                 dy_dv = obj.gradient_wrt_regression_vector_fast(vn);
+                Var_dy_dv = obj.gradient_variance_wrt_regression_vector_fast(vn);
 
                 % Update jacobi matrix
                 if i > 1
                     P(i, 1:(i-1)) = dy_dv((i-1):-1:1);
+                    Var_P(i, 1:(i-1)) = Var_dy_dv((i-1):-1:1);
                 end
             end
         end
 
         function dy_dv = gradient_wrt_regression_vector_fast(obj, vn)
-            %gradient_wrt_regression_vector Compute GP output gradient w.r.t. a regression vector.
+            %gradient_wrt_regression_vector_fast Compute GP output gradient w.r.t. a regression vector.
             %
             %   Inputs:
             %       vn : Current regression vector (column or row vector)
@@ -273,6 +281,48 @@ classdef GP_SISO_IO < handle
             % Calculate gradient
             w = obj.alpha .* k;
             dy_dv = -obj.sigmaL2_inv * (sum(w)*vn - obj.V_transp*w);
+        end
+
+        function Var_dy_dv = gradient_variance_wrt_regression_vector_fast(obj, vn)
+            %gradient_variance_wrt_regression_vector_fast Compute GP output gradient variance w.r.t. a regression vector.
+            %
+            %   Inputs:
+            %       vn : Current regression vector (column or row vector)
+            %
+            %   Outputs:
+            %       Var_dy_dv : Gradient variance of GP output with respect to vn (column vector)
+
+            N = length(obj.u_cell{1});
+
+            % Column Vector
+            vn = vn(:);
+
+            % Calculate euklidean norm between vn and every regression
+            % vector in V
+            vn_norm2 = sum(vn.^2);
+            Vv = obj.V*vn;          % vector containing V_i'*v
+            r2 = vn_norm2 + obj.V_row_norm2 - 2*Vv;
+
+            % Calculate kernel Vector (element-wise)
+            k = obj.sigmaF2 * exp(-0.5 * obj.sigmaL2_inv * r2);
+
+            % Difference Matrix, Diff(i,j) = V(i,j) - vn(j) (every row
+            % contains the element-wise differences between V(i, :) and vn)
+            Diff = obj.V - vn.';
+
+            % g = dk(V, vn) / dvn(j) => G = [g1, ..., gN]
+            G = obj.sigmaL2_inv * (Diff .* k);
+
+            % Solve B = K^-1*G
+            B = obj.L_chol \ G;
+            B = obj.L_chol.' \ B;
+
+            % Calculate Data_Terms d(i) = G(:, i)^T * B(:, i) => Summation
+            % in direction 1 (vertical)
+            d = sum(G .* B, 1);
+
+            % Calculate varianve
+            Var_dy_dv = obj.sigmaF2 * obj.sigmaL2_inv * ones(N, 1) + d(:);
         end
 
         function [P, Var_P] = approx_linearisation_at_given_trajectory(obj, u_lin)
@@ -298,6 +348,9 @@ classdef GP_SISO_IO < handle
             k_params = obj.GP.KernelInformation.KernelParameters;
             obj.sigmaL2_inv = 1/(k_params(1)^2);
             obj.sigmaF2 = k_params(2)^2;
+
+            % Receive Cholesky Factor of (K + sigma_N^2*I)
+            obj.L_chol = obj.GP.Impl.LFactor;
 
             % Step-size
             h = 1e-1;
@@ -356,8 +409,7 @@ classdef GP_SISO_IO < handle
 
             % Efficient computation of the covariance (unsing cholesky
             % factors)
-            L_chol = obj.GP.Impl.LFactor;   % (K + sigma^2*I) = LL^T
-            B = L_chol \ K_pm_tr;           % B = L^-1 * K*
+            B = obj.L_chol \ K_pm_tr;           % B = L^-1 * K*
             K_f = K_pm_pm - B.' * B;        % K_f = K** - B^T*B = K** - K*^T [K + sigma^2*I] K*
 
             % Covariance Matrix
