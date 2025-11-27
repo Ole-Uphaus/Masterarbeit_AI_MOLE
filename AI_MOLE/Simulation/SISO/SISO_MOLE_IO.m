@@ -80,7 +80,7 @@ classdef SISO_MOLE_IO < handle
             obj.GP_SISO.train_GP_model(y_cell_train, u_cell_train);
 
             % Linearize GP model (fast function)
-            P = obj.GP_SISO.linearize_at_given_trajectory_fast(obj.u_cell{i_iter});
+            [P, ~] = obj.GP_SISO.linearize_at_given_trajectory_fast(obj.u_cell{i_iter});
 
             % Change dimensions of P (delete first row and last column -
             % because ILC uses a reduced size framework)
@@ -88,12 +88,12 @@ classdef SISO_MOLE_IO < handle
 
             % Calculate weighting matrices
             W = eye(size(P));
-            % W = 1/obj.GP_SISO.GP.Sigma * eye(size(P));
             disp(obj.GP_SISO.GP.Sigma);
             S = 1 * (norm(P, 2)^2) * eye(size(P));
+            R = 0.0 * eye(size(P));
 
             % Perform ILC update
-            obj.ILC_SISO.init_Quadr_type(W, S, P);
+            obj.ILC_SISO.init_Quadr_type(W, S, R, P);
             u_vec_new = obj.ILC_SISO.Quadr_update(y_vec);
 
             % Save new input

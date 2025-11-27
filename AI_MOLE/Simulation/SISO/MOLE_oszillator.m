@@ -36,7 +36,7 @@ opts = odeset( ...
     'InitialStep', Ts/20);
 
 % Noise Parameters
-sigma_v = 0.01;      % Measurement Noise 0.01
+sigma_v = 0.0;      % Measurement Noise 0.01
 fc_v = 20;
 white = true;       % if white == true -> white noise is sampled - no filter
 

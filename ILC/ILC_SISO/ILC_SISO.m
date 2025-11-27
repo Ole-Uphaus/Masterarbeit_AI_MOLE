@@ -11,11 +11,14 @@ classdef ILC_SISO < handle
         error_vec   % Tracking error
         RMSE_log    % Error log
         P           % Lifted Dynamics
+        
         W           % Wheighting Matrix error
         S           % Wheighting Matrix change of u
         R           % Wheighting Matrix input u
+
         L           % Optimal Learning Matrix
         Q           % Optimal Q-Operator
+
         a_Q         % Filter Parameter a
         b_Q         % Filter Parameter b
     end
