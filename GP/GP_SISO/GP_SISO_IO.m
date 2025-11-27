@@ -12,6 +12,8 @@ classdef GP_SISO_IO < handle
         u_cell      % Cell containing training input Data (from each trial)
         V           % Design matrix (containing u regression vectors)
         z           % Target Vector (containing y target Values)
+        N           % Length of input Trajectory
+        J           % Number of training trials
 
         sigmaF2     % Squared kernel parameter sigma_F^2
         sigmaL2_inv % Squared inverse kernel parameter 1/l^2
@@ -48,6 +50,10 @@ classdef GP_SISO_IO < handle
             obj.y_cell = y_cell;
             obj.u_cell = u_cell;
 
+            % Get length and number of training trials
+            obj.N = length(obj.u_cell{1});
+            obj.J = length(obj.u_cell);
+
             % Design Matrix V
             obj.constr_design_matrix();
 
@@ -79,19 +85,16 @@ classdef GP_SISO_IO < handle
         function constr_design_matrix(obj)
             %constr_design_matrix Construct the GP design (regressor) matrix.
 
-            N = length(obj.u_cell{1});
-            J = length(obj.u_cell);     % Nuber of training trials
-
             % Empty design matrix
-            obj.V = zeros(J*N, N);
+            obj.V = zeros(obj.J*obj.N, obj.N);
 
             % Design Matrix
-            for i = 1:J
+            for i = 1:obj.J
                 % Toeplitz Matrix
-                V_temp = toeplitz([0; obj.u_cell{i}(1:end-1)], zeros(1, N));
+                V_temp = toeplitz([0; obj.u_cell{i}(1:end-1)], zeros(1, obj.N));
 
                 % Put Toeplitz into Design Matrix
-                obj.V(((i-1)*N + 1):(i*N), :) = V_temp;
+                obj.V(((i-1)*obj.N + 1):(i*obj.N), :) = V_temp;
             end
     
         end
@@ -99,15 +102,12 @@ classdef GP_SISO_IO < handle
         function constr_target_vector(obj)
             %constr_target_vector Construct target vector for GP regression.
 
-            N = length(obj.y_cell{1});
-            J = length(obj.y_cell);     % Nuber of training trials
-
             % Empty Target vector
-            obj.z = zeros(J*N, 1);
+            obj.z = zeros(obj.J*obj.N, 1);
 
             % Target Vector
-            for i = 1:J
-                obj.z(((i-1)*N + 1):(i*N), :) = obj.y_cell{i};
+            for i = 1:obj.J
+                obj.z(((i-1)*obj.N + 1):(i*obj.N), :) = obj.y_cell{i};
             end
         end
 
@@ -132,10 +132,8 @@ classdef GP_SISO_IO < handle
             %   Outputs:
             %       V_test : Toeplitz-structured regression matrix built from u_test
 
-            N = length(obj.u_cell{1});
-
             % Toeplitz test Matrix
-            V_test = toeplitz([0; u_test(1:end-1)], zeros(1, N));
+            V_test = toeplitz([0; u_test(1:end-1)], zeros(1, obj.N));
         end
 
         function P = linearize_at_given_trajectory(obj, u_lin)
@@ -148,16 +146,14 @@ classdef GP_SISO_IO < handle
             %       P : Jacobian (linearization) matrix of size N×N, mapping input variations
             %           Δu to output variations Δy near the trajectory u_lin
 
-            N = length(obj.u_cell{1});
-
             % Empty jacobi matrix
-            P = zeros(N, N);
+            P = zeros(obj.N, obj.N);
 
             % Construct linearisation Matrix
             V_lin = obj.constr_test_matrix(u_lin);
 
             % Iteratively compute gradients
-            for i = 1:N
+            for i = 1:obj.N
                 % Extract regression Vector
                 vn = V_lin(i, :);
 
@@ -165,8 +161,8 @@ classdef GP_SISO_IO < handle
                 dy_dv = obj.gradient_wrt_regression_vector(vn);
 
                 % Update jacobi matrix
-                J = i - 1;
-                for j = 1:J
+                obj.J = i - 1;
+                for j = 1:obj.J
                     P(i, j) = dy_dv(i - j);
                 end
             end
@@ -215,11 +211,9 @@ classdef GP_SISO_IO < handle
             %       P : Jacobian (linearization) matrix of size N×N, mapping input variations
             %           Δu to output variations Δy near the trajectory u_lin
 
-            N = length(obj.u_cell{1});
-
             % Empty jacobi matrix
-            P = zeros(N, N);
-            Var_P = zeros(N, N);
+            P = zeros(obj.N, obj.N);
+            Var_P = zeros(obj.N, obj.N);
 
             % Construct linearisation Matrix
             V_lin = obj.constr_test_matrix(u_lin);
@@ -241,7 +235,7 @@ classdef GP_SISO_IO < handle
             obj.V_transp = obj.V.'; % .' - no complex transposition
 
             % Iteratively compute gradients
-            for i = 1:N
+            for i = 1:obj.N
                 % Extract regression Vector
                 vn = V_lin(i, :);
 
@@ -292,8 +286,6 @@ classdef GP_SISO_IO < handle
             %   Outputs:
             %       Var_dy_dv : Gradient variance of GP output with respect to vn (column vector)
 
-            N = length(obj.u_cell{1});
-
             % Column Vector
             vn = vn(:);
 
@@ -322,7 +314,7 @@ classdef GP_SISO_IO < handle
             d = sum(G .* B, 1);
 
             % Calculate varianve
-            Var_dy_dv = obj.sigmaF2 * obj.sigmaL2_inv * ones(N, 1) - d(:);
+            Var_dy_dv = obj.sigmaF2 * obj.sigmaL2_inv * ones(obj.N, 1) - d(:);
         end
 
         function [P, Var_P] = approx_linearisation_at_given_trajectory(obj, u_lin)
@@ -335,11 +327,9 @@ classdef GP_SISO_IO < handle
             %       P : Jacobian (linearization) matrix of size N×N, mapping input variations
             %           Δu to output variations Δy near the trajectory u_lin
 
-            N = length(obj.u_cell{1});
-
             % Empty jacobi matrix (and Variance)
-            P = zeros(N, N);
-            Var_P = zeros(N, N);
+            P = zeros(obj.N, obj.N);
+            Var_P = zeros(obj.N, obj.N);
 
             % Construct linearisation Matrix
             V_lin = obj.constr_test_matrix(u_lin);
@@ -356,12 +346,12 @@ classdef GP_SISO_IO < handle
             h = 1e-1;
 
             % Iteratively compute gradients
-            for i = 1:N
+            for i = 1:obj.N
                 % Extract regression Vector
                 vn = V_lin(i, :);
 
                 % Gradient of the GP w.r.t vn
-                [dy_dv, Cov_dy_dv] = obj.approx_gradient_wrt_regression_vector(vn, h, N);
+                [dy_dv, Cov_dy_dv] = obj.approx_gradient_wrt_regression_vector(vn, h);
                 var_dy_dv = diag(Cov_dy_dv);
 
                 % Update jacobi matrix
@@ -372,7 +362,7 @@ classdef GP_SISO_IO < handle
             end
         end
 
-        function [dy_dv, Cov_dy_dv] = approx_gradient_wrt_regression_vector(obj, vn, h, N)
+        function [dy_dv, Cov_dy_dv] = approx_gradient_wrt_regression_vector(obj, vn, h)
             %approx_gradient_wrt_regression_vector Compute approximated GP output gradient w.r.t. a regression vector.
             %
             %   Inputs:
@@ -382,13 +372,13 @@ classdef GP_SISO_IO < handle
             %       dy_dv : Gradient of GP output with respect to vn (column vector)
 
             % General input Matrix containing the regression vector N times
-            X = repmat(vn, N, 1);
+            X = repmat(vn, obj.N, 1);
 
             % Input Matrix with positive step-size (one input vector unit vector)
-            X_plus = X + h*eye(N);
+            X_plus = X + h*eye(obj.N);
 
             % Input Matrix with negative step-size (one input vector unit vector)
-            X_minus = X - h*eye(N);
+            X_minus = X - h*eye(obj.N);
 
             % Perform gp Prediction for positive and negative input (X* =
             % X_plus_minus)
@@ -396,7 +386,7 @@ classdef GP_SISO_IO < handle
             f = predict(obj.GP, X_plus_minus);
 
             % Calculation Matrix
-            A = [1/(2*h)*eye(N), -1/(2*h)*eye(N)];
+            A = [1/(2*h)*eye(obj.N), -1/(2*h)*eye(obj.N)];
 
             % Compute approximated Gradient
             dy_dv = A*f;
