@@ -9,6 +9,7 @@ classdef SISO_MOLE_IO < handle
         N_iter          % Total number of learning iterations
         H_trials        % Number of previous trials used for GP training (history length)
         m_delay         % System delay (in samples) - relative degree
+        i_iter          % Current Iteration counter
     end
     
     methods
@@ -62,42 +63,76 @@ classdef SISO_MOLE_IO < handle
             %       u_vec_new : Updated input signal for the next iteration
 
             % Get current iteration counter
-            i_iter = sum(~cellfun(@isempty, obj.u_cell));
+            obj.i_iter = sum(~cellfun(@isempty, obj.u_cell));
 
             % Save Trajectory (measured or simulated)
-            obj.y_cell{i_iter} = y_vec;
+            obj.y_cell{obj.i_iter} = y_vec;
 
             % Prepare training data for the GP
-            if i_iter <= obj.H_trials
-                u_cell_train = obj.u_cell(1:i_iter);
-                y_cell_train = obj.y_cell(1:i_iter);
+            if obj.i_iter <= obj.H_trials
+                u_cell_train = obj.u_cell(1:obj.i_iter);
+                y_cell_train = obj.y_cell(1:obj.i_iter);
             else
-                u_cell_train = obj.u_cell(i_iter-(obj.H_trials-1):i_iter);
-                y_cell_train = obj.y_cell(i_iter-(obj.H_trials-1):i_iter);
+                u_cell_train = obj.u_cell(obj.i_iter-(obj.H_trials-1):obj.i_iter);
+                y_cell_train = obj.y_cell(obj.i_iter-(obj.H_trials-1):obj.i_iter);
             end
 
             % Train GP model
             obj.GP_SISO.train_GP_model(y_cell_train, u_cell_train);
 
             % Linearize GP model (fast function)
-            [P, ~] = obj.GP_SISO.linearize_at_given_trajectory_fast(obj.u_cell{i_iter});
+            [P, Var_P] = obj.GP_SISO.linearize_at_given_trajectory_fast(obj.u_cell{obj.i_iter});
 
-            % Change dimensions of P (delete first row and last column -
+            % Change dimensions of P and Var_P (delete first row and last column -
             % because ILC uses a reduced size framework)
             P = P(obj.m_delay+1:end, 1:end-obj.m_delay);
+            Var_P = Var_P(obj.m_delay+1:end, 1:end-obj.m_delay);
 
             % Calculate weighting matrices
-            W = eye(size(P));
-            disp(obj.GP_SISO.GP.Sigma);
-            S = 1 * (norm(P, 2)^2) * eye(size(P));
-            R = 0.0 * eye(size(P));
+            % W = eye(size(P));
+            % disp(obj.GP_SISO.GP.Sigma);
+            % S = 0.002 * (norm(P, 2)^2) * eye(size(P));
+            % R = 0.0 * eye(size(P));
+            [W, R, S] = obj.design_weighting_matrices(P, Var_P);
 
             % Perform ILC update
             obj.ILC_SISO.init_Quadr_type(W, S, R, P);
             u_vec_new = obj.ILC_SISO.Quadr_update(y_vec);
 
             % Save new input
-            obj.u_cell{i_iter+1} = [u_vec_new; 0];
+            obj.u_cell{obj.i_iter+1} = [u_vec_new; 0];
+        end
+
+        function [W, R, S] = design_weighting_matrices(obj, P, Var_P)
+            %design_weighting_matrices
+
+            % Choose W, S
+            W = eye(size(P));
+            S = obj.GP_SISO.GP.Sigma * eye(size(P));
+
+            % Calculate maximum error in P
+            Sigma_P = sqrt(max(Var_P, 0));
+            Delta_P_max = 3 * Sigma_P;
+
+            % Smalles Eigenvalue of A = P' W P + S
+            A = P.' * W * P + S;
+            A = (A + A.')/2;        % Numerically symmetric
+            lambda_min_A = min(eig(A));
+
+            % Numerator of the inequation
+            num = norm(S, 2) + norm(P, 2) * norm(W, 2) * norm(Delta_P_max, 2);
+
+            % Calculate lower bound of r
+            r_lower_bound = num - lambda_min_A;
+
+            % Check if r is positive
+            r = max(0, 1.01 * r_lower_bound);
+
+            % Weighting Matrix
+            R = r * eye(size(P));
+
+            % Print
+            fprintf('Iteration = %d | r = %g \n', obj.i_iter, r);
         end
 
         function save_final_trajectory(obj, y_vec)
