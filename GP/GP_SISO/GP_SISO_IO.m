@@ -235,7 +235,7 @@ classdef GP_SISO_IO < handle
             obj.V_transp = obj.V.'; % .' - no complex transposition
 
             % Iteratively compute gradients
-            for i = 1:obj.N
+            parfor i = 1:obj.N
                 % Extract regression Vector
                 vn = V_lin(i, :);
 
@@ -243,11 +243,19 @@ classdef GP_SISO_IO < handle
                 dy_dv = obj.gradient_wrt_regression_vector_fast(vn);
                 Var_dy_dv = obj.gradient_variance_wrt_regression_vector_fast(vn);
 
+                % Local variables for parfor
+                rowP     = zeros(1, obj.N);
+                rowVar_P = zeros(1, obj.N);
+
                 % Update jacobi matrix
                 if i > 1
-                    P(i, 1:(i-1)) = dy_dv((i-1):-1:1);
-                    Var_P(i, 1:(i-1)) = Var_dy_dv((i-1):-1:1);
+                    rowP(1:(i-1))     = dy_dv((i-1):-1:1);
+                    rowVar_P(1:(i-1)) = Var_dy_dv((i-1):-1:1);
                 end
+
+                % Update Row (parfor)
+                P(i, :) = rowP;
+                Var_P(i, :) = rowVar_P;
             end
         end
 
