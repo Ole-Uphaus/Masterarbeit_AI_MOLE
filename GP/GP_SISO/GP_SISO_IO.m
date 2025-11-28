@@ -235,7 +235,7 @@ classdef GP_SISO_IO < handle
             obj.V_transp = obj.V.'; % .' - no complex transposition
 
             % Iteratively compute gradients
-            parfor i = 1:obj.N
+            for i = 1:obj.N
                 % Extract regression Vector
                 vn = V_lin(i, :);
 
