@@ -215,7 +215,7 @@ title('Prediction Error');
 legend()
 
 subplot(2,2,3);
-imagesc(sqrt(Var_P3));
+imagesc(sqrt(Var_P2));
 colorbar;
 title('Sigma P (approximiert)');
 xlabel('Input-Index');

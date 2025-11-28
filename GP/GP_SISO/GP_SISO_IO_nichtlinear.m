@@ -66,7 +66,7 @@ y_sim_test = x_sim(:, 1);
 
 %% Predict System Dynamics
 % Init Gaussian Process
-GP_IO = GP_SISO_IO();
+GP_IO = GP_SISO_IO(1.e-5);
 
 % Train Gaussian Process
 GP_IO.train_GP_model(y_sim_train_cell, u_vec_train_cell);
@@ -95,7 +95,7 @@ fprintf('Dauer der Linearisierung (approximiert): %g s\n\n', t);
 % Compare Fast and slow Computation
 error_P1 = P - P2;
 max_error_P1 = max(abs(P(:) - P2(:)));
-fprintf('Maximaler absoluter Unterschied bei der Bestimmung von P (fast vs. slow): %.3e\n', max_error_P1);
+fprintf('Maximaler absoluter Unterschied bei der Bestimmung von P (fast vs. slow): %.3e\n\n', max_error_P1);
 
 % Compare analytic and approx Computation
 error_P3 = P - P3;
@@ -156,10 +156,16 @@ y_lin_test = y_sim_train_cell{1} + [0; P_analytic*delta_u(1:end-1)];
 P_reduced_size = P(2:end, 1:end-1);
 error_P2 = P_analytic - P_reduced_size;
 max_error_P2 = max(abs(P_analytic(:) - P_reduced_size(:)));
-mean_error_P2 = mean(abs(P_analytic(:) - P_reduced_size(:)));
 
+error_P2_vals = error_P2(error_P2 ~= 0);
+mean_error_P2 = mean(abs(error_P2_vals(:)));
+
+P_analytic_vals = P_analytic(P_analytic ~= 0);
+mean_P_analytic = mean(abs(P_analytic_vals(:)));
+
+fprintf('Mittelwert der Einträge von P_analytic: %.3e\n', mean_P_analytic);
 fprintf('Maximaler absoluter Unterschied P_analytic und P_lin: %.3e\n', max_error_P2);
-fprintf('Mittlerer absoluter Unterschied P_analytic und P_lin: %.3e\n', mean_error_P2);
+fprintf('Mittlerer absoluter Unterschied P_analytic und P_lin: %.3e\n\n', mean_error_P2);
 
 % Calculate prediction Error
 error_y_pred = abs(y_sim_test - y_pred_test);
@@ -171,18 +177,32 @@ for i = 1:size(error_P2, 1)
     row_err_P(i) = mean(abs(error_P2(i, 1:i)));
 end
 
+%% Compare estimated and real linearisation Error
+% Element-wise Variance
+Sigma_P2 = sqrt(Var_P2);
+
+% Mean Variance
+Var_P2_vals = Var_P2(Var_P2 ~= 0);
+mean_Var_P2 = mean(Var_P2_vals(:));
+fprintf('Geschätzte mittlere Varianz der Linearisierung: %.3e\n', mean_Var_P2);
+
+% Mean Sandard deviation
+Sigma_P2_vals = Sigma_P2(Sigma_P2 ~= 0);
+mean_Sigma_P2 = mean(Sigma_P2_vals(:));
+fprintf('Geschätzte mittlere Standardabweichung der Linearisierung: %.3e\n', mean_Sigma_P2);
+
 %% Plots
 figure;
-set(gcf, 'Position', [100 100 1200 500]);
+set(gcf, 'Position', [100 100 1200 800]);
 
-subplot(1,2,1);
+subplot(2,2,1);
 imagesc(error_P2);
 colorbar;
 title('error P_{analytic} - P_{lin}');
 xlabel('Input-Index');
 ylabel('Output-Index');
 
-subplot(1,2,2);
+subplot(2,2,2);
 plot(t_vec, error_y_pred, LineWidth=2, DisplayName='error (y-sim - y-pred)');
 hold on;
 plot(t_vec, error_y_lin, LineWidth=2, DisplayName='error (y-lin - y-pred-lin)');
@@ -192,6 +212,14 @@ xlabel('Zeit [s]');
 ylabel('x [m]');
 title('Prediction Error');
 legend()
+
+subplot(2,2,3);
+Sigma_P2 = sqrt(Var_P2);
+imagesc(Sigma_P2);
+colorbar;
+title('Var P2');
+xlabel('Input-Index');
+ylabel('Output-Index');
 
 figure;
 set(gcf, 'Position', [100 100 1200 500]);
