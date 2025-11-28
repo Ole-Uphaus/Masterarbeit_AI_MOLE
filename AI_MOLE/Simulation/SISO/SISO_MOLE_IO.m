@@ -113,6 +113,7 @@ classdef SISO_MOLE_IO < handle
             % Calculate maximum error in P
             Sigma_P = sqrt(max(Var_P, 0));
             Delta_P_max = 3 * Sigma_P;
+            norm_Delta_P_max = norm(Delta_P_max, 2);
 
             % Smalles Eigenvalue of A = P' W P + S
             A = P.' * W * P + S;
@@ -120,7 +121,8 @@ classdef SISO_MOLE_IO < handle
             lambda_min_A = min(eig(A));
 
             % Numerator of the inequation
-            num = norm(S, 2) + norm(P, 2) * norm(W, 2) * norm(Delta_P_max, 2);
+            norm_P = norm(P, 2);
+            num = norm(S, 2) + norm_P * norm(W, 2) * norm_Delta_P_max;
 
             % Calculate lower bound of r
             r_lower_bound = num - lambda_min_A;
@@ -132,7 +134,7 @@ classdef SISO_MOLE_IO < handle
             R = r * eye(size(P));
 
             % Print
-            fprintf('Iteration = %d | r = %g \n', obj.i_iter, r);
+            fprintf('Iteration = %d | r = %g | s = %g | ||P|| = %g | ||delta_P|| = %g \n', obj.i_iter, r, obj.GP_SISO.GP.Sigma, norm_P, norm_Delta_P_max);
         end
 
         function save_final_trajectory(obj, y_vec)
@@ -142,10 +144,10 @@ classdef SISO_MOLE_IO < handle
             %       y_vec : Measured or simulated output of the final iteration
 
             % Get current iteration counter
-            i_iter = sum(~cellfun(@isempty, obj.u_cell));
+            obj.i_iter = sum(~cellfun(@isempty, obj.u_cell));
 
             % Save Trajectory (measured or simulated)
-            obj.y_cell{i_iter} = y_vec;
+            obj.y_cell{obj.i_iter} = y_vec;
 
             % Calculate final Error ILC
             obj.ILC_SISO.calculate_final_error(y_vec);
