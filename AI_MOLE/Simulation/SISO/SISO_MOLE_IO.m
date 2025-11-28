@@ -134,7 +134,7 @@ classdef SISO_MOLE_IO < handle
             R = r * eye(size(P));
 
             % Print
-            fprintf('Iteration = %d | r = %g | s = %g | ||P|| = %g | ||delta_P|| = %g \n', obj.i_iter, r, obj.GP_SISO.GP.Sigma, norm_P, norm_Delta_P_max);
+            fprintf('Iteration = %d | r = %.4e | s = %.4e | ||P|| = %.4e | ||delta_P|| = %.4e \n', obj.i_iter, r, obj.GP_SISO.GP.Sigma, norm_P, norm_Delta_P_max);
         end
 
         function save_final_trajectory(obj, y_vec)
