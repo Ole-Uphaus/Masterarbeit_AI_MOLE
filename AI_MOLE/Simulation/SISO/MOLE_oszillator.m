@@ -63,7 +63,7 @@ for i = 1:max_iter
 
     % System Simulation
     v_vec = Gen_noise_Butter(t_vec, sigma_v, fc_v, white);
-    [t_sim, x_sim] = ode45(@(t,x) oszillator_nonlinear(t, x, u_init_auto, t_vec), t_vec, x0, opts);
+    [t_sim, x_sim] = ode45(@(t,x) oszillator_linear(t, x, u_init_auto, t_vec), t_vec, x0, opts);
     y_sim = x_sim(:, 1) + v_vec;
 
     % Calculate output variance
@@ -87,7 +87,7 @@ end
 m_delay = 1;
 N_iter = 10;
 H_trials = 3;
-weight_init_method = 3;     % Method being used for ILC weight initialisation
+weight_init_method = 1;     % Method being used for ILC weight initialisation
 
 % Initial input Trajectory (simple sin or automatic generated)
 sigma_I = 0.1;
@@ -102,7 +102,7 @@ tic;
 % Update Loop
 u_sim = u_init;
 v_vec = Gen_noise_Butter(t_vec, sigma_v, fc_v, white);
-[t_sim, x_sim] = ode45(@(t,x) oszillator_nonlinear(t, x, u_sim, t_vec), t_vec, x0, opts);
+[t_sim, x_sim] = ode45(@(t,x) oszillator_linear(t, x, u_sim, t_vec), t_vec, x0, opts);
 y_sim = x_sim(:, 1) + v_vec;
 for i = 1:N_iter
     % Update input
@@ -110,7 +110,7 @@ for i = 1:N_iter
 
     % Simulate the system
     v_vec = Gen_noise_Butter(t_vec, sigma_v, fc_v, white);
-    [t_sim, x_sim] = ode45(@(t,x) oszillator_nonlinear(t, x, u_sim, t_vec), t_vec, x0, opts);
+    [t_sim, x_sim] = ode45(@(t,x) oszillator_linear(t, x, u_sim, t_vec), t_vec, x0, opts);
     y_sim = x_sim(:, 1) + v_vec;
 end
 SISO_MOLE.save_final_trajectory(y_sim);
