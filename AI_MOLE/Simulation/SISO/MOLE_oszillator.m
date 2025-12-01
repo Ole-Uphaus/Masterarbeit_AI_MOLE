@@ -87,6 +87,7 @@ end
 m_delay = 1;
 N_iter = 10;
 H_trials = 3;
+weight_init_method = 3;     % Method being used for ILC weight initialisation
 
 % Initial input Trajectory (simple sin or automatic generated)
 sigma_I = 0.1;
@@ -94,7 +95,7 @@ u_init_sin = sigma_I*sin(2*pi/T_end.*t_vec');
 u_init = u_init_sin;        % u_init_sin / u_init_auto
 
 % Initialisation
-SISO_MOLE = SISO_MOLE_IO(r_vec, m_delay, u_init, N_iter, H_trials);
+SISO_MOLE = SISO_MOLE_IO(r_vec, m_delay, u_init, N_iter, H_trials, weight_init_method);
 
 %% Run ILC
 tic;

@@ -86,10 +86,10 @@ tic;
 t = toc;
 fprintf('Dauer der Linearisierung und Varianzberechnung (fast): %g s\n\n', t);
 
-tic;
-[P3, Var_P3] = GP_IO.approx_linearisation_at_given_trajectory(u_vec_train_cell{1});
-t = toc;
-fprintf('Dauer der Linearisierung (approximiert): %g s\n\n', t);
+% tic;
+% [P3, Var_P3] = GP_IO.approx_linearisation_at_given_trajectory(u_vec_train_cell{1});
+% t = toc;
+% fprintf('Dauer der Linearisierung (approximiert): %g s\n\n', t);
 
 %% Compare Errors
 % Compare Fast and slow Computation
@@ -97,15 +97,15 @@ error_P1 = P - P2;
 max_error_P1 = max(abs(P(:) - P2(:)));
 fprintf('Maximaler absoluter Unterschied bei der Bestimmung von P (fast vs. slow): %.3e\n\n', max_error_P1);
 
-% Compare analytic and approx Computation
-error_P3 = P - P3;
-max_error_P2 = max(abs(P(:) - P3(:)));
-fprintf('Maximaler absoluter Unterschied bei der Bestimmung von P (analytic vs. approx): %.3e\n', max_error_P2);
-
-% Compare analytic and approx Computation
-error_Var_P = Var_P2 - Var_P3;
-max_error_Var_P = max(abs(Var_P2(:) - Var_P3(:)));
-fprintf('Maximaler absoluter Unterschied bei der Bestimmung von Var_P (analytic vs. approx): %.3e\n\n', max_error_Var_P);
+% % Compare analytic and approx Computation
+% error_P3 = P - P3;
+% max_error_P2 = max(abs(P(:) - P3(:)));
+% fprintf('Maximaler absoluter Unterschied bei der Bestimmung von P (analytic vs. approx): %.3e\n', max_error_P2);
+% 
+% % Compare analytic and approx Computation
+% error_Var_P = Var_P2 - Var_P3;
+% max_error_Var_P = max(abs(Var_P2(:) - Var_P3(:)));
+% fprintf('Maximaler absoluter Unterschied bei der Bestimmung von Var_P (analytic vs. approx): %.3e\n\n', max_error_Var_P);
 
 % Prediction with linearized gp model
 delta_u = u_vec_test - u_vec_train_cell{1};

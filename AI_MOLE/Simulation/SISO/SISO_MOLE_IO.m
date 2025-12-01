@@ -2,26 +2,29 @@ classdef SISO_MOLE_IO < handle
     %SISO_MOLE_IO Implementation of the AI-MOLE framework for SISO systems
     
     properties
-        GP_SISO         % Gaussian Process model for the SISO system
-        ILC_SISO        % Iterative Learning Control (ILC) instance
-        y_cell          % Cell array storing output trajectories (per iteration)
-        u_cell          % Cell array storing input trajectories (per iteration)
-        N_iter          % Total number of learning iterations
-        H_trials        % Number of previous trials used for GP training (history length)
-        m_delay         % System delay (in samples) - relative degree
-        i_iter          % Current Iteration counter
+        GP_SISO             % Gaussian Process model for the SISO system
+        ILC_SISO            % Iterative Learning Control (ILC) instance
+        y_cell              % Cell array storing output trajectories (per iteration)
+        u_cell              % Cell array storing input trajectories (per iteration)
+        N_iter              % Total number of learning iterations
+        H_trials            % Number of previous trials used for GP training (history length)
+        m_delay             % System delay (in samples) - relative degree
+        i_iter              % Current Iteration counter
+        weight_init_method  % Tells, how the weighting Matrices are getting Initialized
     end
     
     methods
-        function obj = SISO_MOLE_IO(r_vec, m_delay, u_init, N_iter, H_trials, sigma_n)
+        function obj = SISO_MOLE_IO(r_vec, m_delay, u_init, N_iter, H_trials, weight_init_method, sigma_n)
             %SISO_MOLE_IO Constructor for the SISO_MOLE_IO class
             %
             %   Inputs:
-            %       r_vec    : Reference trajectory (column vector)
-            %       m_delay  : System delay (integer)
-            %       u_init   : Initial input trajectory (column vector)
-            %       N_iter   : Number of learning iterations
-            %       H_trials : Number of previous trials used for GP training
+            %       r_vec               : Reference trajectory (column vector)
+            %       m_delay             : System delay (integer)
+            %       u_init              : Initial input trajectory (column vector)
+            %       N_iter              : Number of learning iterations
+            %       H_trials            : Number of previous trials used for GP training
+            %       weight_init_method  : Number of previous trials used for GP training
+            %       sigma_n             : Measurement Noise (if known before)
             
             % Generate dynamic paths
             base_dir = fileparts(mfilename("fullpath"));
@@ -33,7 +36,7 @@ classdef SISO_MOLE_IO < handle
             addpath(ILC_path);
 
             % Initialize GP (use fixed sigma_n if given)
-            if nargin < 6 || isempty(sigma_n)
+            if nargin < 7 || isempty(sigma_n)
                 obj.GP_SISO = GP_SISO_IO();
             else
                 obj.GP_SISO = GP_SISO_IO(sigma_n);
@@ -51,6 +54,7 @@ classdef SISO_MOLE_IO < handle
             obj.u_cell{1} = u_init;
             obj.H_trials = H_trials;
             obj.m_delay = m_delay;
+            obj.weight_init_method = weight_init_method;
         end
 
         function u_vec_new = update_input(obj, y_vec)
@@ -89,10 +93,6 @@ classdef SISO_MOLE_IO < handle
             Var_P = Var_P(obj.m_delay+1:end, 1:end-obj.m_delay);
 
             % Calculate weighting matrices
-            % W = eye(size(P));
-            % disp(obj.GP_SISO.GP.Sigma);
-            % S = 0.002 * (norm(P, 2)^2) * eye(size(P));
-            % R = 0.0 * eye(size(P));
             [W, R, S] = obj.design_weighting_matrices(P, Var_P);
 
             % Perform ILC update
@@ -105,36 +105,71 @@ classdef SISO_MOLE_IO < handle
 
         function [W, R, S] = design_weighting_matrices(obj, P, Var_P)
             %design_weighting_matrices
+    
+            switch obj.weight_init_method
+                case 1
+                    % Meindls method
 
-            % Choose W, S
-            W = eye(size(P));
-            S = obj.GP_SISO.GP.Sigma * eye(size(P));
+                    % Choose W, S, R
+                    W = eye(size(P));
+                    s = (norm(P, 2)^2);
+                    S = s * eye(size(P));
+                    r = 0;
+                    R = r * eye(size(P));
 
-            % Calculate maximum error in P
-            Sigma_P = sqrt(max(Var_P, 0));
-            Delta_P_max = 3 * Sigma_P;
-            norm_Delta_P_max = norm(Delta_P_max, 2);
+                    % Print
+                    fprintf('Iteration = %d | r = %.4e | s = %.4e \n', obj.i_iter, r, s);
 
-            % Smalles Eigenvalue of A = P' W P + S
-            A = P.' * W * P + S;
-            A = (A + A.')/2;        % Numerically symmetric
-            lambda_min_A = min(eig(A));
+                case 2
+                    % Ensure robust monotonic convergence
 
-            % Numerator of the inequation
-            norm_P = norm(P, 2);
-            num = norm(S, 2) + norm_P * norm(W, 2) * norm_Delta_P_max;
+                    % Choose W, S
+                    W = eye(size(P));
+                    s = obj.GP_SISO.GP.Sigma;
+                    S = s * eye(size(P));
+        
+                    % Calculate maximum error in P
+                    Sigma_P = sqrt(max(Var_P, 0));
+                    Delta_P_max = 3 * Sigma_P;
+                    norm_Delta_P_max = norm(Delta_P_max, 2);
+        
+                    % Smalles Eigenvalue of A = P' W P + S
+                    A = P.' * W * P + S;
+                    A = (A + A.')/2;        % Numerically symmetric
+                    lambda_min_A = min(eig(A));
+        
+                    % Numerator of the inequation
+                    norm_P = norm(P, 2);
+                    num = norm(S, 2) + norm_P * norm(W, 2) * norm_Delta_P_max;
+        
+                    % Calculate lower bound of r
+                    r_lower_bound = num - lambda_min_A;
+        
+                    % Check if r is positive
+                    r = max(0, 1.01 * r_lower_bound);
+        
+                    % Weighting Matrix
+                    R = r * eye(size(P));
 
-            % Calculate lower bound of r
-            r_lower_bound = num - lambda_min_A;
+                    % Print
+                    fprintf('Iteration = %d | r = %.4e | s = %.4e | ||P|| = %.4e | ||delta_P|| = %.4e \n', obj.i_iter, r, s, norm_P, norm_Delta_P_max);
 
-            % Check if r is positive
-            r = max(0, 1.01 * r_lower_bound);
+                case 3
+                    % Heuristic depending on Var_P
 
-            % Weighting Matrix
-            R = r * eye(size(P));
+                    % Choose W, S, R
+                    W = eye(size(P));
+                    s = norm(Var_P, 2);
+                    S = s * eye(size(P));
+                    r = 0;
+                    R = r * eye(size(P));
 
-            % Print
-            fprintf('Iteration = %d | r = %.4e | s = %.4e | ||P|| = %.4e | ||delta_P|| = %.4e \n', obj.i_iter, r, obj.GP_SISO.GP.Sigma, norm_P, norm_Delta_P_max);
+                    % Print
+                    fprintf('Iteration = %d | r = %.4e | s = %.4e \n', obj.i_iter, r, s);
+
+                otherwise
+                    error('Unbekannte Initialisierungsmethode ausgewählt.')
+            end
         end
 
         function save_final_trajectory(obj, y_vec)
