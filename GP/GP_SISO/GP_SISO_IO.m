@@ -242,7 +242,8 @@ classdef GP_SISO_IO < handle
 
                 % Gradient and Variance of the GP w.r.t vn
                 dy_dv = obj.gradient_wrt_regression_vector_fast(vn);
-                Var_dy_dv = obj.gradient_variance_wrt_regression_vector_fast(vn);
+                Cov_dy_dv = obj.gradient_variance_wrt_regression_vector_fast(vn);
+                Var_dy_dv = diag(Cov_dy_dv);
 
                 % Local variables for parfor
                 rowP     = zeros(1, obj.N);
@@ -286,7 +287,7 @@ classdef GP_SISO_IO < handle
             dy_dv = -obj.sigmaL2_inv * (sum(w)*vn - obj.V_transp*w);
         end
 
-        function Var_dy_dv = gradient_variance_wrt_regression_vector_fast(obj, vn)
+        function Cov_dy_dv = gradient_variance_wrt_regression_vector_fast(obj, vn)
             %gradient_variance_wrt_regression_vector_fast Compute GP output gradient variance w.r.t. a regression vector.
             %
             %   Inputs:
@@ -318,12 +319,8 @@ classdef GP_SISO_IO < handle
             B = obj.L_chol \ G;
             B = obj.L_chol.' \ B;
 
-            % Calculate Data_Terms d(i) = G(:, i)^T * B(:, i) => Summation
-            % in direction 1 (vertical)
-            d = sum(G .* B, 1);
-
-            % Calculate varianve
-            Var_dy_dv = obj.sigmaF2 * obj.sigmaL2_inv * ones(obj.N, 1) - d(:);
+            % Calculate Covariance Matrix
+            Cov_dy_dv = obj.sigmaF2 * obj.sigmaL2_inv * eye(obj.N) - (G.' * B);
         end
 
         function [P, Var_P, Cov_dy_dv_cell] = approx_linearisation_at_given_trajectory(obj, u_lin)
