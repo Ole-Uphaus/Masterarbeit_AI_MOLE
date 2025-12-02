@@ -326,7 +326,7 @@ classdef GP_SISO_IO < handle
             Var_dy_dv = obj.sigmaF2 * obj.sigmaL2_inv * ones(obj.N, 1) - d(:);
         end
 
-        function [P, Var_P] = approx_linearisation_at_given_trajectory(obj, u_lin)
+        function [P, Var_P, Cov_dy_dv_cell] = approx_linearisation_at_given_trajectory(obj, u_lin)
             %approx_linearisation_at_given_trajectory Compute local approximated linearization (Jacobian) of GP at a trajectory.
             %
             %   Inputs:
@@ -339,6 +339,9 @@ classdef GP_SISO_IO < handle
             % Empty jacobi matrix (and Variance)
             P = zeros(obj.N, obj.N);
             Var_P = zeros(obj.N, obj.N);
+
+            % Cell Array for Covariances
+            Cov_dy_dv_cell = cell(obj.N, 1);
 
             % Construct linearisation Matrix
             V_lin = obj.constr_test_matrix(u_lin);
@@ -362,6 +365,9 @@ classdef GP_SISO_IO < handle
                 % Gradient of the GP w.r.t vn
                 [dy_dv, Cov_dy_dv] = obj.approx_gradient_wrt_regression_vector(vn, h);
                 var_dy_dv = diag(Cov_dy_dv);
+
+                % Save Covariance Matrix in Cell
+                Cov_dy_dv_cell{i} = Cov_dy_dv;
 
                 % Update jacobi matrix
                 if i > 1
