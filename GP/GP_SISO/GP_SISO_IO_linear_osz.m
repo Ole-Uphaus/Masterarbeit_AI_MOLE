@@ -119,14 +119,6 @@ fprintf('Maximaler absoluter (relativer) Unterschied bei der Bestimmung von Var_
 delta_u = u_vec_test - u_vec_train_cell{1};
 y_pred_lin_test = GP_IO.predict_trajectory(u_vec_train_cell{1}) + P*delta_u;
 
-% Use variance to predict linearisation uncertainty (2 sigma band)
-Sigma_P2 = sqrt(Var_P2);
-
-% We have to use the absolute Value of delta_u, because we want to know the real
-% upper and lower bound (otherwise the errors wioll cancel out)
-y_pred_lin_test_upper = y_pred_lin_test + 2*Sigma_P2*abs(delta_u);
-y_pred_lin_test_lower = y_pred_lin_test - 2*Sigma_P2*abs(delta_u);
-
 % Calculate linearisation uncertanty as Variance of a new GP
 Var_delta_y = linearisation_prediction_variance(GP_IO, delta_u, Cov_dy_dv_cell);
 Sigma_delta_y = sqrt(abs(Var_delta_y));
@@ -172,23 +164,6 @@ fprintf('Mittlerer absoluter Unterschied P_analytic und P_lin: %.3e\n\n', mean_e
 error_y_pred = abs(y_sim_test - y_pred_test);
 error_y_lin = abs(y_sim_test - y_pred_lin_test);
 
-% Mean row-error P
-row_err_P = zeros(size(error_P2, 1), 1);
-for i = 1:size(error_P2, 1)
-    row_err_P(i) = mean(abs(error_P2(i, 1:i)));
-end
-
-%% Compare estimated and real linearisation Error
-% Mean Variance
-Var_P2_vals = Var_P2(Var_P2 ~= 0);
-mean_Var_P2 = mean(Var_P2_vals(:));
-fprintf('Geschätzte mittlere Varianz der Linearisierung: %.3e\n', mean_Var_P2);
-
-% Mean Sandard deviation
-Sigma_P2_vals = Sigma_P2(Sigma_P2 ~= 0);
-mean_Sigma_P2 = mean(Sigma_P2_vals(:));
-fprintf('Geschätzte mittlere Standardabweichung der Linearisierung: %.3e\n', mean_Sigma_P2);
-
 %% Plot
 % 1. Plot
 figure;
@@ -205,7 +180,6 @@ subplot(2,2,2);
 plot(t_vec, error_y_pred, LineWidth=2, DisplayName='error (y-sim - y-pred)');
 hold on;
 plot(t_vec, error_y_lin, LineWidth=2, DisplayName='error (y-sim - y-pred-lin)');
-% plot(t_vec(2:end), row_err_P, LineWidth=2, DisplayName='row-error (P-analyt - P-lin)');
 grid on;
 xlabel('Zeit [s]'); 
 ylabel('x [m]');
@@ -238,12 +212,9 @@ legend()
 subplot(2,2,2);
 plot(t_vec, y_sim_test, LineWidth=1, DisplayName='y-sim-test'); hold on;
 plot(t_vec, y_pred_lin_test, LineWidth=1, DisplayName='y-pred-lin-test');
-% fill([t_vec, fliplr(t_vec)], [y_pred_lin_test_upper', fliplr(y_pred_lin_test_lower')], ...
-%      [0.4 0.7 1], 'FaceAlpha', 0.25, 'EdgeColor', 'none', ...
-%      'DisplayName','±2σ-Band-1');
 fill([t_vec, fliplr(t_vec)], [y_pred_lin_test_upper2', fliplr(y_pred_lin_test_lower2')], ...
      [1 0.6 0.4], 'FaceAlpha', 0.25, 'EdgeColor', 'none', ...
-     'DisplayName','±2σ-Band-2');
+     'DisplayName','±2σ-Band');
 grid on;
 xlabel('Zeit [s]'); 
 ylabel('x [m]');
