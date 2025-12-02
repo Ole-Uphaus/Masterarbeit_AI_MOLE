@@ -33,7 +33,7 @@ fc_v = 20;
 white = true;       % if white == true -> white noise is sampled - no filter
 
 % Input trajectorys
-u_scale_train = [1, 3];
+u_scale_train = [1];
 N_traj = length(u_scale_train);
 u_scale_test = 2;
 
@@ -92,7 +92,7 @@ t = toc;
 fprintf('Dauer der Linearisierung und Varianzberechnung (fast): %g s\n\n', t);
 
 tic;
-[P3, Var_P3] = GP_IO.approx_linearisation_at_given_trajectory(u_vec_train_cell{1});
+[P3, Var_P3, Cov_dy_dv_cell] = GP_IO.approx_linearisation_at_given_trajectory(u_vec_train_cell{1});
 t = toc;
 fprintf('Dauer der Linearisierung (approximiert): %g s\n\n', t);
 
@@ -100,58 +100,44 @@ fprintf('Dauer der Linearisierung (approximiert): %g s\n\n', t);
 % Compare Fast and slow Computation
 error_P1 = P - P2;
 max_error_P1 = max(abs(P(:) - P2(:)));
-fprintf('Maximaler absoluter Unterschied bei der Bestimmung von P (fast vs. slow): %.3e\n', max_error_P1);
+max_rel_error_P1 = max(abs(P(:) - P2(:)) ./ max(abs(P(:)), eps));
+fprintf('Maximaler absoluter (relativer) Unterschied bei der Bestimmung von P (fast vs. slow): %.3e (%.3e)\n', max_error_P1, max_rel_error_P1);
 
 % Compare analytic and approx Computation
 error_P3 = P - P3;
 max_error_P2 = max(abs(P(:) - P3(:)));
-fprintf('Maximaler absoluter Unterschied bei der Bestimmung von P (analytic vs. approx): %.3e\n', max_error_P2);
+max_rel_error_P2 = max(abs(P(:) - P3(:)) ./ max(abs(P(:)), eps));
+fprintf('Maximaler absoluter (relativer) Unterschied bei der Bestimmung von P (analytic vs. approx): %.3e (%.3e)\n', max_error_P2, max_rel_error_P2);
 
 % Compare analytic and approx Computation
 error_Var_P = Var_P2 - Var_P3;
 max_error_Var_P = max(abs(Var_P2(:) - Var_P3(:)));
-fprintf('Maximaler absoluter Unterschied bei der Bestimmung von Var_P (analytic vs. approx): %.3e\n\n', max_error_Var_P);
+max_rel_error_Var_P = max(abs(Var_P2(:) - Var_P3(:)) ./ max(abs(Var_P2(:)), eps));
+fprintf('Maximaler absoluter (relativer) Unterschied bei der Bestimmung von Var_P (analytic vs. approx): %.3e (%.3e)\n\n', max_error_Var_P, max_rel_error_Var_P);
 
 % Prediction with linearized gp model
 delta_u = u_vec_test - u_vec_train_cell{1};
 y_pred_lin_test = GP_IO.predict_trajectory(u_vec_train_cell{1}) + P*delta_u;
 
-%% Finite difference check
-% Parameters
-u0 = u_vec_train_cell{1};
-K = 3;
-h = 1e-6;
+% Use variance to predict linearisation uncertainty (2 sigma band)
+Sigma_P2 = sqrt(Var_P2);
 
-% First Prediction
-[y0,~] = GP_IO.predict_trajectory(u0);
-N = length(u0);
+% We have to use the absolute Value of delta_u, because we want to know the real
+% upper and lower bound (otherwise the errors wioll cancel out)
+y_pred_lin_test_upper = y_pred_lin_test + 2*Sigma_P2*abs(delta_u);
+y_pred_lin_test_lower = y_pred_lin_test - 2*Sigma_P2*abs(delta_u);
 
-% Run Loop (one Direction per iteration)
-for i = 1:K
-    % Random Direction
-    v = randn(N, 1);
+% Calculate linearisation uncertanty as Variance of a new GP
+Var_delta_y = linearisation_prediction_variance(GP_IO, delta_u, Cov_dy_dv_cell);
+Sigma_delta_y = sqrt(abs(Var_delta_y));
 
-    % Normalize direction vector (vector norm increases with vector size)
-    v = v / norm(v);
-
-    % Calculate change in output via Finite-Differences (from both sides)
-    y_plus = GP_IO.predict_trajectory(u0 + h*v);
-    y_minus = GP_IO.predict_trajectory(u0 - h*v);
-    delta_y_fd = 0.5*(y_plus - y_minus);
-
-    % Calculate Change in output via Linearized lifted Matrix
-    delta_y_lin = P*(h*v);
-
-    % Error
-    max_error_y = max(abs(delta_y_fd - delta_y_lin));
-    rel_error_y = norm(delta_y_fd - delta_y_lin) / max(1e-17, norm(delta_y_lin));
-
-    % Print
-    fprintf('Richtung %d: rel. Fehler = %.3e, max. abs. Fehler = %.3e\n', i, rel_error_y, max_error_y);
-end
-fprintf('\n');
+y_pred_lin_test_upper2 = y_pred_lin_test + 2*Sigma_delta_y;
+y_pred_lin_test_lower2 = y_pred_lin_test - 2*Sigma_delta_y;
 
 %% Compare Lifted System representation
+
+N = length(u_vec_train_cell{1});
+
 % Simulation parameters
 m  = 2; % kg
 c1 = 2; % N/m
@@ -180,7 +166,7 @@ max_error_P2 = max(abs(P_analytic(:) - P_reduced_size(:)));
 mean_error_P2 = mean(abs(P_analytic(:) - P_reduced_size(:)));
 
 fprintf('Maximaler absoluter Unterschied P_analytic und P_lin: %.3e\n', max_error_P2);
-fprintf('Mittlerer absoluter Unterschied P_analytic und P_lin: %.3e\n', mean_error_P2);
+fprintf('Mittlerer absoluter Unterschied P_analytic und P_lin: %.3e\n\n', mean_error_P2);
 
 % Calculate prediction Error
 error_y_pred = abs(y_sim_test - y_pred_test);
@@ -192,7 +178,19 @@ for i = 1:size(error_P2, 1)
     row_err_P(i) = mean(abs(error_P2(i, 1:i)));
 end
 
+%% Compare estimated and real linearisation Error
+% Mean Variance
+Var_P2_vals = Var_P2(Var_P2 ~= 0);
+mean_Var_P2 = mean(Var_P2_vals(:));
+fprintf('Geschätzte mittlere Varianz der Linearisierung: %.3e\n', mean_Var_P2);
+
+% Mean Sandard deviation
+Sigma_P2_vals = Sigma_P2(Sigma_P2 ~= 0);
+mean_Sigma_P2 = mean(Sigma_P2_vals(:));
+fprintf('Geschätzte mittlere Standardabweichung der Linearisierung: %.3e\n', mean_Sigma_P2);
+
 %% Plot
+% 1. Plot
 figure;
 set(gcf, 'Position', [100 100 1200 800]);
 
@@ -221,6 +219,7 @@ title('Sigma P (approximiert)');
 xlabel('Input-Index');
 ylabel('Output-Index');
 
+% 2. Plot
 figure;
 set(gcf, 'Position', [100 100 1200 800]);
 
@@ -234,6 +233,21 @@ grid on;
 xlabel('Zeit [s]'); 
 ylabel('x [m]');
 title('Simulated and Predicted Results with confidence (2*sigma)');
+legend()
+
+subplot(2,2,2);
+plot(t_vec, y_sim_test, LineWidth=1, DisplayName='y-sim-test'); hold on;
+plot(t_vec, y_pred_lin_test, LineWidth=1, DisplayName='y-pred-lin-test');
+% fill([t_vec, fliplr(t_vec)], [y_pred_lin_test_upper', fliplr(y_pred_lin_test_lower')], ...
+%      [0.4 0.7 1], 'FaceAlpha', 0.25, 'EdgeColor', 'none', ...
+%      'DisplayName','±2σ-Band-1');
+fill([t_vec, fliplr(t_vec)], [y_pred_lin_test_upper2', fliplr(y_pred_lin_test_lower2')], ...
+     [1 0.6 0.4], 'FaceAlpha', 0.25, 'EdgeColor', 'none', ...
+     'DisplayName','±2σ-Band-2');
+grid on;
+xlabel('Zeit [s]'); 
+ylabel('x [m]');
+title('Simulated and linearised Results with confidence (2*sigma)');
 legend()
 
 subplot(2,2,3);
@@ -260,3 +274,23 @@ xlabel('Zeit [s]');
 ylabel('u [N]');
 title('Training and Testing Input u');
 legend()
+
+%% Local Functions
+function Var_delta_y = linearisation_prediction_variance(GP_IO, delta_u, Cov_dy_dv_cell)
+
+    % Empty variance Vector
+    Var_delta_y = zeros(GP_IO.N, 1);
+    
+    % Construct test matrix
+    V_test = GP_IO.constr_test_matrix(delta_u);
+
+    % Calculate Variances
+    for i = 1:GP_IO.N
+        % Extract regression Vector
+        vn = V_test(i, :);
+        vn = vn(:);
+
+        % Calculate Variance
+        Var_delta_y(i) = vn.' * Cov_dy_dv_cell{i} * vn;
+    end
+end
