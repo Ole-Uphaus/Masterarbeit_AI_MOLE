@@ -87,12 +87,12 @@ t = toc;
 fprintf('Dauer der Linearisierung: %g s\n', t);
 
 tic;
-[P2, Var_P2] = GP_IO.linearize_at_given_trajectory_fast(u_vec_train_cell{1});
+[P2, Cov_dy_dv_cell2] = GP_IO.linearize_at_given_trajectory_fast(u_vec_train_cell{1});
 t = toc;
 fprintf('Dauer der Linearisierung und Varianzberechnung (fast): %g s\n\n', t);
 
 tic;
-[P3, Var_P3, Cov_dy_dv_cell] = GP_IO.approx_linearisation_at_given_trajectory(u_vec_train_cell{1});
+[P3, Cov_dy_dv_cell3] = GP_IO.approx_linearisation_at_given_trajectory(u_vec_train_cell{1});
 t = toc;
 fprintf('Dauer der Linearisierung (approximiert): %g s\n\n', t);
 
@@ -103,24 +103,18 @@ max_error_P1 = max(abs(P(:) - P2(:)));
 max_rel_error_P1 = max(abs(P(:) - P2(:)) ./ max(abs(P(:)), eps));
 fprintf('Maximaler absoluter (relativer) Unterschied bei der Bestimmung von P (fast vs. slow): %.3e (%.3e)\n', max_error_P1, max_rel_error_P1);
 
-% Compare analytic and approx Computation
+% Compare analytic and approx Computation (Linearisation P)
 error_P3 = P - P3;
 max_error_P2 = max(abs(P(:) - P3(:)));
 max_rel_error_P2 = max(abs(P(:) - P3(:)) ./ max(abs(P(:)), eps));
-fprintf('Maximaler absoluter (relativer) Unterschied bei der Bestimmung von P (analytic vs. approx): %.3e (%.3e)\n', max_error_P2, max_rel_error_P2);
-
-% Compare analytic and approx Computation
-error_Var_P = Var_P2 - Var_P3;
-max_error_Var_P = max(abs(Var_P2(:) - Var_P3(:)));
-max_rel_error_Var_P = max(abs(Var_P2(:) - Var_P3(:)) ./ max(abs(Var_P2(:)), eps));
-fprintf('Maximaler absoluter (relativer) Unterschied bei der Bestimmung von Var_P (analytic vs. approx): %.3e (%.3e)\n\n', max_error_Var_P, max_rel_error_Var_P);
+fprintf('Maximaler absoluter (relativer) Unterschied bei der Bestimmung von P (analytic vs. approx): %.3e (%.3e)\n\n', max_error_P2, max_rel_error_P2);
 
 % Prediction with linearized gp model
 delta_u = u_vec_test - u_vec_train_cell{1};
 y_pred_lin_test = GP_IO.predict_trajectory(u_vec_train_cell{1}) + P*delta_u;
 
 % Calculate linearisation uncertanty as Variance of a new GP
-Var_delta_y = linearisation_prediction_variance(GP_IO, delta_u, Cov_dy_dv_cell);
+Var_delta_y = linearisation_prediction_variance(GP_IO, delta_u, Cov_dy_dv_cell2);
 Sigma_delta_y = sqrt(abs(Var_delta_y));
 
 y_pred_lin_test_upper2 = y_pred_lin_test + 2*Sigma_delta_y;
@@ -167,16 +161,16 @@ error_y_lin = abs(y_sim_test - y_pred_lin_test);
 %% Plot
 % 1. Plot
 figure;
-set(gcf, 'Position', [100 100 1200 800]);
+set(gcf, 'Position', [100 100 1200 500]);
 
-subplot(2,2,1);
+subplot(1,2,1);
 imagesc(error_P2);
 colorbar;
 title('error P_{analytic} - P_{lin}');
 xlabel('Input-Index');
 ylabel('Output-Index');
 
-subplot(2,2,2);
+subplot(1,2,2);
 plot(t_vec, error_y_pred, LineWidth=2, DisplayName='error (y-sim - y-pred)');
 hold on;
 plot(t_vec, error_y_lin, LineWidth=2, DisplayName='error (y-sim - y-pred-lin)');
@@ -185,13 +179,6 @@ xlabel('Zeit [s]');
 ylabel('x [m]');
 title('Prediction Error');
 legend()
-
-subplot(2,2,3);
-imagesc(sqrt(Var_P2));
-colorbar;
-title('Sigma P (approximiert)');
-xlabel('Input-Index');
-ylabel('Output-Index');
 
 % 2. Plot
 figure;
