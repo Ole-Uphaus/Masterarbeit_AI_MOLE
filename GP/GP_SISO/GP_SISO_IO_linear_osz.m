@@ -109,6 +109,39 @@ max_error_P2 = max(abs(P(:) - P3(:)));
 max_rel_error_P2 = max(abs(P(:) - P3(:)) ./ max(abs(P(:)), eps));
 fprintf('Maximaler absoluter (relativer) Unterschied bei der Bestimmung von P (analytic vs. approx): %.3e (%.3e)\n\n', max_error_P2, max_rel_error_P2);
 
+% Compare analytic and approx Computation (Covariance C)
+max_error_Cov_P = 0;
+max_rel_error_Cov_P = 0;
+
+sum_abs_diff_cov = 0;
+sum_rel_diff_cov = 0;
+n_total_etries = 0;
+
+for i = 1:GP_IO.N
+    C_analytic = Cov_dy_dv_cell2{i};
+    C_approx = Cov_dy_dv_cell3{i};
+
+    diff_C = C_analytic - C_approx;
+
+    % absolute error
+    max_error_Cov_P = max(max_error_Cov_P, max(abs(diff_C(:))));
+
+    % relative error
+    rel_diff = abs(diff_C(:)) ./ max(abs(C_analytic(:)), eps);
+    max_rel_error_Cov_P = max(max_rel_error_Cov_P, max(rel_diff));
+
+    % mean abs error
+    sum_abs_diff_cov = sum_abs_diff_cov + sum(abs(diff_C(:)));
+    sum_rel_diff_cov = sum_rel_diff_cov + sum(abs(rel_diff(:)));
+    n_total_etries = n_total_etries + numel(diff_C);
+end
+
+mean_abs_diff_Cov_P = sum_abs_diff_cov / n_total_etries;
+mean_rel_diff_Cov_P = sum_rel_diff_cov / n_total_etries;
+
+fprintf('Maximaler absoluter (relativer) Unterschied bei der Bestimmung von Cov_P (analytic vs. approx): %.3e (%.3e)\n', max_error_Cov_P, max_rel_error_Cov_P);
+fprintf('Mittlerer absoluter (relativer) Unterschied bei der Bestimmung von Cov_P (analytic vs. approx): %.3e (%.3e)\n\n', mean_abs_diff_Cov_P, mean_rel_diff_Cov_P);
+
 % Prediction with linearized gp model
 delta_u = u_vec_test - u_vec_train_cell{1};
 y_pred_lin_test = GP_IO.predict_trajectory(u_vec_train_cell{1}) + P*delta_u;
