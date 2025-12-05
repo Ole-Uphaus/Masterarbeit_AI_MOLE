@@ -33,7 +33,7 @@ fc_v = 20;
 white = true;       % if white == true -> white noise is sampled - no filter
 
 % Input trajectorys
-u_scale_train = [1];
+u_scale_train = [1, 3];
 N_traj = length(u_scale_train);
 u_scale_test = 2;
 
@@ -91,56 +91,56 @@ tic;
 t = toc;
 fprintf('Dauer der Linearisierung und Varianzberechnung (fast): %g s\n\n', t);
 
-tic;
-[P3, Cov_dy_dv_cell3] = GP_IO.approx_linearisation_at_given_trajectory(u_vec_train_cell{1});
-t = toc;
-fprintf('Dauer der Linearisierung (approximiert): %g s\n\n', t);
+% tic;
+% [P3, Cov_dy_dv_cell3] = GP_IO.approx_linearisation_at_given_trajectory(u_vec_train_cell{1});
+% t = toc;
+% fprintf('Dauer der Linearisierung (approximiert): %g s\n\n', t);
 
 %% Compare Errors
 % Compare Fast and slow Computation
 error_P1 = P - P2;
 max_error_P1 = max(abs(P(:) - P2(:)));
 max_rel_error_P1 = max(abs(P(:) - P2(:)) ./ max(abs(P(:)), eps));
-fprintf('Maximaler absoluter (relativer) Unterschied bei der Bestimmung von P (fast vs. slow): %.3e (%.3e)\n', max_error_P1, max_rel_error_P1);
+fprintf('Maximaler absoluter (relativer) Unterschied bei der Bestimmung von P (fast vs. slow): %.3e (%.3e)\n\n', max_error_P1, max_rel_error_P1);
 
-% Compare analytic and approx Computation (Linearisation P)
-error_P3 = P - P3;
-max_error_P2 = max(abs(P(:) - P3(:)));
-max_rel_error_P2 = max(abs(P(:) - P3(:)) ./ max(abs(P(:)), eps));
-fprintf('Maximaler absoluter (relativer) Unterschied bei der Bestimmung von P (analytic vs. approx): %.3e (%.3e)\n\n', max_error_P2, max_rel_error_P2);
-
-% Compare analytic and approx Computation (Covariance C)
-max_error_Cov_P = 0;
-max_rel_error_Cov_P = 0;
-
-sum_abs_diff_cov = 0;
-sum_rel_diff_cov = 0;
-n_total_etries = 0;
-
-for i = 1:GP_IO.N
-    C_analytic = Cov_dy_dv_cell2{i};
-    C_approx = Cov_dy_dv_cell3{i};
-
-    diff_C = C_analytic - C_approx;
-
-    % absolute error
-    max_error_Cov_P = max(max_error_Cov_P, max(abs(diff_C(:))));
-
-    % relative error
-    rel_diff = abs(diff_C(:)) ./ max(abs(C_analytic(:)), eps);
-    max_rel_error_Cov_P = max(max_rel_error_Cov_P, max(rel_diff));
-
-    % mean abs error
-    sum_abs_diff_cov = sum_abs_diff_cov + sum(abs(diff_C(:)));
-    sum_rel_diff_cov = sum_rel_diff_cov + sum(abs(rel_diff(:)));
-    n_total_etries = n_total_etries + numel(diff_C);
-end
-
-mean_abs_diff_Cov_P = sum_abs_diff_cov / n_total_etries;
-mean_rel_diff_Cov_P = sum_rel_diff_cov / n_total_etries;
-
-fprintf('Maximaler absoluter (relativer) Unterschied bei der Bestimmung von Cov_P (analytic vs. approx): %.3e (%.3e)\n', max_error_Cov_P, max_rel_error_Cov_P);
-fprintf('Mittlerer absoluter (relativer) Unterschied bei der Bestimmung von Cov_P (analytic vs. approx): %.3e (%.3e)\n\n', mean_abs_diff_Cov_P, mean_rel_diff_Cov_P);
+% % Compare analytic and approx Computation (Linearisation P)
+% error_P3 = P - P3;
+% max_error_P2 = max(abs(P(:) - P3(:)));
+% max_rel_error_P2 = max(abs(P(:) - P3(:)) ./ max(abs(P(:)), eps));
+% fprintf('Maximaler absoluter (relativer) Unterschied bei der Bestimmung von P (analytic vs. approx): %.3e (%.3e)\n\n', max_error_P2, max_rel_error_P2);
+% 
+% % Compare analytic and approx Computation (Covariance C)
+% max_error_Cov_P = 0;
+% max_rel_error_Cov_P = 0;
+% 
+% sum_abs_diff_cov = 0;
+% sum_rel_diff_cov = 0;
+% n_total_etries = 0;
+% 
+% for i = 1:GP_IO.N
+%     C_analytic = Cov_dy_dv_cell2{i};
+%     C_approx = Cov_dy_dv_cell3{i};
+% 
+%     diff_C = C_analytic - C_approx;
+% 
+%     % absolute error
+%     max_error_Cov_P = max(max_error_Cov_P, max(abs(diff_C(:))));
+% 
+%     % relative error
+%     rel_diff = abs(diff_C(:)) ./ max(abs(C_analytic(:)), eps);
+%     max_rel_error_Cov_P = max(max_rel_error_Cov_P, max(rel_diff));
+% 
+%     % mean abs error
+%     sum_abs_diff_cov = sum_abs_diff_cov + sum(abs(diff_C(:)));
+%     sum_rel_diff_cov = sum_rel_diff_cov + sum(abs(rel_diff(:)));
+%     n_total_etries = n_total_etries + numel(diff_C);
+% end
+% 
+% mean_abs_diff_Cov_P = sum_abs_diff_cov / n_total_etries;
+% mean_rel_diff_Cov_P = sum_rel_diff_cov / n_total_etries;
+% 
+% fprintf('Maximaler absoluter (relativer) Unterschied bei der Bestimmung von Cov_P (analytic vs. approx): %.3e (%.3e)\n', max_error_Cov_P, max_rel_error_Cov_P);
+% fprintf('Mittlerer absoluter (relativer) Unterschied bei der Bestimmung von Cov_P (analytic vs. approx): %.3e (%.3e)\n\n', mean_abs_diff_Cov_P, mean_rel_diff_Cov_P);
 
 % Prediction with linearized gp model
 delta_u = u_vec_test - u_vec_train_cell{1};
@@ -152,6 +152,32 @@ Sigma_delta_y = sqrt(abs(Var_delta_y));
 
 y_pred_lin_test_upper2 = y_pred_lin_test + 2*Sigma_delta_y;
 y_pred_lin_test_lower2 = y_pred_lin_test - 2*Sigma_delta_y;
+
+%% Estimate Uncertainty in P (delta_P)
+
+% Use variance of every Element in P
+delta_P1 = element_wise_variance(GP_IO, Cov_dy_dv_cell2);
+
+% Compare Spectral morm
+norm_P = norm(P, 2);
+norm_delta_P = norm(delta_P1, 2);
+
+% Approx norm
+norm_delta_P2 = approx_norm(GP_IO, Cov_dy_dv_cell2);
+
+% Sample covariance Matrix random
+[norms_delta_P, delta_P_cell] = sample_deltaP_norms(GP_IO, Cov_dy_dv_cell2, 100);
+[norm_delta_P3, idx] = max(norms_delta_P);
+delta_P3 = delta_P_cell{idx};
+
+fprintf(['Spektralnorm von P: %.3e, \n' ...
+    'Spektralnorm von delta_P (elementweise Satndardabweichung): %.3e, \n' ...
+    'Spektralnorm von delta_P (vektoriesierung Lifted Matrix): %.3e, \n' ...
+    'Spektralnorm von delta_P (Sampling basiert): %.3e \n\n'], norm_P, norm_delta_P, norm_delta_P2, norm_delta_P3);
+
+% Calculate linearisation uncertaincy based on Sampling
+y_pred_lin_test_upper3 = y_pred_lin_test + delta_P3*abs(delta_u);
+y_pred_lin_test_lower3 = y_pred_lin_test - delta_P3*abs(delta_u);
 
 %% Compare Lifted System representation
 
@@ -183,9 +209,11 @@ P_reduced_size = P(2:end, 1:end-1);
 error_P2 = P_analytic - P_reduced_size;
 max_error_P2 = max(abs(P_analytic(:) - P_reduced_size(:)));
 mean_error_P2 = mean(abs(P_analytic(:) - P_reduced_size(:)));
+norm_error_P2 = norm(abs(P_analytic(:) - P_reduced_size(:)), 2);
 
 fprintf('Maximaler absoluter Unterschied P_analytic und P_lin: %.3e\n', max_error_P2);
-fprintf('Mittlerer absoluter Unterschied P_analytic und P_lin: %.3e\n\n', mean_error_P2);
+fprintf('Mittlerer absoluter Unterschied P_analytic und P_lin: %.3e\n', mean_error_P2);
+fprintf('Spektralnorm des absoluten Unterschieds zwischen P_analytic und P_lin: %.3e\n\n', norm_error_P2);
 
 % Calculate prediction Error
 error_y_pred = abs(y_sim_test - y_pred_test);
@@ -232,9 +260,12 @@ legend()
 subplot(2,2,2);
 plot(t_vec, y_sim_test, LineWidth=1, DisplayName='y-sim-test'); hold on;
 plot(t_vec, y_pred_lin_test, LineWidth=1, DisplayName='y-pred-lin-test');
+fill([t_vec, fliplr(t_vec)], [y_pred_lin_test_upper3', fliplr(y_pred_lin_test_lower3')], ...
+     [0.4 0.7 1], 'FaceAlpha', 0.25, 'EdgeColor', 'none', ...
+     'DisplayName','±2σ-Band-geschätzt');
 fill([t_vec, fliplr(t_vec)], [y_pred_lin_test_upper2', fliplr(y_pred_lin_test_lower2')], ...
      [1 0.6 0.4], 'FaceAlpha', 0.25, 'EdgeColor', 'none', ...
-     'DisplayName','±2σ-Band');
+     'DisplayName','±2σ-Band-mathematisch');
 grid on;
 xlabel('Zeit [s]'); 
 ylabel('x [m]');
@@ -283,5 +314,80 @@ function Var_delta_y = linearisation_prediction_variance(GP_IO, delta_u, Cov_dy_
 
         % Calculate Variance
         Var_delta_y(i) = vn.' * Cov_dy_dv_cell{i} * vn;
+    end
+end
+
+function delta_P = element_wise_variance(GP_IO, Cov_dy_dv_cell)
+
+    % Empty variance Matrix
+    Var_P = zeros(GP_IO.N);
+    
+    for i = 1:GP_IO.N
+        % Extract variances
+        Var_dy_dv = diag(Cov_dy_dv_cell{i});
+    
+        % Update jacobi matrix
+        if i > 1
+            Var_P(i, 1:(i-1)) = Var_dy_dv((i-1):-1:1);
+        end
+    end
+    
+    % Calculate standard deviation of P
+    Sigma_P = sqrt(Var_P);
+    
+    % Calculate uncertyincy by using confidence (3*sigma)
+    delta_P = 3*Sigma_P;
+end
+
+function norm_delta_P = approx_norm(GP_IO, Cov_dy_dv_cell)
+    
+    % Initialize sum
+    trace_sum = 0;
+
+    for i = 1:GP_IO.N
+        trace_sum = trace_sum + sum(diag(Cov_dy_dv_cell{i}));
+    end
+
+    % Approx norm
+    norm_delta_P = sqrt(trace_sum);
+end
+
+function [norms_deltaP, delta_P_cell] = sample_deltaP_norms(GP_IO, Cov_dy_dv_cell, N_samples)
+
+    % Empty vector and cell
+    norms_deltaP = zeros(N_samples,1);
+    delta_P_cell = cell(GP_IO.N, 1);
+
+    % Empty cell for precomputed cholesky
+    L_cell = cell(GP_IO.N, 1);
+
+    % Pre calculate cholesky
+    for i = 1:GP_IO.N
+        % Numerically symmetric covariance
+        C = Cov_dy_dv_cell{i};
+        C = (C + C.')/2;
+
+        % Cholesky
+        L_cell{i} = chol(C, 'lower');
+    end
+
+    for k = 1:N_samples
+        % Empty realisation matrix
+        DeltaP = zeros(GP_IO.N);
+        z = randn(size(C,1),1);
+
+        for i = 1:GP_IO.N          
+            % Cholesky sample random gradient
+            g_i = L_cell{i} * z;
+
+            % Map random gradient values to lifted matrix
+            if i > 1
+                DeltaP(i, 1:(i-1)) = g_i((i-1):-1:1);
+            end
+        end
+
+        % Spektral norm of current realisation
+        norms_deltaP(k) = norm(DeltaP, 2);
+        delta_P_cell{k} = DeltaP;
     end
 end
