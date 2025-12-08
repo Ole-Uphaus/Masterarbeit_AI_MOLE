@@ -33,7 +33,7 @@ fc_v = 20;
 white = true;       % if white == true -> white noise is sampled - no filter
 
 % Input trajectorys
-u_scale_train = [1, 3];
+u_scale_train = [1];
 N_traj = length(u_scale_train);
 u_scale_test = 2;
 
@@ -170,10 +170,14 @@ norm_delta_P2 = approx_norm(GP_IO, Cov_dy_dv_cell2);
 [norm_delta_P3, idx] = max(norms_delta_P);
 delta_P3 = delta_P_cell{idx};
 
+% Norm from bachelor Thesis
+norm_delta_P4 = norm_bachelor_thesis(GP_IO, Cov_dy_dv_cell2);
+
 fprintf(['Spektralnorm von P: %.3e, \n' ...
     'Spektralnorm von delta_P (elementweise Satndardabweichung): %.3e, \n' ...
     'Spektralnorm von delta_P (vektoriesierung Lifted Matrix): %.3e, \n' ...
-    'Spektralnorm von delta_P (Sampling basiert): %.3e \n\n'], norm_P, norm_delta_P, norm_delta_P2, norm_delta_P3);
+    'Spektralnorm von delta_P (Sampling basiert): %.3e, \n' ...
+    'Spektralnorm von delta_P (aus Bachelorarbeit): %.3e \n\n'], norm_P, norm_delta_P, norm_delta_P2, norm_delta_P3, norm_delta_P4);
 
 % Calculate linearisation uncertaincy based on Sampling
 y_pred_lin_test_upper3 = y_pred_lin_test + delta_P3*abs(delta_u);
@@ -260,9 +264,9 @@ legend()
 subplot(2,2,2);
 plot(t_vec, y_sim_test, LineWidth=1, DisplayName='y-sim-test'); hold on;
 plot(t_vec, y_pred_lin_test, LineWidth=1, DisplayName='y-pred-lin-test');
-fill([t_vec, fliplr(t_vec)], [y_pred_lin_test_upper3', fliplr(y_pred_lin_test_lower3')], ...
-     [0.4 0.7 1], 'FaceAlpha', 0.25, 'EdgeColor', 'none', ...
-     'DisplayName','±2σ-Band-geschätzt');
+% fill([t_vec, fliplr(t_vec)], [y_pred_lin_test_upper3', fliplr(y_pred_lin_test_lower3')], ...
+%      [0.4 0.7 1], 'FaceAlpha', 0.25, 'EdgeColor', 'none', ...
+%      'DisplayName','±2σ-Band-geschätzt');
 fill([t_vec, fliplr(t_vec)], [y_pred_lin_test_upper2', fliplr(y_pred_lin_test_lower2')], ...
      [1 0.6 0.4], 'FaceAlpha', 0.25, 'EdgeColor', 'none', ...
      'DisplayName','±2σ-Band-mathematisch');
@@ -352,6 +356,32 @@ function norm_delta_P = approx_norm(GP_IO, Cov_dy_dv_cell)
     norm_delta_P = sqrt(trace_sum);
 end
 
+function norm_delta_P = norm_bachelor_thesis(GP_IO, Cov_dy_dv_cell)
+    
+    % Empty variance Matrix
+    Var_P = zeros(GP_IO.N);
+    
+    for i = 1:GP_IO.N
+        % Extract variances
+        Var_dy_dv = diag(Cov_dy_dv_cell{i});
+    
+        % Update jacobi matrix
+        if i > 1
+            Var_P(i, 1:(i-1)) = Var_dy_dv((i-1):-1:1);
+        end
+    end
+
+    B = sqrt(Var_P);
+
+    rowEnergies = sqrt(sum(B.^2, 2)); 
+    sigma = max(rowEnergies);
+
+    sigma_star = max(B, [], "all");
+
+    norm_delta_P = sigma + sigma_star * sqrt(log(GP_IO.N));
+    % norm_delta_P = sigma_star * sqrt(GP_IO.N);
+end
+
 function [norms_deltaP, delta_P_cell] = sample_deltaP_norms(GP_IO, Cov_dy_dv_cell, N_samples)
 
     % Empty vector and cell
@@ -366,6 +396,8 @@ function [norms_deltaP, delta_P_cell] = sample_deltaP_norms(GP_IO, Cov_dy_dv_cel
         % Numerically symmetric covariance
         C = Cov_dy_dv_cell{i};
         C = (C + C.')/2;
+        % C = diag(Cov_dy_dv_cell{i});
+        % C = diag(C);
 
         % Cholesky
         L_cell{i} = chol(C, 'lower');
@@ -378,6 +410,7 @@ function [norms_deltaP, delta_P_cell] = sample_deltaP_norms(GP_IO, Cov_dy_dv_cel
 
         for i = 1:GP_IO.N          
             % Cholesky sample random gradient
+            % z = randn(size(C,1),1);
             g_i = L_cell{i} * z;
 
             % Map random gradient values to lifted matrix
