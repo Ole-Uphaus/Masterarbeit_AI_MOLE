@@ -249,16 +249,10 @@ classdef GP_SISO_IO < handle
                 % Save Covariance Matrix in Cell
                 Cov_dy_dv_cell{i} = Cov_dy_dv;
 
-                % Local variables for parfor
-                rowP     = zeros(1, obj.N);
-
                 % Update jacobi matrix
                 if i > 1
-                    rowP(1:(i-1)) = dy_dv((i-1):-1:1);
+                    P(i, 1:(i-1)) = dy_dv((i-1):-1:1);
                 end
-
-                % Update Row (parfor)
-                P(i, :) = rowP;
             end
         end
 
