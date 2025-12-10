@@ -90,7 +90,7 @@ H_trials = 3;
 
 % Choose weight initialisation Method ('Meindl', 'Stochastic', 'Heuristic',
 % 'Robust', 'Manual')
-weight_init_method = 'Meindl';
+weight_init_method = 'Stochastic';
 
 % Initial input Trajectory (simple sin or automatic generated)
 sigma_I = 0.1;

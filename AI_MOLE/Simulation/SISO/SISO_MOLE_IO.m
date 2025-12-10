@@ -119,6 +119,40 @@ classdef SISO_MOLE_IO < handle
                     % Print
                     fprintf('Iteration = %d | r = %.4e | s = %.4e \n', obj.i_iter, r, s);
 
+                case 'Stochastic'
+                    % Stochastic initialisation using covariance matrices
+
+                    % Choose W, R
+                    w = 1;
+                    r = 0;
+                    W = w * eye(size(P));
+                    R = r * eye(size(P));
+
+                    % Calculate S using covariances
+                    Cov_size = size(Cov_dy_du_cell{end}, 1);
+                    Cov_sum = zeros(Cov_size, Cov_size);
+
+                    for i = 1:numel(Cov_dy_du_cell)
+                        % Get current covariance matrix
+                        Cov_i = Cov_dy_du_cell{i};
+
+                        % Check if covariance is empty (fist matrix should
+                        % be always empty)
+                        if isempty(Cov_i)
+                            continue;
+                        end
+
+                        n_i = size(Cov_i, 1);
+
+                        % Add matrix to the sum (upper left corner)
+                        Cov_sum(1:n_i, 1:n_i) = Cov_sum(1:n_i, 1:n_i) + Cov_i;
+                    end
+
+                    S = w * Cov_sum;
+
+                    % Print
+                    fprintf('Iteration = %d | r = %.4e | ||S|| = %.4e \n', obj.i_iter, r, norm(S, 2));
+
                 case 'Heuristic'
                     % Heuristic method (prediction new trajectory)
 
