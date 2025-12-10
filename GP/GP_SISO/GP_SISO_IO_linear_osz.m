@@ -87,7 +87,7 @@ t = toc;
 fprintf('Dauer der Linearisierung: %g s\n', t);
 
 tic;
-[P2, Cov_dy_dv_cell2] = GP_IO.linearize_at_given_trajectory_fast(u_vec_train_cell{1});
+[P2, Cov_dy_dv_cell2, Cov_dy_du_cell2] = GP_IO.linearize_at_given_trajectory_fast(u_vec_train_cell{1});
 t = toc;
 fprintf('Dauer der Linearisierung und Varianzberechnung (fast): %g s\n\n', t);
 

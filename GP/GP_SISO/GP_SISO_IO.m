@@ -202,7 +202,7 @@ classdef GP_SISO_IO < handle
             dy_dv = dk_dvn * alpha_vec;
         end
 
-        function [P, Cov_dy_dv_cell] = linearize_at_given_trajectory_fast(obj, u_lin)
+        function [P, Cov_dy_dv_cell, Cov_dy_du_cell] = linearize_at_given_trajectory_fast(obj, u_lin)
             %linearize_at_given_trajectory_fast Compute local linearization (Jacobian) of GP at a trajectory.
             %
             %   Inputs:
@@ -215,8 +215,9 @@ classdef GP_SISO_IO < handle
             % Empty jacobi matrix
             P = zeros(obj.N, obj.N);
 
-            % Cell Array for Covariances
+            % Cell Arrays for Covariances
             Cov_dy_dv_cell = cell(obj.N, 1);
+            Cov_dy_du_cell = cell(obj.N, 1);
 
             % Construct linearisation Matrix
             V_lin = obj.constr_test_matrix(u_lin);
@@ -251,7 +252,13 @@ classdef GP_SISO_IO < handle
 
                 % Update jacobi matrix
                 if i > 1
-                    P(i, 1:(i-1)) = dy_dv((i-1):-1:1);
+                    idx = (i-1):-1:1;
+
+                    % Update jacobian
+                    P(i, 1:(i-1)) = dy_dv(idx);
+
+                    % Update covariance
+                    Cov_dy_du_cell{i} = Cov_dy_dv(idx, idx);
                 end
             end
         end
