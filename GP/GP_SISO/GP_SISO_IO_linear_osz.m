@@ -33,7 +33,7 @@ fc_v = 20;
 white = true;       % if white == true -> white noise is sampled - no filter
 
 % Input trajectorys
-u_scale_train = [1];
+u_scale_train = [1, 3];
 N_traj = length(u_scale_train);
 u_scale_test = 2;
 
@@ -154,7 +154,6 @@ y_pred_lin_test_upper2 = y_pred_lin_test + 2*Sigma_delta_y;
 y_pred_lin_test_lower2 = y_pred_lin_test - 2*Sigma_delta_y;
 
 %% Estimate Uncertainty in P (delta_P)
-
 % Use variance of every Element in P
 delta_P1 = element_wise_variance(GP_IO, Cov_dy_dv_cell2);
 
@@ -213,7 +212,7 @@ P_reduced_size = P(2:end, 1:end-1);
 error_P2 = P_analytic - P_reduced_size;
 max_error_P2 = max(abs(P_analytic(:) - P_reduced_size(:)));
 mean_error_P2 = mean(abs(P_analytic(:) - P_reduced_size(:)));
-norm_error_P2 = norm(abs(P_analytic(:) - P_reduced_size(:)), 2);
+norm_error_P2 = norm(abs(error_P2), 2);
 
 fprintf('Maximaler absoluter Unterschied P_analytic und P_lin: %.3e\n', max_error_P2);
 fprintf('Mittlerer absoluter Unterschied P_analytic und P_lin: %.3e\n', mean_error_P2);
@@ -222,6 +221,13 @@ fprintf('Spektralnorm des absoluten Unterschieds zwischen P_analytic und P_lin: 
 % Calculate prediction Error
 error_y_pred = abs(y_sim_test - y_pred_test);
 error_y_lin = abs(y_sim_test - y_pred_lin_test);
+
+%% Monotonic Convergence Condition
+% Compute bound
+% bound = monotonic_convergence_condition(P, norm_error_P2, delta_P3(2:end, 1:end-1));
+bound = monotonic_convergence_condition(P, norm_error_P2, error_P2);
+
+fprintf('Monotone Konvergenzbedingung (abhängig von unsicherheitsschätzung): %.3e (< 1)\n', bound);
 
 %% Plot
 % 1. Plot
@@ -423,4 +429,31 @@ function [norms_deltaP, delta_P_cell] = sample_deltaP_norms(GP_IO, Cov_dy_dv_cel
         norms_deltaP(k) = norm(DeltaP, 2);
         delta_P_cell{k} = DeltaP;
     end
+end
+
+function bound = monotonic_convergence_condition(P, norm_delta_P, delta_P)
+
+    % Bring P to the right size
+    P = P(2:end, 1:end-1);
+
+    % Weighting matrix
+    Q = eye(size(P));
+
+    % A = P' Q P
+    lambda = 0;      % for robust inversion
+    A = P.'*Q*P + lambda*eye(size(P,2));
+
+    % B = P' Q
+    B = P.'*Q;
+    % B = P.'*Q*delta_P;
+
+    % Constant term X
+    inv_A = inv(A);
+    X = inv_A * B;
+
+    % Calculate bound (using uncertainty norm)
+    bound = norm(X, 2)*norm_delta_P;
+
+    % Calculate bound (using uncertainty matrix)
+    % bound = norm(X, 2);
 end
