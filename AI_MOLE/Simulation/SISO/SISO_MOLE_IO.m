@@ -198,11 +198,14 @@ classdef SISO_MOLE_IO < handle
 
                     % Choose W, S, R
                     w = 1;
-                    s = 0.001;
-                    r = 0;
+                    s = 0.01;
+                    r = 0.01;
                     W = w * eye(size(P));
                     S = s * eye(size(P));
                     R = r * eye(size(P));
+
+                    % Print
+                    fprintf('Iteration = %d | r = %.4e | s = %.4e \n', obj.i_iter, r, s);
 
                 otherwise
                     error('Unbekannte Initialisierungsmethode ausgewählt.')
