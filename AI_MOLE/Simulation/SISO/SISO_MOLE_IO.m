@@ -85,15 +85,14 @@ classdef SISO_MOLE_IO < handle
             obj.GP_SISO.train_GP_model(y_cell_train, u_cell_train);
 
             % Linearize GP model (fast function)
-            [P, Var_P] = obj.GP_SISO.linearize_at_given_trajectory_fast(obj.u_cell{obj.i_iter});
+            [P, ~, Cov_dy_du_cell] = obj.GP_SISO.linearize_at_given_trajectory_fast(obj.u_cell{obj.i_iter});
 
-            % Change dimensions of P and Var_P (delete first row and last column -
+            % Change dimensions of P (delete first row and last column -
             % because ILC uses a reduced size framework)
             P = P(obj.m_delay+1:end, 1:end-obj.m_delay);
-            Var_P = Var_P(obj.m_delay+1:end, 1:end-obj.m_delay);
 
-            % Calculate weighting matrices
-            [W, R, S] = obj.design_weighting_matrices(P, Var_P);
+            % Calculate weighting matrices (different Methods)
+            [W, R, S] = obj.design_weighting_matrices(P, Cov_dy_du_cell);
 
             % Perform ILC update
             obj.ILC_SISO.init_Quadr_type(W, S, R, P);
@@ -103,11 +102,11 @@ classdef SISO_MOLE_IO < handle
             obj.u_cell{obj.i_iter+1} = [u_vec_new; 0];
         end
 
-        function [W, R, S] = design_weighting_matrices(obj, P, Var_P)
+        function [W, R, S] = design_weighting_matrices(obj, P, Cov_dy_du_cell)
             %design_weighting_matrices
     
             switch obj.weight_init_method
-                case 1
+                case 'Meindl'
                     % Meindls method
 
                     % Choose W, S, R
@@ -120,7 +119,13 @@ classdef SISO_MOLE_IO < handle
                     % Print
                     fprintf('Iteration = %d | r = %.4e | s = %.4e \n', obj.i_iter, r, s);
 
-                case 2
+                case 'Heuristic'
+                    % Heuristic method (prediction new trajectory)
+
+                    % Heuristic needs to be developed
+                    error('Noch keine Heuristik implementiert.')
+
+                case 'Robust'
                     % Ensure robust monotonic convergence
 
                     % Choose W, S
@@ -154,18 +159,16 @@ classdef SISO_MOLE_IO < handle
                     % Print
                     fprintf('Iteration = %d | r = %.4e | s = %.4e | ||P|| = %.4e | ||delta_P|| = %.4e \n', obj.i_iter, r, s, norm_P, norm_Delta_P_max);
 
-                case 3
-                    % Heuristic depending on Var_P
+                case 'Manual'
+                    % Manual parameterisation
 
                     % Choose W, S, R
-                    W = eye(size(P));
-                    s = norm(Var_P, 2);
-                    S = s * eye(size(P));
+                    w = 1;
+                    s = 0.001;
                     r = 0;
+                    W = w * eye(size(P));
+                    S = s * eye(size(P));
                     R = r * eye(size(P));
-
-                    % Print
-                    fprintf('Iteration = %d | r = %.4e | s = %.4e \n', obj.i_iter, r, s);
 
                 otherwise
                     error('Unbekannte Initialisierungsmethode ausgewählt.')

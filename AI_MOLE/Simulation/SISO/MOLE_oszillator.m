@@ -87,7 +87,10 @@ end
 m_delay = 1;
 N_iter = 10;
 H_trials = 3;
-weight_init_method = 1;     % Method being used for ILC weight initialisation
+
+% Choose weight initialisation Method ('Meindl', 'Stochastic', 'Heuristic',
+% 'Robust', 'Manual')
+weight_init_method = 'Meindl';
 
 % Initial input Trajectory (simple sin or automatic generated)
 sigma_I = 0.1;
