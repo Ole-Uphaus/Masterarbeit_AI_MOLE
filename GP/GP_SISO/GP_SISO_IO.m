@@ -202,7 +202,7 @@ classdef GP_SISO_IO < handle
             dy_dv = dk_dvn * alpha_vec;
         end
 
-        function [P, Cov_dy_dv_cell, Cov_dy_du_cell, H_dy_dv_cell] = linearize_at_given_trajectory_fast(obj, u_lin)
+        function [P, Cov_dy_dv_cell, Cov_dy_du_cell, H_dy_dv_cell, H_dy_du_cell] = linearize_at_given_trajectory_fast(obj, u_lin)
             %linearize_at_given_trajectory_fast Compute local linearization (Jacobian) of GP at a trajectory.
             %
             %   Inputs:
@@ -221,6 +221,7 @@ classdef GP_SISO_IO < handle
 
             % Cell Arrays for Hessians
             H_dy_dv_cell = cell(obj.N, 1);
+            H_dy_du_cell = cell(obj.N, 1);
 
             % Construct linearisation Matrix
             V_lin = obj.constr_test_matrix(u_lin);
@@ -261,8 +262,9 @@ classdef GP_SISO_IO < handle
                     % Update jacobian
                     P(i, 1:(i-1)) = dy_dv(idx);
 
-                    % Update covariance
+                    % Update covariance and Hessians
                     Cov_dy_du_cell{i} = Cov_dy_dv(idx, idx);
+                    H_dy_du_cell{i} = H(idx, idx);
                 end
             end
         end
