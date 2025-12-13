@@ -85,14 +85,14 @@ classdef SISO_MOLE_IO < handle
             obj.GP_SISO.train_GP_model(y_cell_train, u_cell_train);
 
             % Linearize GP model (fast function)
-            [P, ~, Cov_dy_du_cell] = obj.GP_SISO.linearize_at_given_trajectory_fast(obj.u_cell{obj.i_iter});
+            [P, ~, Cov_dy_du_cell, ~, H_dy_du_cell] = obj.GP_SISO.linearize_at_given_trajectory_fast(obj.u_cell{obj.i_iter});
 
             % Change dimensions of P (delete first row and last column -
             % because ILC uses a reduced size framework)
             P = P(obj.m_delay+1:end, 1:end-obj.m_delay);
 
             % Calculate weighting matrices (different Methods)
-            [W, R, S] = obj.design_weighting_matrices(P, Cov_dy_du_cell);
+            [W, R, S] = obj.design_weighting_matrices(P, Cov_dy_du_cell, H_dy_du_cell);
 
             % Perform ILC update
             obj.ILC_SISO.init_Quadr_type(W, S, R, P);
@@ -102,7 +102,7 @@ classdef SISO_MOLE_IO < handle
             obj.u_cell{obj.i_iter+1} = [u_vec_new; 0];
         end
 
-        function [W, R, S] = design_weighting_matrices(obj, P, Cov_dy_du_cell)
+        function [W, R, S] = design_weighting_matrices(obj, P, Cov_dy_du_cell, H_dy_du_cell)
             %design_weighting_matrices
     
             switch obj.weight_init_method
@@ -131,10 +131,12 @@ classdef SISO_MOLE_IO < handle
                     % Calculate S using covariances
                     Cov_size = size(Cov_dy_du_cell{end}, 1);
                     Cov_sum = zeros(Cov_size, Cov_size);
+                    H_sum = zeros(Cov_size, Cov_size);
 
                     for i = 1:numel(Cov_dy_du_cell)
-                        % Get current covariance matrix
+                        % Get current covariance matrix and Hessian
                         Cov_i = Cov_dy_du_cell{i};
+                        H_i = abs(H_dy_du_cell{i});     % Using absolute values for parameterisation (otherwise we can get negative weights)
 
                         % Check if covariance is empty (fist matrix should
                         % be always empty)
@@ -146,8 +148,10 @@ classdef SISO_MOLE_IO < handle
 
                         % Add matrix to the sum (upper left corner)
                         Cov_sum(1:n_i, 1:n_i) = Cov_sum(1:n_i, 1:n_i) + Cov_i;
+                        H_sum(1:n_i, 1:n_i) = H_sum(1:n_i, 1:n_i) + H_i;
                     end
 
+                    % S = w * Cov_sum + w * H_sum;
                     S = w * Cov_sum;
 
                     % Print
