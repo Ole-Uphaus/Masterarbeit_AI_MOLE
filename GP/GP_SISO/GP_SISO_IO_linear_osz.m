@@ -33,7 +33,7 @@ fc_v = 20;
 white = true;       % if white == true -> white noise is sampled - no filter
 
 % Input trajectorys
-u_scale_train = [1, 3];
+u_scale_train = [1];
 N_traj = length(u_scale_train);
 u_scale_test = 2;
 
@@ -87,7 +87,7 @@ t = toc;
 fprintf('Dauer der Linearisierung: %g s\n', t);
 
 tic;
-[P2, Cov_dy_dv_cell2, Cov_dy_du_cell2] = GP_IO.linearize_at_given_trajectory_fast(u_vec_train_cell{1});
+[P2, Cov_dy_dv_cell2, Cov_dy_du_cell2, H_dy_dv_cell2, H_dy_du_cell2] = GP_IO.linearize_at_given_trajectory_fast(u_vec_train_cell{1});
 t = toc;
 fprintf('Dauer der Linearisierung und Varianzberechnung (fast): %g s\n\n', t);
 

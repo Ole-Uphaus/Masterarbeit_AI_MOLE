@@ -36,7 +36,7 @@ opts = odeset( ...
     'InitialStep', Ts/20);
 
 % Noise Parameters
-sigma_v = 0.01;      % Measurement Noise 0.01
+sigma_v = 0.0;      % Measurement Noise 0.01
 fc_v = 20;
 white = true;       % if white == true -> white noise is sampled - no filter
 
@@ -90,7 +90,7 @@ H_trials = 3;
 
 % Choose weight initialisation Method ('Meindl', 'Stochastic', 'Heuristic',
 % 'Robust', 'Manual')
-weight_init_method = 'Meindl';
+weight_init_method = 'Stochastic';
 
 % Initial input Trajectory (simple sin or automatic generated)
 sigma_I = 0.1;
@@ -130,7 +130,7 @@ set(gcf, 'Position', [100 100 1200 800]);
 subplot(2,2,1);   % 1 Zeile, 2 Spalten, erster Plot
 plot(t_vec, r_vec, LineWidth=1, DisplayName='desired'); hold on;
 for i = 1:N_iter
-    plot(t_vec, SISO_MOLE.y_cell{i}, LineWidth=1, Color=[0.5 0.5 0.5], HandleVisibility='off');
+    % plot(t_vec, SISO_MOLE.y_cell{i}, LineWidth=1, Color=[0.5 0.5 0.5], HandleVisibility='off');
 end
 plot(t_vec, SISO_MOLE.y_cell{N_iter+1}, LineWidth=1, DisplayName=sprintf('Iteration %d', N_iter));
 grid on;
