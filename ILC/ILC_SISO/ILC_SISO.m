@@ -148,6 +148,17 @@ classdef ILC_SISO < handle
                 x_filt = x;
             end
         end
+
+        function set_current_u_vec(obj, u_vec_new)
+            %set_current_u_vec Manually set the current input vector. This
+            %is used in AI-MOLE to apply a damping factor to the optimized
+            %input trajectory.
+            %
+            %   Inputs:
+            %       u_vec_new : new input vector (damped)
+
+            obj.u_vec = u_vec_new;
+        end
     end
 end
 

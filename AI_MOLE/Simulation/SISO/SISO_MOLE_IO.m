@@ -89,14 +89,22 @@ classdef SISO_MOLE_IO < handle
 
             % Change dimensions of P (delete first row and last column -
             % because ILC uses a reduced size framework)
-            P = P(obj.m_delay+1:end, 1:end-obj.m_delay);
+            P_reduced = P(obj.m_delay+1:end, 1:end-obj.m_delay);
 
             % Calculate weighting matrices (different Methods)
-            [W, R, S] = obj.design_weighting_matrices(P, Cov_dy_du_cell, H_dy_du_cell);
+            [W, R, S] = obj.design_weighting_matrices(P_reduced, Cov_dy_du_cell, H_dy_du_cell);
 
             % Perform ILC update
-            obj.ILC_SISO.init_Quadr_type(W, S, R, P);
+            obj.ILC_SISO.init_Quadr_type(W, S, R, P_reduced);
             u_vec_new = obj.ILC_SISO.Quadr_update(y_vec);
+
+            % Apply damping based on nonlinearity
+            u_vec_new = obj.apply_nonlinearity_damping(u_vec_new, P);
+
+            % Update current input trajectory inside the ILC object, to
+            % ensure that the next optimisation step uses the right input
+            % trajectory to update
+            obj.ILC_SISO.set_current_u_vec(u_vec_new);
 
             % Save new input
             obj.u_cell{obj.i_iter+1} = [u_vec_new; 0];
@@ -214,6 +222,33 @@ classdef SISO_MOLE_IO < handle
                 otherwise
                     error('Unbekannte Initialisierungsmethode ausgewählt.')
             end
+        end
+
+        function u_vec_new_damped = apply_nonlinearity_damping(obj, u_vec_new, P)
+
+            % Compute delta_u
+            delta_u = [u_vec_new; 0] - obj.u_cell{obj.i_iter};
+
+            % Prediction using GP
+            [y_pred_GP, y_std_GP] = obj.GP_SISO.predict_trajectory([u_vec_new; 0]);
+
+            % Prediction using Linearisation
+            y_pred_lin = obj.GP_SISO.predict_trajectory(obj.u_cell{obj.i_iter}) + P*delta_u;
+
+            % Relative prediction difference (use variances too)
+            beta = 2;
+            % eta = norm((y_pred_GP - y_pred_lin), 2) / (norm((P*delta_u), 2) + eps);
+            eta = (norm((y_pred_GP - y_pred_lin), 2) + norm(beta*y_std_GP, 2)) / (norm((P*delta_u), 2) + eps);
+
+            % Damping factor
+            alpha = 1 / (1 + eta);
+            % alpha = max(1-eta, 0.1);
+
+            % Calculate damped input Trajectory
+            u_vec_new_damped = obj.u_cell{obj.i_iter} + alpha*delta_u;
+
+            % Delete last element to ensure reduced size representation
+            u_vec_new_damped = u_vec_new_damped(1:end-1);
         end
 
         function save_final_trajectory(obj, y_vec)
