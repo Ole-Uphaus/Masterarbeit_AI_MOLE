@@ -238,11 +238,15 @@ classdef SISO_MOLE_IO < handle
             % Relative prediction difference (use variances too)
             beta = 2;
             % eta = norm((y_pred_GP - y_pred_lin), 2) / (norm((P*delta_u), 2) + eps);
-            eta = (norm((y_pred_GP - y_pred_lin), 2) + norm(beta*y_std_GP, 2)) / (norm((P*delta_u), 2) + eps);
+            % eta = (norm((y_pred_GP - y_pred_lin), 2) + norm(beta*y_std_GP, 2)) / (norm((P*delta_u), 2) + eps);
+            eta = (norm((y_pred_GP - y_pred_lin), 2) + norm(beta*y_std_GP, 2)) / (norm((P*delta_u), 2) + norm(beta*y_std_GP, 2) + eps);
 
             % Damping factor
             alpha = 1 / (1 + eta);
             % alpha = max(1-eta, 0.1);
+            
+            % Print parameters
+            fprintf('    eta = %.3f | alpha = %.3f \n', eta, alpha);
 
             % Calculate damped input Trajectory
             u_vec_new_damped = obj.u_cell{obj.i_iter} + alpha*delta_u;
