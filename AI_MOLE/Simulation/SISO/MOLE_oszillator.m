@@ -83,22 +83,29 @@ for i = 1:max_iter
 end
 
 %% Initialize AI-MOLE
+
+params = struct();
+
 % Parameters
-m_delay = 1;
-N_iter = 10;
-H_trials = 3;
+params.m_delay = 1;
+params.N_iter = 10;
+params.H_trials = 3;
 
 % Choose weight initialisation Method ('Meindl', 'Stochastic', 'Heuristic',
 % 'Robust', 'Manual')
-weight_init_method = 'Stochastic';
+params.weight_init_method = 'Stochastic';
+
+% Choose nonlinearity damping Parameters
+params.use_nonlin_damping = true;
+params.beta = 2;
 
 % Initial input Trajectory (simple sin or automatic generated)
-sigma_I = 0.1;
+sigma_I = 0.1;  % for stibeck model = 1, otherwise = 0.1
 u_init_sin = sigma_I*sin(2*pi/T_end.*t_vec');
 u_init = u_init_sin;        % u_init_sin / u_init_auto
 
 % Initialisation
-SISO_MOLE = SISO_MOLE_IO(r_vec, m_delay, u_init, N_iter, H_trials, weight_init_method);
+SISO_MOLE = SISO_MOLE_IO(r_vec, u_init, params);
 
 %% Run ILC
 tic;
@@ -107,7 +114,7 @@ u_sim = u_init;
 v_vec = Gen_noise_Butter(t_vec, sigma_v, fc_v, white);
 [t_sim, x_sim] = ode45(@(t,x) oszillator_linear(t, x, u_sim, t_vec), t_vec, x0, opts);
 y_sim = x_sim(:, 1) + v_vec;
-for i = 1:N_iter
+for i = 1:params.N_iter
     % Update input
     u_sim = [SISO_MOLE.update_input(y_sim); 0];
 
@@ -121,7 +128,7 @@ y_sim_quadratic = y_sim;
 
 % Zeitmessung und Ausgabe
 time = toc;
-fprintf('Dauer von AI-MOLE mit %d Iterationen, %d Trials Delay (H) und jeweils %d Datenpunkten pro Trial: %g s\n', N_iter, H_trials, length(t_vec), time);
+fprintf('Dauer von AI-MOLE mit %d Iterationen, %d Trials Delay (H) und jeweils %d Datenpunkten pro Trial: %g s\n', params.N_iter, params.H_trials, length(t_vec), time);
 
 %% Plot Results
 figure;
@@ -129,10 +136,10 @@ set(gcf, 'Position', [100 100 1200 800]);
 
 subplot(2,2,1);   % 1 Zeile, 2 Spalten, erster Plot
 plot(t_vec, r_vec, LineWidth=1, DisplayName='desired'); hold on;
-for i = 1:N_iter
+for i = 1:params.N_iter
     % plot(t_vec, SISO_MOLE.y_cell{i}, LineWidth=1, Color=[0.5 0.5 0.5], HandleVisibility='off');
 end
-plot(t_vec, SISO_MOLE.y_cell{N_iter+1}, LineWidth=1, DisplayName=sprintf('Iteration %d', N_iter));
+plot(t_vec, SISO_MOLE.y_cell{params.N_iter+1}, LineWidth=1, DisplayName=sprintf('Iteration %d', params.N_iter));
 grid on;
 xlabel('Zeit [s]'); 
 ylabel('x [m]');
@@ -149,10 +156,10 @@ legend()
 
 subplot(2,2,4);   % 1 Zeile, 2 Spalten, erster Plot
 hold on;
-for i = 1:N_iter
+for i = 1:params.N_iter
     plot(t_vec, SISO_MOLE.u_cell{i}, LineWidth=1, Color=[0.5 0.5 0.5], HandleVisibility='off');
 end
-plot(t_vec, SISO_MOLE.u_cell{N_iter+1}, LineWidth=1, DisplayName=sprintf('Iteration %d', N_iter));
+plot(t_vec, SISO_MOLE.u_cell{params.N_iter+1}, LineWidth=1, DisplayName=sprintf('Iteration %d', params.N_iter));
 grid on;
 xlabel('Zeit [s]'); 
 ylabel('F [N]');

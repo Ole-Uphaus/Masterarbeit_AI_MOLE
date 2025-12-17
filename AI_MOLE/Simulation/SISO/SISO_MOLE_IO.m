@@ -11,19 +11,24 @@ classdef SISO_MOLE_IO < handle
         m_delay             % System delay (in samples) - relative degree
         i_iter              % Current Iteration counter
         weight_init_method  % Tells, how the weighting Matrices are getting Initialized
+        use_nonlin_damping  % Tells, if nonlin damping should be used for Regularisation
+        beta                % Parameter for nonlin damping
     end
     
     methods
-        function obj = SISO_MOLE_IO(r_vec, m_delay, u_init, N_iter, H_trials, weight_init_method, sigma_n)
+        function obj = SISO_MOLE_IO(r_vec, u_init, params, sigma_n)
             %SISO_MOLE_IO Constructor for the SISO_MOLE_IO class
             %
             %   Inputs:
             %       r_vec               : Reference trajectory (column vector)
-            %       m_delay             : System delay (integer)
             %       u_init              : Initial input trajectory (column vector)
-            %       N_iter              : Number of learning iterations
-            %       H_trials            : Number of previous trials used for GP training
-            %       weight_init_method  : Number of previous trials used for GP training
+            %       params              : Struct containing model parameters
+            %           -m_delay             : System delay (integer)
+            %           -N_iter              : Number of learning iterations
+            %           -H_trials            : Number of previous trials used for GP training
+            %           -weight_init_method  : Method being used for W, R, S initialisation
+            %           -use_nonlin_damping  : if nonlin damping should be used for Regularisation
+            %           -beta                : Parameter for nonlin damping
             %       sigma_n             : Measurement Noise (if known before)
             
             % Generate dynamic paths
@@ -36,25 +41,27 @@ classdef SISO_MOLE_IO < handle
             addpath(ILC_path);
 
             % Initialize GP (use fixed sigma_n if given)
-            if nargin < 7 || isempty(sigma_n)
+            if nargin < 4 || isempty(sigma_n)
                 obj.GP_SISO = GP_SISO_IO();
             else
                 obj.GP_SISO = GP_SISO_IO(sigma_n);
             end
 
             % Initialize ILC
-            obj.ILC_SISO = ILC_SISO(r_vec, m_delay, u_init);
+            obj.ILC_SISO = ILC_SISO(r_vec, params.m_delay, u_init);
 
             % Storage cells
-            obj.y_cell = cell(N_iter+1, 1);
-            obj.u_cell = cell(N_iter+1, 1);
+            obj.y_cell = cell(params.N_iter+1, 1);
+            obj.u_cell = cell(params.N_iter+1, 1);
 
             % Assign values
-            obj.N_iter = N_iter;
+            obj.N_iter = params.N_iter;
             obj.u_cell{1} = u_init;
-            obj.H_trials = H_trials;
-            obj.m_delay = m_delay;
-            obj.weight_init_method = weight_init_method;
+            obj.H_trials = params.H_trials;
+            obj.m_delay = params.m_delay;
+            obj.weight_init_method = params.weight_init_method;
+            obj.use_nonlin_damping = params.use_nonlin_damping;
+            obj.beta = params.beta;
         end
 
         function u_vec_new = update_input(obj, y_vec)
@@ -98,13 +105,15 @@ classdef SISO_MOLE_IO < handle
             obj.ILC_SISO.init_Quadr_type(W, S, R, P_reduced);
             u_vec_new = obj.ILC_SISO.Quadr_update(y_vec);
 
-            % Apply damping based on nonlinearity
-            u_vec_new = obj.apply_nonlinearity_damping(u_vec_new, P);
-
-            % Update current input trajectory inside the ILC object, to
-            % ensure that the next optimisation step uses the right input
-            % trajectory to update
-            obj.ILC_SISO.set_current_u_vec(u_vec_new);
+            if obj.use_nonlin_damping
+                % Apply damping based on nonlinearity
+                u_vec_new = obj.apply_nonlinearity_damping(u_vec_new, P);
+    
+                % Update current input trajectory inside the ILC object, to
+                % ensure that the next optimisation step uses the right input
+                % trajectory to update
+                obj.ILC_SISO.set_current_u_vec(u_vec_new);
+            end
 
             % Save new input
             obj.u_cell{obj.i_iter+1} = [u_vec_new; 0];
@@ -236,10 +245,9 @@ classdef SISO_MOLE_IO < handle
             y_pred_lin = obj.GP_SISO.predict_trajectory(obj.u_cell{obj.i_iter}) + P*delta_u;
 
             % Relative prediction difference (use variances too)
-            beta = 2;
             % eta = norm((y_pred_GP - y_pred_lin), 2) / (norm((P*delta_u), 2) + eps);
-            % eta = (norm((y_pred_GP - y_pred_lin), 2) + norm(beta*y_std_GP, 2)) / (norm((P*delta_u), 2) + eps);
-            eta = (norm((y_pred_GP - y_pred_lin), 2) + norm(beta*y_std_GP, 2)) / (norm((P*delta_u), 2) + norm(beta*y_std_GP, 2) + eps);
+            % eta = (norm((y_pred_GP - y_pred_lin), 2) + norm(obj.beta*y_std_GP, 2)) / (norm((P*delta_u), 2) + eps);
+            eta = (norm((y_pred_GP - y_pred_lin), 2) + norm(obj.beta*y_std_GP, 2)) / (norm((P*delta_u), 2) + norm(obj.beta*y_std_GP, 2) + eps);
 
             % Damping factor
             alpha = 1 / (1 + eta);
