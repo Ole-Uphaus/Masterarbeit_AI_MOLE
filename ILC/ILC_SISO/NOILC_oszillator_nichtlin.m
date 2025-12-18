@@ -44,7 +44,7 @@ x0 = [0;
 
 W = eye(N-m_delay);
 S = 0.001*eye(N-m_delay);
-R = 0.001*eye(N-m_delay);
+R = 0*eye(N-m_delay);
 
 % Solver settings
 opts = odeset( ...

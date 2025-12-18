@@ -70,7 +70,7 @@ x0 = [0;
     0]; 
 W = eye(size(P));
 S = 0.001*eye(size(P));
-R = 0.00001*eye(size(P));
+R = 0*eye(size(P));
 
 % Track Results
 y_cell_quadr = cell(N_iter+1, 1);
