@@ -149,7 +149,7 @@ function dx = torsion_oszillator_linear_PI(t, x_vec, r_vec, t_vec)
         0];
     C = [0, 0, 1, 0];
 
-    % State space (controlled system=
+    % State space (controlled system)
     A_cont = [A-Kp*b*C, KI*b;
         -C, 0];
     b_cont = [Kp*b;
