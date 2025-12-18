@@ -64,9 +64,17 @@ if save_traj
     % Create new file path
     filename = sprintf('Trajectory_%02d.mat', N_traj+1);
     filepath = fullfile(traj_dir, filename);
+
+    % Create struct
+    ref_traj = struct();
+
+    ref_traj.t_vec = t_vec;
+    ref_traj.phi2 = phi2;
+    ref_traj.phi2_p = phi2_p;
+    ref_traj.phi2_pp = phi2_pp;
     
-    % Save file
-    save(filepath, 't_vec', 'phi2', 'phi2_p', 'phi2_pp');
+    % Save data
+    save(filepath, 'ref_traj');
 end
 
 %% Plots
