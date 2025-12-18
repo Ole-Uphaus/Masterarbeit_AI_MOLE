@@ -129,7 +129,8 @@ legend('Location', 'best');
 
 subplot(2,2,4);  
 % plot(t_vec, phi1_p_cont, LineWidth=1, DisplayName='phi1p'); hold on;
-plot(t_vec, phi2_p_cont, LineWidth=1, DisplayName='phi2p');
+plot(t_vec, phi2_p_cont, LineWidth=1, DisplayName='phi2p'); hold on;
+plot(t_vec, ref_traj.phi2_p, LineWidth=1, DisplayName='reference');
 grid on;
 xlabel('Zeit [s]'); 
 ylabel('phip [rad/s]');
