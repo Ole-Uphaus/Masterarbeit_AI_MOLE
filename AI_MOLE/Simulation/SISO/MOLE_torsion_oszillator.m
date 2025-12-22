@@ -18,10 +18,9 @@ addpath(Model_Path);
 
 %% Parameters
 % MOLE architcture ('uncontrolled', 'serial')
-architecture = 'uncontrolled';
+architecture = 'serial';
 
 % Simulation parameters
-x0 = [0; 0; 0; 0];
 Ts = 0.01;
 T_end = 5;
 t_vec = 0:Ts:T_end;
@@ -49,6 +48,7 @@ switch architecture
 
         % Choose system model
         system_dynamics = @torsion_oszillator_linear;
+        x0 = [0; 0; 0; 0];
 
         params = struct();
 
@@ -72,6 +72,39 @@ switch architecture
         
         % Initialisation
         SISO_MOLE = SISO_MOLE_IO(r_vec, u_init, params);
+
+    case 'serial'
+        % Use the PI-controlled system for AI-MOLE while modifying the
+        % reference trajectory of the controller. The reference trajectory
+        % is used as initial input.
+
+        % Choose system model
+        system_dynamics = @torsion_oszillator_linear_PI;
+        x0 = [0; 0; 0; 0; 0];
+
+        params = struct();
+
+        % Parameters
+        params.m_delay = 1;
+        params.N_iter = 10;
+        params.H_trials = 3;
+        
+        % Choose weight initialisation Method ('Meindl', 'Stochastic', 'Heuristic',
+        % 'Robust', 'Manual')
+        params.weight_init_method = 'Stochastic';
+        
+        % Choose nonlinearity damping Parameters
+        params.use_nonlin_damping = true;
+        params.beta = 2;
+        
+        % Initial input Trajectory
+        u_init = r_vec;
+        
+        % Initialisation
+        SISO_MOLE = SISO_MOLE_IO(r_vec, u_init, params);
+
+    otherwise
+        error('Unbekannte Architektur ausgewählt.')
 end
 
 %% Run ILC
