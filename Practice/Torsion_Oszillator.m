@@ -40,7 +40,7 @@ phi2_p = x_sim(:, 4);
 %% Reference trajectory
 % Load trajectory file
 filename = 'Trajectory_01.mat';
-filepath = fullfile(pwd, '..', 'AI_MOLE', 'Test_Bench', 'Torsion_Oscillator', 'Reference_Trajectories', filename);
+filepath = fullfile(pwd, '..', 'AI_MOLE', 'Test_Bench', 'Torsion_Oszillator', 'Reference_Trajectories', filename);
 load(filepath);
 
 r_vec = ref_traj.phi2;
