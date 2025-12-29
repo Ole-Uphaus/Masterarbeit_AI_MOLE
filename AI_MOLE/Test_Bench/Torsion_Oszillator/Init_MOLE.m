@@ -94,7 +94,7 @@ end
 runs_dir = fullfile(pwd, 'Runs');
 
 % Date directory (today)
-today_str = datestr(datetime('today'), 'yyyy-mm-dd');
+today_str = datestr(datetime('today'), 'yyyy_mm_dd');
 date_dir = fullfile(runs_dir, today_str);
 
 if ~exist(date_dir, 'dir')
