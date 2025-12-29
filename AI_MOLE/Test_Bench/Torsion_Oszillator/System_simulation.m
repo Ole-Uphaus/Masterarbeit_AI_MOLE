@@ -68,6 +68,7 @@ opts = odeset( ...
 % Simulation step
 [t_sim, x_sim] = ode45(@(t,x) system_dynamics(t, x, u_vec, ref_traj.t_vec), ref_traj.t_vec, x0, opts);
 y_vec = x_sim(:, 3);
+disp('Simulation durchgeführt.')
 
 %% Save Results
 % Name

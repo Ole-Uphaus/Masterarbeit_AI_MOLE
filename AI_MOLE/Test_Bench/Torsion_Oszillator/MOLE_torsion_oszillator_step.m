@@ -38,15 +38,16 @@ load(sim_trial_filename);
 if init_update_timestamp < sim_trial_timestamp
     % Chech if this was the last iteration (no update will be performed - just
     % the last trajectory will be saved)
-    idx = find(~cellfun('isempty', SISO_MOLE.u_cell), 1, 'last');
+    idx_u = find(~cellfun('isempty', SISO_MOLE.u_cell), 1, 'last');
+    idx_y = find(~cellfun('isempty', SISO_MOLE.y_cell), 1, 'last');
 
-    if idx <= SISO_MOLE.N_iter
+    if idx_u <= SISO_MOLE.N_iter
         % Perform MOLE update
         [~] = SISO_MOLE.update_input(y_vec);
         disp('AI-MOLE Update durchgeführt.')
-    elseif idx == SISO_MOLE.N_iter+1
+    elseif (idx_u == SISO_MOLE.N_iter+1) && (idx_y == SISO_MOLE.N_iter)
         % Save last trajectory
-        SISO_MOLE.save_final_trajectory(y_sim);
+        SISO_MOLE.save_final_trajectory(y_vec);
         disp('Letzte trajektorie gespeichert.')
     else
         disp('Es wurde kein Update durchgeführt, da die maximale Anzahl an Iterationen erreicht wurde.')
