@@ -110,4 +110,5 @@ run_filename = sprintf('Run_%02d_%s.mat', run_idx, architecture);
 run_filepath = fullfile(date_dir, run_filename);
 
 % Save data
-save(run_filepath, 'SISO_MOLE', 'ref_traj');
+init_update_timestamp = datetime('now');    % Timestamp of initialisation
+save(run_filepath, 'SISO_MOLE', 'ref_traj', 'init_update_timestamp');
