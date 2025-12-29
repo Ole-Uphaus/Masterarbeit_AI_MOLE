@@ -67,7 +67,7 @@ opts = odeset( ...
 
 % Simulation step
 [t_sim, x_sim] = ode45(@(t,x) system_dynamics(t, x, u_vec, ref_traj.t_vec), ref_traj.t_vec, x0, opts);
-y_sim = x_sim(:, 3);
+y_vec = x_sim(:, 3);
 
 %% Save Results
 % Name
@@ -75,4 +75,4 @@ res_name = sprintf('Sim_Run_%s_%s.mat', parts{2}, date_string);
 
 % Save
 sim_trial_timestamp = datetime('now');  % Timestamp of simulation
-save(res_name, 'y_sim', 'sim_trial_timestamp');
+save(res_name, 'y_vec', 'sim_trial_timestamp');
