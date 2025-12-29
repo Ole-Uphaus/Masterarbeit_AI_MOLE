@@ -54,16 +54,13 @@ acc_bounds = [0, 0, 0, 0];
 
 %% Save reference trajectory
 if save_traj
-    % Path to directory
-    traj_dir = fullfile(pwd, 'Reference_Trajectories');
-    
-    % Number of files in dir
-    files = dir(fullfile(traj_dir, '*.mat'));
+    % Number of .mat-files in dir
+    files = dir(fullfile(pwd, '*.mat'));
     N_traj = numel(files);
     
     % Create new file path
     filename = sprintf('Trajectory_%02d.mat', N_traj+1);
-    filepath = fullfile(traj_dir, filename);
+    filepath = fullfile(pwd, filename);
 
     % Create struct
     ref_traj = struct();
