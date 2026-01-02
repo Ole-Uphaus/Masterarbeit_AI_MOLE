@@ -11,7 +11,7 @@ classdef SISO_MOLE_IO < handle
         m_delay             % System delay (in samples) - relative degree
         i_iter              % Current Iteration counter
         weight_init_method  % Tells, how the weighting Matrices are getting Initialized
-        use_nonlin_damping  % Tells, if nonlin damping should be used for Regularisation
+        nonlin_damping      % Tells, if nonlin damping should be used for Regularisation
         beta                % Parameter for nonlin damping
     end
     
@@ -27,7 +27,7 @@ classdef SISO_MOLE_IO < handle
             %           -N_iter              : Number of learning iterations
             %           -H_trials            : Number of previous trials used for GP training
             %           -weight_init_method  : Method being used for W, R, S initialisation
-            %           -use_nonlin_damping  : if nonlin damping should be used for Regularisation
+            %           -nonlin_damping      : if nonlin damping should be used for Regularisation
             %           -beta                : Parameter for nonlin damping
             %       sigma_n             : Measurement Noise (if known before)
             
@@ -60,7 +60,7 @@ classdef SISO_MOLE_IO < handle
             obj.H_trials = params.H_trials;
             obj.m_delay = params.m_delay;
             obj.weight_init_method = params.weight_init_method;
-            obj.use_nonlin_damping = params.use_nonlin_damping;
+            obj.nonlin_damping = params.nonlin_damping;
             obj.beta = params.beta;
         end
 
@@ -105,15 +105,13 @@ classdef SISO_MOLE_IO < handle
             obj.ILC_SISO.init_Quadr_type(W, S, R, P_reduced);
             u_vec_new = obj.ILC_SISO.Quadr_update(y_vec);
 
-            if obj.use_nonlin_damping
-                % Apply damping based on nonlinearity
-                u_vec_new = obj.apply_nonlinearity_damping(u_vec_new, P);
-    
-                % Update current input trajectory inside the ILC object, to
-                % ensure that the next optimisation step uses the right input
-                % trajectory to update
-                obj.ILC_SISO.set_current_u_vec(u_vec_new);
-            end
+            % Apply damping based on nonlinearity
+            u_vec_new = obj.apply_nonlinearity_damping(u_vec_new, P);
+
+            % Update current input trajectory inside the ILC object, to
+            % ensure that the next optimisation step uses the right input
+            % trajectory to update
+            obj.ILC_SISO.set_current_u_vec(u_vec_new);
 
             % Save new input
             obj.u_cell{obj.i_iter+1} = [u_vec_new; 0];
@@ -238,23 +236,39 @@ classdef SISO_MOLE_IO < handle
             % Compute delta_u
             delta_u = [u_vec_new; 0] - obj.u_cell{obj.i_iter};
 
-            % Prediction using GP
-            [y_pred_GP, y_std_GP] = obj.GP_SISO.predict_trajectory([u_vec_new; 0]);
+            switch obj.nonlin_damping
+                case 'none'
+                    % No damping applid so alpha is set to one
+                    alpha = 1;
+                
+                case 'relative'
+                    % Use the relative error between linearized Gp and
+                    % actual GP to parametrize alpha
+        
+                    % Prediction using GP
+                    [y_pred_GP, y_std_GP] = obj.GP_SISO.predict_trajectory([u_vec_new; 0]);
+        
+                    % Prediction using Linearisation
+                    y_pred_lin = obj.GP_SISO.predict_trajectory(obj.u_cell{obj.i_iter}) + P*delta_u;
+        
+                    % Relative prediction difference (use variances too)
+                    % eta = norm((y_pred_GP - y_pred_lin), 2) / (norm((P*delta_u), 2) + eps);
+                    eta = (norm((y_pred_GP - y_pred_lin), 2) + norm(obj.beta*y_std_GP, 2)) / (norm((P*delta_u), 2) + eps);
+                    % eta = (norm((y_pred_GP - y_pred_lin), 2) + norm(obj.beta*y_std_GP, 2)) / (norm((P*delta_u), 2) + norm(obj.beta*y_std_GP, 2) + eps);
+        
+                    % Damping factor
+                    alpha = 1 / (1 + eta);
+                    % alpha = max(1-eta, 0.1);
 
-            % Prediction using Linearisation
-            y_pred_lin = obj.GP_SISO.predict_trajectory(obj.u_cell{obj.i_iter}) + P*delta_u;
+                    % Print parameters
+                    fprintf('    eta = %.3f | alpha = %.3f \n', eta, alpha);
 
-            % Relative prediction difference (use variances too)
-            % eta = norm((y_pred_GP - y_pred_lin), 2) / (norm((P*delta_u), 2) + eps);
-            % eta = (norm((y_pred_GP - y_pred_lin), 2) + norm(obj.beta*y_std_GP, 2)) / (norm((P*delta_u), 2) + eps);
-            eta = (norm((y_pred_GP - y_pred_lin), 2) + norm(obj.beta*y_std_GP, 2)) / (norm((P*delta_u), 2) + norm(obj.beta*y_std_GP, 2) + eps);
+                case 'minimize'
+                    % 
 
-            % Damping factor
-            alpha = 1 / (1 + eta);
-            % alpha = max(1-eta, 0.1);
-            
-            % Print parameters
-            fprintf('    eta = %.3f | alpha = %.3f \n', eta, alpha);
+                otherwise
+                    error('Unbekannte nichtlineare Dämpfungsmethode ausgewählt.')
+            end
 
             % Calculate damped input Trajectory
             u_vec_new_damped = obj.u_cell{obj.i_iter} + alpha*delta_u;
