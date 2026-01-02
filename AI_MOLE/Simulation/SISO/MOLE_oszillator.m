@@ -44,6 +44,44 @@ white = true;       % if white == true -> white noise is sampled - no filter
 sigma = 1;
 [r_vec, ~, ~] = Random_C2_trajectory_1D(2, t_vec, sigma);
 
+%% System model
+
+% Choose system model ('linear', 'nonlinear', 'nonlinear_stribeck',)
+system_model = 'nonlinear';
+
+switch system_model
+    case 'linear'
+        % Use the linear system for AI-MOLE
+        dynamic_model = @oszillator_linear;
+
+        % Initial input Trajectory (simple sin or automatic generated)
+        sigma_I = 0.1;  % for stibeck model = 1, otherwise = 0.1
+        u_init_sin = sigma_I*sin(2*pi/T_end.*t_vec');
+        u_init = u_init_sin;        % u_init_sin / u_init_auto
+
+    case 'nonlinear'
+        % Use the nonlinear system for AI-MOLE
+        dynamic_model = @oszillator_nonlinear;
+
+        % Initial input Trajectory (simple sin or automatic generated)
+        sigma_I = 0.1;  % for stibeck model = 1, otherwise = 0.1
+        u_init_sin = sigma_I*sin(2*pi/T_end.*t_vec');
+        u_init = u_init_sin;        % u_init_sin / u_init_auto
+
+    case 'nonlinear_stribeck'
+        % Use the nonlinear system with stribeck friction for AI-MOLE
+        dynamic_model = @oszillator_nonlinear_stribeck;
+
+        % Initial input Trajectory (simple sin or automatic generated)
+        sigma_I = 1;  % for stibeck model = 1, otherwise = 0.1
+        u_init_sin = sigma_I*sin(2*pi/T_end.*t_vec');
+        u_init = u_init_sin;        % u_init_sin / u_init_auto
+
+    otherwise
+        error('Unbekanntes Systemmodell ausgewählt.')
+
+end
+
 %% Determine initial input Trajectory
 % Parameters
 alpha = 0.3;   % Initial alpha (percentage of amplitude of reference signal)
@@ -63,7 +101,7 @@ for i = 1:max_iter
 
     % System Simulation
     v_vec = Gen_noise_Butter(t_vec, sigma_v, fc_v, white);
-    [t_sim, x_sim] = ode45(@(t,x) oszillator_linear(t, x, u_init_auto, t_vec), t_vec, x0, opts);
+    [t_sim, x_sim] = ode45(@(t,x) dynamic_model(t, x, u_init_auto, t_vec), t_vec, x0, opts);
     y_sim = x_sim(:, 1) + v_vec;
 
     % Calculate output variance
@@ -99,11 +137,6 @@ params.weight_init_method = 'Stochastic';
 params.use_nonlin_damping = true;
 params.beta = 2;
 
-% Initial input Trajectory (simple sin or automatic generated)
-sigma_I = 0.1;  % for stibeck model = 1, otherwise = 0.1
-u_init_sin = sigma_I*sin(2*pi/T_end.*t_vec');
-u_init = u_init_sin;        % u_init_sin / u_init_auto
-
 % Initialisation
 SISO_MOLE = SISO_MOLE_IO(r_vec, u_init, params);
 
@@ -112,7 +145,7 @@ tic;
 % Update Loop
 u_sim = u_init;
 v_vec = Gen_noise_Butter(t_vec, sigma_v, fc_v, white);
-[t_sim, x_sim] = ode45(@(t,x) oszillator_linear(t, x, u_sim, t_vec), t_vec, x0, opts);
+[t_sim, x_sim] = ode45(@(t,x) dynamic_model(t, x, u_sim, t_vec), t_vec, x0, opts);
 y_sim = x_sim(:, 1) + v_vec;
 for i = 1:params.N_iter
     % Update input
@@ -120,7 +153,7 @@ for i = 1:params.N_iter
 
     % Simulate the system
     v_vec = Gen_noise_Butter(t_vec, sigma_v, fc_v, white);
-    [t_sim, x_sim] = ode45(@(t,x) oszillator_linear(t, x, u_sim, t_vec), t_vec, x0, opts);
+    [t_sim, x_sim] = ode45(@(t,x) dynamic_model(t, x, u_sim, t_vec), t_vec, x0, opts);
     y_sim = x_sim(:, 1) + v_vec;
 end
 SISO_MOLE.save_final_trajectory(y_sim);
