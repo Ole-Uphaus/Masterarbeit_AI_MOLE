@@ -264,7 +264,32 @@ classdef SISO_MOLE_IO < handle
                     fprintf('    eta = %.3f | alpha = %.3f \n', eta, alpha);
 
                 case 'minimize'
-                    % 
+                    % Use the GP to Calculate the expected error (with
+                    % uncertainty) for different alpha values (grid search)
+
+                    % Alpha values
+                    alpha_vec = linspace(0.1, 1, 20);
+                    alpha_vec = alpha_vec(:);
+
+                    % Expected value of the quadratic error
+                    expected_sq_error_vec = zeros(length(alpha_vec), 1);
+
+                    for i = 1:length(alpha_vec)
+                        % GP prediction depending of alpha
+                        u_vec_temp = obj.u_cell{obj.i_iter} + alpha_vec(i)*delta_u;
+                        [y_pred_temp, y_std_temp] = obj.GP_SISO.predict_trajectory(u_vec_temp);
+
+                        % Calculate expected squared error
+                        expected_sq_error_vec(i) = sum((obj.ILC_SISO.r_vec - y_pred_temp).^2) + sum(y_std_temp.^2);
+                        % expected_sq_error_vec(i) = norm((obj.ILC_SISO.r_vec - y_pred_temp), 2) + 3*norm(y_std_temp, 2);
+                    end
+
+                    % Find minimum and optimal alpha
+                    [~, idx_min] = min(expected_sq_error_vec);
+                    alpha = alpha_vec(idx_min);
+
+                    % Print parameters
+                    fprintf('    alpha = %.3f \n', alpha);
 
                 otherwise
                     error('Unbekannte nichtlineare Dämpfungsmethode ausgewählt.')
