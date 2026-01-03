@@ -253,8 +253,9 @@ classdef SISO_MOLE_IO < handle
         
                     % Relative prediction difference (use variances too)
                     % eta = norm((y_pred_GP - y_pred_lin), 2) / (norm((P*delta_u), 2) + eps);
-                    eta = (norm((y_pred_GP - y_pred_lin), 2) + norm(obj.beta*y_std_GP, 2)) / (norm((P*delta_u), 2) + eps);
+                    % eta = (norm((y_pred_GP - y_pred_lin), 2) + norm(obj.beta*y_std_GP, 2)) / (norm((P*delta_u), 2) + eps);
                     % eta = (norm((y_pred_GP - y_pred_lin), 2) + norm(obj.beta*y_std_GP, 2)) / (norm((P*delta_u), 2) + norm(obj.beta*y_std_GP, 2) + eps);
+                    eta = norm((abs(y_pred_GP - y_pred_lin) + obj.beta*y_std_GP), 2) / (norm((P*delta_u), 2) + eps);
         
                     % Damping factor
                     alpha = 1 / (1 + eta);
