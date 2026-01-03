@@ -47,7 +47,7 @@ sigma = 1;
 %% System model
 
 % Choose system model ('linear', 'nonlinear', 'nonlinear_stribeck',)
-system_model = 'linear';
+system_model = 'nonlinear';
 
 switch system_model
     case 'linear'
@@ -133,9 +133,9 @@ params.H_trials = 3;
 % 'Robust', 'Manual')
 params.weight_init_method = 'Stochastic';
 
-% Choose nonlinearity damping method ('none', 'relative', 'minimize')
-params.nonlin_damping = 'relative';
-params.beta = 2;
+% Choose nonlinearity damping method ('none', 'relative_1', 'relative_2', 'minimize')
+params.nonlin_damping = 'relative_2';
+params.beta = 0;
 
 % Initialisation
 SISO_MOLE = SISO_MOLE_IO(r_vec, u_init, params);
@@ -180,8 +180,8 @@ title('Compare desired and simulated Trajectory');
 legend('Location', 'best');
 
 subplot(2,2,3);   % 1 Zeile, 2 Spalten, erster Plot
-plot(0:(length(SISO_MOLE.ILC_SISO.RMSE_log)-1), SISO_MOLE.ILC_SISO.RMSE_log, LineWidth=1, DisplayName='ILC Quadr');
-% semilogy(0:(length(SISO_MOLE.ILC_SISO.RMSE_log)-1), SISO_MOLE.ILC_SISO.RMSE_log, LineWidth=1, DisplayName='ILC Quadr');
+% plot(0:(length(SISO_MOLE.ILC_SISO.RMSE_log)-1), SISO_MOLE.ILC_SISO.RMSE_log, LineWidth=1, DisplayName='ILC Quadr');
+semilogy(0:(length(SISO_MOLE.ILC_SISO.RMSE_log)-1), SISO_MOLE.ILC_SISO.RMSE_log, LineWidth=1, DisplayName='ILC Quadr');
 grid on;
 xlabel('Iteration'); 
 ylabel('RMSE');

@@ -241,7 +241,7 @@ classdef SISO_MOLE_IO < handle
                     % No damping applid so alpha is set to one
                     alpha = 1;
                 
-                case 'relative'
+                case 'relative_1'
                     % Use the relative error between linearized Gp and
                     % actual GP to parametrize alpha
         
@@ -252,14 +252,30 @@ classdef SISO_MOLE_IO < handle
                     y_pred_lin = obj.GP_SISO.predict_trajectory(obj.u_cell{obj.i_iter}) + P*delta_u;
         
                     % Relative prediction difference (use variances too)
-                    % eta = norm((y_pred_GP - y_pred_lin), 2) / (norm((P*delta_u), 2) + eps);
-                    % eta = (norm((y_pred_GP - y_pred_lin), 2) + norm(obj.beta*y_std_GP, 2)) / (norm((P*delta_u), 2) + eps);
-                    % eta = (norm((y_pred_GP - y_pred_lin), 2) + norm(obj.beta*y_std_GP, 2)) / (norm((P*delta_u), 2) + norm(obj.beta*y_std_GP, 2) + eps);
                     eta = norm((abs(y_pred_GP - y_pred_lin) + obj.beta*y_std_GP), 2) / (norm((P*delta_u), 2) + eps);
         
                     % Damping factor
                     alpha = 1 / (1 + eta);
                     % alpha = max(1-eta, 0.1);
+
+                    % Print parameters
+                    fprintf('    eta = %.3f | alpha = %.3f \n', eta, alpha);
+                
+                case 'relative_2'
+                    % Use the relative error between linearized Gp and
+                    % actual GP to parametrize alpha
+        
+                    % Prediction using GP
+                    [y_pred_GP, y_std_GP] = obj.GP_SISO.predict_trajectory([u_vec_new; 0]);
+        
+                    % Prediction using Linearisation
+                    y_pred_lin = obj.GP_SISO.predict_trajectory(obj.u_cell{obj.i_iter}) + P*delta_u;
+        
+                    % Relative prediction difference (use variances too)
+                    eta = norm((abs(y_pred_GP - y_pred_lin) + obj.beta*y_std_GP), 2) / (norm((abs(P*delta_u) + abs(y_pred_GP - y_pred_lin) + obj.beta*y_std_GP), 2) + eps);
+        
+                    % Damping factor
+                    alpha = 1 - eta;
 
                     % Print parameters
                     fprintf('    eta = %.3f | alpha = %.3f \n', eta, alpha);
@@ -269,7 +285,7 @@ classdef SISO_MOLE_IO < handle
                     % uncertainty) for different alpha values (grid search)
 
                     % Alpha values
-                    alpha_vec = linspace(0.1, 1, 20);
+                    alpha_vec = linspace(0.1, 1, 10);
                     alpha_vec = alpha_vec(:);
 
                     % Expected value of the quadratic error
