@@ -1,10 +1,10 @@
 % -------------------------------------------------------------
 % Autor:      Ole Uphaus
-% Datum:      18.11.2025
+% Datum:      04.01.2026
 % Beschreibung:
-% In diesem Skript werde ich das Systemmodell des Torsionsschwingers
-% untersuchen, sodass ich es später für AI-MOLE nutzen kann. Dabei werde
-% ich sowohl das ungeregelte als auch das geregelte System untersuchen.
+% In diesem Skript werde ich eine Zustandsregelung für den
+% Torsionsschwinger auf basis von ASK entwerfen, um dies später für ILC
+% nutzen zu können.
 % -------------------------------------------------------------
 
 clc
@@ -37,26 +37,7 @@ phi1_p = x_sim(:, 2);
 phi2 = x_sim(:, 3);
 phi2_p = x_sim(:, 4);
 
-%% Reference trajectory
-% Load trajectory file
-filename = 'Trajectory_01.mat';
-filepath = fullfile(pwd, '..', '..', 'AI_MOLE', 'Test_Bench', 'Torsion_Oszillator', 'Reference_Trajectories', filename);
-load(filepath);
-
-r_vec = ref_traj.phi2;
-
-%% Simulation (controlled system)
-% New state vector (because of the additional integrator state)
-x0 = [0; 0; 0; 0; 0];
-
-% Simulation
-[~, x_sim] = ode45(@(t,x) torsion_oszillator_linear_PI(t, x, r_vec, t_vec), t_vec, x0, opts);
-phi1_cont = x_sim(:, 1);
-phi1_p_cont = x_sim(:, 2);
-phi2_cont = x_sim(:, 3);
-phi2_p_cont = x_sim(:, 4);
-
-%% Stability analysis
+%% Controller design (state feedback control)
 % Simulation parameters
 J1  = 0.031;    % kgm^2
 J2  = 0.237;    % kgm^2
@@ -64,36 +45,39 @@ c_phi = 9;      % Nm/rad
 d_v1 = 0.070;   % Nms/rad
 d_v2 = 0.231;   % Nms/rad
 
-% Controller parameters
-Kp = 3;
-KI = 1;
-
 % State space
 A = [0, 1, 0, 0;
     -c_phi/J1, -d_v1/J1, c_phi/J1, 0;
     0, 0, 0, 1;
     c_phi/J2, 0, -c_phi/J2, -d_v2/J2];
+
 b = [0;
     1/J1;
     0;
     0];
-C = [0, 0, 1, 0];
 
-% State space (controlled system)
-A_cont = [A-Kp*b*C, KI*b;
-    -C, 0];
-b_cont = [Kp*b;
-    1];
+% LQR weighting matrices (as in ASK)
+Q_LQR = diag([50, 1, 50, 1]);
+R_LQR = 1;
+
+% LQR gain
+k_T = lqr(A, b, Q_LQR, R_LQR);
 
 % Eigenvalues
-eig_uncont = eig(A);
-eig_cont = eig(A_cont);
-
-% Print
-fprintf('Eigenwerte des ungeregelten Systems (A)\n');
-disp(eig_uncont);
+eig_cont = eig(A - b*k_T);
 fprintf('Eigenwerte des geregelten Systems (A_cont)\n');
 disp(eig_cont);
+
+%% Simulation (controlled System)
+% Simulation
+[~, x_sim] = ode45(@(t,x) torsion_oszillator_linear_LQR(t, x, u_inp, t_vec), t_vec, x0, opts);
+phi1_cont = x_sim(:, 1);
+phi1_p_cont = x_sim(:, 2);
+phi2_cont = x_sim(:, 3);
+phi2_p_cont = x_sim(:, 4);
+
+%% Feedforward control
+
 
 %% Plots
 figure;
@@ -120,21 +104,19 @@ legend('Location', 'best');
 subplot(2,2,3);   
 % plot(t_vec, phi1_cont, LineWidth=1, DisplayName='phi1'); hold on;
 plot(t_vec, phi2_cont, LineWidth=1, DisplayName='phi2'); hold on;
-plot(t_vec, r_vec, LineWidth=1, DisplayName='reference');
 grid on;
 xlabel('Zeit [s]'); 
 ylabel('phi [rad]');
-title('Simulation results (feedback controller)');
+title('Simulation results (controlled system)');
 legend('Location', 'best');
 
 subplot(2,2,4);  
 % plot(t_vec, phi1_p_cont, LineWidth=1, DisplayName='phi1p'); hold on;
 plot(t_vec, phi2_p_cont, LineWidth=1, DisplayName='phi2p'); hold on;
-plot(t_vec, ref_traj.phi2_p, LineWidth=1, DisplayName='reference');
 grid on;
 xlabel('Zeit [s]'); 
 ylabel('phip [rad/s]');
-title('Simulation results (feedback controller)');
+title('Simulation results (controlled system)');
 legend('Location', 'best');
 
 %% Local functions
@@ -163,7 +145,7 @@ function dx = torsion_oszillator_linear(t, x_vec, u_vec, t_vec)
     dx = A*x_vec + b*u;
 end
 
-function dx = torsion_oszillator_linear_PI(t, x_vec, r_vec, t_vec)
+function dx = torsion_oszillator_linear_LQR(t, x_vec, u_vec, t_vec)
     % Simulation parameters
     J1  = 0.031;    % kgm^2
     J2  = 0.237;    % kgm^2
@@ -171,12 +153,8 @@ function dx = torsion_oszillator_linear_PI(t, x_vec, r_vec, t_vec)
     d_v1 = 0.070;   % Nms/rad
     d_v2 = 0.231;   % Nms/rad
 
-    % Controller parameters
-    Kp = 3;
-    KI = 1;
-
-    % Input (reference trajectory)
-    r = interp1(t_vec, r_vec, t, 'previous', 'extrap');
+    % Input
+    u_in = interp1(t_vec, u_vec, t, 'previous', 'extrap');
 
     % State space
     A = [0, 1, 0, 0;
@@ -187,14 +165,11 @@ function dx = torsion_oszillator_linear_PI(t, x_vec, r_vec, t_vec)
         1/J1;
         0;
         0];
-    C = [0, 0, 1, 0];
 
-    % State space (controlled system)
-    A_cont = [A-Kp*b*C, KI*b;
-        -C, 0];
-    b_cont = [Kp*b;
-        1];
-     
+    % Control law
+    k_T = [7.004636887952207, 1.129661405169407, 2.995363112047798, 1.415299352286920];
+    u = u_in - k_T*x_vec;
+    
     % Dynamics
-    dx = A_cont*x_vec + b_cont*r;
+    dx = A*x_vec + b*u;
 end
