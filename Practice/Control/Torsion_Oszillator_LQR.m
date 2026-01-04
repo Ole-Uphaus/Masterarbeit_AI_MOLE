@@ -56,6 +56,8 @@ b = [0;
     0;
     0];
 
+c_T = [0, 0, 1, 0];
+
 % LQR weighting matrices (as in ASK)
 Q_LQR = diag([50, 1, 50, 1]);
 R_LQR = 1;
@@ -76,10 +78,45 @@ phi1_p_cont = x_sim(:, 2);
 phi2_cont = x_sim(:, 3);
 phi2_p_cont = x_sim(:, 4);
 
+%% Reference trajectory
+% Load trajectory file
+filename = 'Trajectory_01.mat';
+filepath = fullfile(pwd, '..', '..', 'AI_MOLE', 'Test_Bench', 'Torsion_Oszillator', 'Reference_Trajectories', filename);
+load(filepath);
+
 %% Feedforward control
+% Calculate stationary control signal
+u_ff = - ref_traj.phi2 ./ (c_T*inv((A-b*k_T))*b);
 
+%% Simulation (feedforward controlled System)
+% Simulation
+[~, x_sim] = ode45(@(t,x) torsion_oszillator_linear_LQR(t, x, u_ff, t_vec), t_vec, x0, opts);
+phi1_cont_ff = x_sim(:, 1);
+phi1_p_cont_ff = x_sim(:, 2);
+phi2_cont_ff = x_sim(:, 3);
+phi2_p_cont_ff = x_sim(:, 4);
 
-%% Plots
+%% Dynamic feedforward control
+% Controled dynamics
+A_cont = A - b*k_T;
+b_cont = b;
+sys_cont = ss(A_cont, b_cont, c_T, 0);
+
+% Transfer function
+G_cont = tf(sys_cont);
+
+% Control input (stop at second derivative)
+u_dff = (G_cont.Denominator{1}(3).*ref_traj.phi2_pp + G_cont.Denominator{1}(4).*ref_traj.phi2_p + G_cont.Denominator{1}(5).*ref_traj.phi2) ./ G_cont.Numerator{1}(5);
+
+%% Simulation (dynamic feedforward controlled System)
+% Simulation
+[~, x_sim] = ode45(@(t,x) torsion_oszillator_linear_LQR(t, x, u_dff, t_vec), t_vec, x0, opts);
+phi1_cont_dff = x_sim(:, 1);
+phi1_p_cont_dff = x_sim(:, 2);
+phi2_cont_dff = x_sim(:, 3);
+phi2_p_cont_dff = x_sim(:, 4);
+
+%% Plot 1
 figure;
 set(gcf, 'Position', [100 100 1200 800]);
 
@@ -117,6 +154,46 @@ grid on;
 xlabel('Zeit [s]'); 
 ylabel('phip [rad/s]');
 title('Simulation results (controlled system)');
+legend('Location', 'best');
+
+%% Plot 2
+figure;
+set(gcf, 'Position', [100 100 1200 800]);
+
+subplot(2,2,1);   
+plot(t_vec, ref_traj.phi2, LineWidth=1, DisplayName='desired'); hold on;
+plot(t_vec, phi2_cont_ff, LineWidth=1, DisplayName='phi2');
+grid on;
+xlabel('Zeit [s]'); 
+ylabel('phi [rad]');
+title('Simulation results (feedforward control)');
+legend('Location', 'best');
+
+subplot(2,2,2);  
+plot(t_vec, ref_traj.phi2_p, LineWidth=1, DisplayName='desired'); hold on;
+plot(t_vec, phi2_p_cont_ff, LineWidth=1, DisplayName='phi2p');
+grid on;
+xlabel('Zeit [s]'); 
+ylabel('phip [rad/s]');
+title('Simulation results (feedforward control)');
+legend('Location', 'best');
+
+subplot(2,2,3);   
+plot(t_vec, ref_traj.phi2, LineWidth=1, DisplayName='desired'); hold on;
+plot(t_vec, phi2_cont_dff, LineWidth=1, DisplayName='phi2');
+grid on;
+xlabel('Zeit [s]'); 
+ylabel('phi [rad]');
+title('Simulation results (dynamic feedforward control)');
+legend('Location', 'best');
+
+subplot(2,2,4);  
+plot(t_vec, ref_traj.phi2_p, LineWidth=1, DisplayName='desired'); hold on;
+plot(t_vec, phi2_p_cont_dff, LineWidth=1, DisplayName='phi2p');
+grid on;
+xlabel('Zeit [s]'); 
+ylabel('phip [rad/s]');
+title('Simulation results (dynamic feedforward control)');
 legend('Location', 'best');
 
 %% Local functions
