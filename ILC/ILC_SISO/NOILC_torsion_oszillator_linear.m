@@ -85,11 +85,84 @@ switch architecture
         % Parameters
         N_iter = 10;
         W = eye(size(P));
-        S = 0.0001*eye(size(P));
+        S = 0.005*eye(size(P));
         R = 0*eye(size(P));
 
         % Initial Input Trajectory
         u_init = zeros(size(r_vec, 1), 1);
+        
+        % Initialisation
+        ILC_Quadr = ILC_SISO(r_vec, m_delay, u_init);
+        ILC_Quadr.init_Quadr_type(W, S, R, P)
+        % ILC_Quadr.init_Q_lowpass(Q_fc, Q_order, Ts);
+
+    case 'serial_LQR'
+        % Use the controlled System for model based ILC
+
+        % Controlled System Dynamics
+        k_T = [7.004636887952207, 1.129661405169407, 2.995363112047798, 1.415299352286920];
+        A_cont = A - B*k_T;
+        B_cont = B;
+        C_cont = C;
+        D_cont = D;
+
+        % System dynamics
+        sys_cont = ss(A_cont,B_cont,C_cont,D_cont);
+        sys_disc = c2d(sys_cont, Ts, 'zoh');
+        [Ad,Bd,Cd,Dd] = ssdata(sys_disc);
+
+        % Choose system model
+        system_dynamics = @torsion_oszillator_linear_LQR;
+        x0 = [0; 0; 0; 0];
+
+        % Lifted system dynamics
+        P = Lifted_dynamics_linear_SISO(Ad, Bd, Cd, N, m_delay);
+        
+        % Parameters
+        N_iter = 10;
+        W = eye(size(P));
+        S = 0.000000001*eye(size(P));
+        R = 0*eye(size(P));
+
+        % Initial Input Trajectory
+        u_init = zeros(size(r_vec, 1), 1);
+        
+        % Initialisation
+        ILC_Quadr = ILC_SISO(r_vec, m_delay, u_init);
+        ILC_Quadr.init_Quadr_type(W, S, R, P)
+        % ILC_Quadr.init_Q_lowpass(Q_fc, Q_order, Ts);
+
+    case 'serial_LQR_ff'
+        % Use the controlled System for model based ILC
+
+        % Controlled System Dynamics (with static feedforward gain)
+        k_T = [7.004636887952207, 1.129661405169407, 2.995363112047798, 1.415299352286920];
+        S_gain = 10.000000000000009;
+        A_cont = A - B*k_T;
+        B_cont = B * S_gain;
+        C_cont = C;
+        D_cont = D;
+
+        % System dynamics
+        sys_cont = ss(A_cont,B_cont,C_cont,D_cont);
+        sys_disc = c2d(sys_cont, Ts, 'zoh');
+        [Ad,Bd,Cd,Dd] = ssdata(sys_disc);
+
+        % Choose system model
+        system_dynamics = @torsion_oszillator_linear_LQR_ff;
+        x0 = [0; 0; 0; 0];
+
+        % Lifted system dynamics
+        P = Lifted_dynamics_linear_SISO(Ad, Bd, Cd, N, m_delay);
+        
+        % Parameters
+        N_iter = 10;
+        W = eye(size(P));
+        S = 0.001*eye(size(P));
+        R = 0*eye(size(P));
+
+        % Initial Input Trajectory
+        u_init = r_vec;
         
         % Initialisation
         ILC_Quadr = ILC_SISO(r_vec, m_delay, u_init);
@@ -123,3 +196,50 @@ for i = 1:N_iter
 end
 % Calculate and log final error
 ILC_Quadr.calculate_final_error(y_sim);
+
+%% Plot results
+figure;
+set(gcf, 'Position', [100 100 1200 800]);
+
+subplot(2,2,1);
+plot(t_vec, r_vec, LineWidth=1, DisplayName='desired'); hold on;
+for i = 1:N_iter
+    plot(t_vec, y_cell_quadr{i}, LineWidth=1, Color=[0.5 0.5 0.5], HandleVisibility='off');
+end
+plot(t_vec, y_cell_quadr{N_iter+1}, LineWidth=1, DisplayName=sprintf('Iteration %d', N_iter));
+grid on;
+xlabel('Zeit [s]'); 
+ylabel('x [m]');
+title('Compare desired and simulated Trajectory');
+legend()
+
+subplot(2,2,3);
+% plot(0:(length(ILC_Quadr.RMSE_log)-1), ILC_Quadr.RMSE_log, LineWidth=1, DisplayName='ILC Quadr'); hold on;
+semilogy(0:(length(ILC_Quadr.RMSE_log)-1), ILC_Quadr.RMSE_log, LineWidth=1, DisplayName='ILC Quadr'); hold on;
+grid on;
+xlabel('Iteration'); 
+ylabel('RMSE');
+title('Compare error development');
+legend()
+
+subplot(2,2,2);
+% plot(t_vec, w_vec, LineWidth=1, DisplayName='proc'); hold on;
+% plot(t_vec, w_rep_vec, LineWidth=1, DisplayName='proc rep');
+% plot(t_vec, v_vec, LineWidth=1, DisplayName='meas');
+grid on;
+xlabel('Zeit [s]'); 
+ylabel('x [m]');
+title('Compare process and measurement noise');
+legend()
+
+subplot(2,2,4);
+hold on;
+for i = 1:N_iter
+    plot(t_vec, u_cell_quadr{i}, LineWidth=1, Color=[0.5 0.5 0.5], HandleVisibility='off');
+end
+plot(t_vec, u_cell_quadr{N_iter+1}, LineWidth=1, DisplayName=sprintf('Iteration %d', N_iter));
+grid on;
+xlabel('Zeit [s]'); 
+ylabel('F [N]');
+title('Input Signal');
+legend()
