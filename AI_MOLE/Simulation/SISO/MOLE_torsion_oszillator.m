@@ -17,8 +17,8 @@ Model_Path = fullfile(base_dir, '..', '..', '..', 'System_Models');
 addpath(Model_Path);
 
 %% Parameters
-% MOLE architcture ('uncontrolled', 'serial')
-architecture = 'serial';
+% MOLE architcture ('uncontrolled', 'serial_PI', 'serial_LQR')
+architecture = 'serial_LQR';
 
 % Simulation parameters
 Ts = 0.01;
@@ -61,19 +61,18 @@ switch architecture
         % 'Robust', 'Manual')
         params.weight_init_method = 'Stochastic';
         
-        % Choose nonlinearity damping Parameters
-        params.use_nonlin_damping = true;
-        params.beta = 2;
+        % Choose nonlinearity damping method ('none', 'relative_1', 'relative_2', 'minimize')
+        params.nonlin_damping = 'relative_2';
+        params.beta = 0.5;
         
         % Initial input Trajectory (simple sin or automatic generated)
         sigma_I = 0.1;
-        u_init_sin = sigma_I*sin(2*pi/T_end.*t_vec');
-        u_init = u_init_sin;        % u_init_sin / u_init_auto
+        u_init = sigma_I*sin(2*pi/T_end.*t_vec');
         
         % Initialisation
         SISO_MOLE = SISO_MOLE_IO(r_vec, u_init, params);
 
-    case 'serial'
+    case 'serial_PI'
         % Use the PI-controlled system for AI-MOLE while modifying the
         % reference trajectory of the controller. The reference trajectory
         % is used as initial input.
@@ -93,12 +92,43 @@ switch architecture
         % 'Robust', 'Manual')
         params.weight_init_method = 'Stochastic';
         
-        % Choose nonlinearity damping Parameters
-        params.use_nonlin_damping = true;
-        params.beta = 2;
+        % Choose nonlinearity damping method ('none', 'relative_1', 'relative_2', 'minimize')
+        params.nonlin_damping = 'relative_2';
+        params.beta = 0.1;
         
         % Initial input Trajectory
         u_init = r_vec;
+        
+        % Initialisation
+        SISO_MOLE = SISO_MOLE_IO(r_vec, u_init, params);
+
+    case 'serial_LQR'
+        % Use the state feedback controlled (LQR) system for AI-MOLE while
+        % modifying the input trajectory of the controlled system.
+        % Initialize with simple input Trajectory.
+
+        % Choose system model
+        system_dynamics = @torsion_oszillator_linear_LQR;
+        x0 = [0; 0; 0; 0];
+
+        params = struct();
+
+        % Parameters
+        params.m_delay = 1;
+        params.N_iter = 10;
+        params.H_trials = 3;
+        
+        % Choose weight initialisation Method ('Meindl', 'Stochastic', 'Heuristic',
+        % 'Robust', 'Manual')
+        params.weight_init_method = 'Stochastic';
+        
+        % Choose nonlinearity damping method ('none', 'relative_1', 'relative_2', 'minimize')
+        params.nonlin_damping = 'relative_2';
+        params.beta = 0.1;
+        
+        % Initial input Trajectory (simple sin or automatic generated)
+        sigma_I = 0.1;
+        u_init = sigma_I*sin(2*pi/T_end.*t_vec');
         
         % Initialisation
         SISO_MOLE = SISO_MOLE_IO(r_vec, u_init, params);
@@ -144,7 +174,8 @@ title('Compare desired and simulated Trajectory');
 legend('Location', 'best');
 
 subplot(2,2,3);   % 1 Zeile, 2 Spalten, erster Plot
-plot(0:(length(SISO_MOLE.ILC_SISO.RMSE_log)-1), SISO_MOLE.ILC_SISO.RMSE_log, LineWidth=1, DisplayName='ILC Quadr');
+% plot(0:(length(SISO_MOLE.ILC_SISO.RMSE_log)-1), SISO_MOLE.ILC_SISO.RMSE_log, LineWidth=1, DisplayName='ILC Quadr');
+semilogy(0:(length(SISO_MOLE.ILC_SISO.RMSE_log)-1), SISO_MOLE.ILC_SISO.RMSE_log, LineWidth=1, DisplayName='ILC Quadr');
 grid on;
 xlabel('Iteration'); 
 ylabel('RMSE');
