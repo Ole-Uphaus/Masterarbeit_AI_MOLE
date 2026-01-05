@@ -69,7 +69,7 @@ N_iter = 10;
 x0 = [0;
     0]; 
 W = eye(size(P));
-S = 0.001*eye(size(P));
+S = 0.0001*eye(size(P));
 R = 0*eye(size(P));
 
 % Track Results
@@ -123,7 +123,7 @@ set(gcf, 'Position', [100 100 1200 800]);
 subplot(2,2,1);
 plot(t_vec, r_vec, LineWidth=1, DisplayName='desired'); hold on;
 for i = 1:N_iter
-    plot(t_vec, y_cell_quadr{i}, LineWidth=1, Color=[0.5 0.5 0.5], DisplayName=sprintf('Iteration %d', i-1));
+    plot(t_vec, y_cell_quadr{i}, LineWidth=1, Color=[0.5 0.5 0.5], HandleVisibility='off');
 end
 plot(t_vec, y_cell_quadr{N_iter+1}, LineWidth=1, DisplayName=sprintf('Iteration %d', N_iter));
 grid on;
@@ -133,7 +133,8 @@ title('Compare desired and simulated Trajectory');
 legend()
 
 subplot(2,2,3);
-plot(0:(length(ILC_Quadr.RMSE_log)-1), ILC_Quadr.RMSE_log, LineWidth=1, DisplayName='ILC Quadr'); hold on;
+% plot(0:(length(ILC_Quadr.RMSE_log)-1), ILC_Quadr.RMSE_log, LineWidth=1, DisplayName='ILC Quadr'); hold on;
+semilogy(0:(length(ILC_Quadr.RMSE_log)-1), ILC_Quadr.RMSE_log, LineWidth=1, DisplayName='ILC Quadr'); hold on;
 grid on;
 xlabel('Iteration'); 
 ylabel('RMSE');
@@ -153,7 +154,7 @@ legend()
 subplot(2,2,4);
 hold on;
 for i = 1:N_iter
-    plot(t_vec, u_cell_quadr{i}, LineWidth=1, Color=[0.5 0.5 0.5], DisplayName=sprintf('Iteration %d', i-1));
+    plot(t_vec, u_cell_quadr{i}, LineWidth=1, Color=[0.5 0.5 0.5], HandleVisibility='off');
 end
 plot(t_vec, u_cell_quadr{N_iter+1}, LineWidth=1, DisplayName=sprintf('Iteration %d', N_iter));
 grid on;
