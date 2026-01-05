@@ -202,7 +202,8 @@ classdef GP_SISO_IO < handle
             dy_dv = dk_dvn * alpha_vec;
         end
 
-        function [P, Cov_dy_dv_cell, Cov_dy_du_cell, H_dy_dv_cell, H_dy_du_cell] = linearize_at_given_trajectory_fast(obj, u_lin)
+        function [P, Cov_dy_dv_cell, Cov_dy_du_cell] = linearize_covariance_at_given_trajectory_fast(obj, u_lin)
+        % function [P, Cov_dy_dv_cell, Cov_dy_du_cell, H_dy_dv_cell, H_dy_du_cell] = linearize_covariance_hessian_at_given_trajectory_fast(obj, u_lin)
             %linearize_at_given_trajectory_fast Compute local linearization (Jacobian) of GP at a trajectory.
             %
             %   Inputs:
@@ -219,9 +220,9 @@ classdef GP_SISO_IO < handle
             Cov_dy_dv_cell = cell(obj.N, 1);
             Cov_dy_du_cell = cell(obj.N, 1);
 
-            % Cell Arrays for Hessians
-            H_dy_dv_cell = cell(obj.N, 1);
-            H_dy_du_cell = cell(obj.N, 1);
+            % % Cell Arrays for Hessians
+            % H_dy_dv_cell = cell(obj.N, 1);
+            % H_dy_du_cell = cell(obj.N, 1);
 
             % Construct linearisation Matrix
             V_lin = obj.constr_test_matrix(u_lin);
@@ -248,12 +249,13 @@ classdef GP_SISO_IO < handle
                 vn = V_lin(i, :);
 
                 % Gradient and Variance of the GP w.r.t vn
-                [dy_dv, H] = obj.gradient_wrt_regression_vector_fast(vn);
+                [dy_dv] = obj.gradient_wrt_regression_vector_fast(vn);
+                % [dy_dv, H] = obj.gradient_hessian_wrt_regression_vector_fast(vn);
                 Cov_dy_dv = obj.gradient_variance_wrt_regression_vector_fast(vn);
 
                 % Save Covariance Matrix and Hessian in Cell
                 Cov_dy_dv_cell{i} = Cov_dy_dv;
-                H_dy_dv_cell{i} = H;
+                % H_dy_dv_cell{i} = H;
 
                 % Update jacobi matrix
                 if i > 1
@@ -264,12 +266,13 @@ classdef GP_SISO_IO < handle
 
                     % Update covariance and Hessians
                     Cov_dy_du_cell{i} = Cov_dy_dv(idx, idx);
-                    H_dy_du_cell{i} = H(idx, idx);
+                    % H_dy_du_cell{i} = H(idx, idx);
                 end
             end
         end
 
-        function [dy_dv, H] = gradient_wrt_regression_vector_fast(obj, vn)
+        function [dy_dv] = gradient_wrt_regression_vector_fast(obj, vn)
+        % function [dy_dv, H] = gradient_hessian_wrt_regression_vector_fast(obj, vn)
             %gradient_wrt_regression_vector_fast Compute GP output gradient w.r.t. a regression vector.
             %
             %   Inputs:
@@ -294,12 +297,12 @@ classdef GP_SISO_IO < handle
             w = obj.alpha .* k;
             dy_dv = -obj.sigmaL2_inv * (sum(w)*vn - obj.V_transp*w);
 
-            % Row-wise differences Diff(i, :) = V(i, :) - vn'
-            Diff = obj.V - vn.';
-
-            % Calculate Hessian
-            S = Diff.' * (Diff .* w);
-            H = (obj.sigmaL2_inv^2) * S - obj.sigmaL2_inv * sum(w) * eye(obj.N);
+            % % Row-wise differences Diff(i, :) = V(i, :) - vn'
+            % Diff = obj.V - vn.';
+            % 
+            % % Calculate Hessian
+            % S = Diff.' * (Diff .* w);
+            % H = (obj.sigmaL2_inv^2) * S - obj.sigmaL2_inv * sum(w) * eye(obj.N);
         end
 
         function Cov_dy_dv = gradient_variance_wrt_regression_vector_fast(obj, vn)
