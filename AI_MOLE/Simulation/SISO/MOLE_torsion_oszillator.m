@@ -17,8 +17,8 @@ Model_Path = fullfile(base_dir, '..', '..', '..', 'System_Models');
 addpath(Model_Path);
 
 %% Parameters
-% MOLE architcture ('uncontrolled', 'serial_PI', 'serial_LQR')
-architecture = 'serial_LQR';
+% MOLE architcture ('uncontrolled', 'serial_PI', 'serial_LQR', 'serial_LQR_ff')
+architecture = 'serial_LQR_ff';
 
 % Simulation parameters
 Ts = 0.01;
@@ -129,6 +129,36 @@ switch architecture
         % Initial input Trajectory (simple sin or automatic generated)
         sigma_I = 0.1;
         u_init = sigma_I*sin(2*pi/T_end.*t_vec');
+        
+        % Initialisation
+        SISO_MOLE = SISO_MOLE_IO(r_vec, u_init, params);
+
+    case 'serial_LQR_ff'
+        % Use the state feedback controlled (LQR) system for AI-MOLE while
+        % modifying the reference trajectory if the static feedforward
+        % controlled system.
+
+        % Choose system model
+        system_dynamics = @torsion_oszillator_linear_LQR_ff;
+        x0 = [0; 0; 0; 0];
+
+        params = struct();
+
+        % Parameters
+        params.m_delay = 1;
+        params.N_iter = 10;
+        params.H_trials = 3;
+        
+        % Choose weight initialisation Method ('Meindl', 'Stochastic', 'Heuristic',
+        % 'Robust', 'Manual')
+        params.weight_init_method = 'Stochastic';
+        
+        % Choose nonlinearity damping method ('none', 'relative_1', 'relative_2', 'minimize')
+        params.nonlin_damping = 'relative_2';
+        params.beta = 0.1;
+        
+        % Initial input Trajectory
+        u_init = r_vec;
         
         % Initialisation
         SISO_MOLE = SISO_MOLE_IO(r_vec, u_init, params);
