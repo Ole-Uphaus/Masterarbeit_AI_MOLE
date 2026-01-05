@@ -84,7 +84,7 @@ Q_order = 2;
 Q_fc = 2;
 
 % Initialisation
-ILC_Quadr = ILC_SISO(r_vec, m_delay, u_init);
+ILC_Quadr = ILC_SISO(r_vec, m_delay, u_init, N_iter);
 ILC_Quadr.init_Quadr_type(W, S, R, P)
 % ILC_Quadr.init_Q_lowpass(Q_fc, Q_order, Ts);
 
@@ -100,8 +100,6 @@ u_sim = [ILC_Quadr.u_vec; 0];
 [w_vec, v_vec] = proc_meas_noise(t_vec, fc_w, fc_v, sigma_w, sigma_v, white);
 [t_sim, x_sim] = ode45(@(t,x) oszillator_linear(t, x, (u_sim + w_vec + w_rep_vec), t_vec), t_vec, x0, opts);
 y_sim = x_sim(:, 1) + v_vec;
-y_cell_quadr{1} = y_sim;
-u_cell_quadr{1} = u_sim;
 for i = 1:N_iter
     % Update input
     u_sim = [ILC_Quadr.Quadr_update(y_sim); 0];
@@ -110,8 +108,6 @@ for i = 1:N_iter
     [w_vec, v_vec] = proc_meas_noise(t_vec, fc_w, fc_v, sigma_w, sigma_v, white);
     [t_sim, x_sim] = ode45(@(t,x) oszillator_linear(t, x, (u_sim + w_vec + w_rep_vec), t_vec), t_vec, x0, opts);
     y_sim = x_sim(:, 1) + v_vec;
-    y_cell_quadr{i+1} = y_sim;
-    u_cell_quadr{i+1} = u_sim;
 end
 % Calculate and log final error
 ILC_Quadr.calculate_final_error(y_sim);
@@ -123,9 +119,9 @@ set(gcf, 'Position', [100 100 1200 800]);
 subplot(2,2,1);
 plot(t_vec, r_vec, LineWidth=1, DisplayName='desired'); hold on;
 for i = 1:N_iter
-    plot(t_vec, y_cell_quadr{i}, LineWidth=1, Color=[0.5 0.5 0.5], HandleVisibility='off');
+    plot(t_vec, ILC_Quadr.y_cell{i}, LineWidth=1, Color=[0.5 0.5 0.5], HandleVisibility='off');
 end
-plot(t_vec, y_cell_quadr{N_iter+1}, LineWidth=1, DisplayName=sprintf('Iteration %d', N_iter));
+plot(t_vec, ILC_Quadr.y_cell{N_iter+1}, LineWidth=1, DisplayName=sprintf('Iteration %d', N_iter));
 grid on;
 xlabel('Zeit [s]'); 
 ylabel('x [m]');
@@ -154,9 +150,9 @@ legend()
 subplot(2,2,4);
 hold on;
 for i = 1:N_iter
-    plot(t_vec, u_cell_quadr{i}, LineWidth=1, Color=[0.5 0.5 0.5], HandleVisibility='off');
+    plot(t_vec, ILC_Quadr.u_cell{i}, LineWidth=1, Color=[0.5 0.5 0.5], HandleVisibility='off');
 end
-plot(t_vec, u_cell_quadr{N_iter+1}, LineWidth=1, DisplayName=sprintf('Iteration %d', N_iter));
+plot(t_vec, ILC_Quadr.u_cell{N_iter+1}, LineWidth=1, DisplayName=sprintf('Iteration %d', N_iter));
 grid on;
 xlabel('Zeit [s]'); 
 ylabel('F [N]');

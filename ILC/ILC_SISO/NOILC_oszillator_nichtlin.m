@@ -43,7 +43,7 @@ x0 = [0;
     0];
 
 W = eye(N-m_delay);
-S = 0.001*eye(N-m_delay);
+S = 0.0001*eye(N-m_delay);
 R = 0*eye(N-m_delay);
 
 % Solver settings
@@ -54,7 +54,7 @@ opts = odeset( ...
     'InitialStep', Ts/20);
 
 % Initialisation
-ILC_Quadr = ILC_SISO(r_vec, m_delay, u_init);
+ILC_Quadr = ILC_SISO(r_vec, m_delay, u_init, N_iter);
 
 % Track Results
 y_cell_quadr = cell(N_iter+1, 1);
@@ -65,8 +65,6 @@ u_sim = [ILC_Quadr.u_vec; 0];
 v_vec = Gen_noise_Butter(t_vec, sigma_v, fc_v, white);
 [t_sim, x_sim] = ode45(@(t,x) oszillator_nonlinear(t, x, u_sim, t_vec), t_vec, x0, opts);
 y_sim = x_sim(:, 1) + v_vec;
-y_cell_quadr{1} = y_sim;
-u_cell_quadr{1} = u_sim;
 for i = 1:N_iter
     % Update input
     P = Lifted_dynamics_nonlinear_SISO(@(x) oszillator_linearized_discrete(x, Ts), N, m_delay, x_sim);
@@ -77,8 +75,6 @@ for i = 1:N_iter
     v_vec = Gen_noise_Butter(t_vec, sigma_v, fc_v, white);
     [t_sim, x_sim] = ode45(@(t,x) oszillator_nonlinear(t, x, u_sim, t_vec), t_vec, x0, opts);
     y_sim = x_sim(:, 1) + v_vec;
-    y_cell_quadr{i+1} = y_sim;
-    u_cell_quadr{i+1} = u_sim;
 end
 % Calculate and log final error
 ILC_Quadr.calculate_final_error(y_sim);
@@ -90,9 +86,9 @@ set(gcf, 'Position', [100 100 1200 800]);
 subplot(2,2,1);   % 1 Zeile, 2 Spalten, erster Plot
 plot(t_vec, r_vec, LineWidth=1, DisplayName='desired'); hold on;
 for i = 1:N_iter
-    plot(t_vec, y_cell_quadr{i}, LineWidth=1, Color=[0.5 0.5 0.5], DisplayName=sprintf('Iteration %d', i-1));
+    % plot(t_vec, ILC_Quadr.y_cell{i}, LineWidth=1, Color=[0.5 0.5 0.5], HandleVisibility='off');
 end
-plot(t_vec, y_cell_quadr{N_iter+1}, LineWidth=1, DisplayName=sprintf('Iteration %d', N_iter));
+plot(t_vec, ILC_Quadr.y_cell{N_iter+1}, LineWidth=1, DisplayName=sprintf('Iteration %d', N_iter));
 grid on;
 xlabel('Zeit [s]'); 
 ylabel('x [m]');
@@ -100,7 +96,8 @@ title('Compare desired and simulated Trajectory');
 legend()
 
 subplot(2,2,3);   % 1 Zeile, 2 Spalten, erster Plot
-plot(0:(length(ILC_Quadr.RMSE_log)-1), ILC_Quadr.RMSE_log, LineWidth=1, DisplayName='ILC Quadr'); hold on;
+% plot(0:(length(ILC_Quadr.RMSE_log)-1), ILC_Quadr.RMSE_log, LineWidth=1, DisplayName='ILC Quadr'); hold on;
+semilogy(0:(length(ILC_Quadr.RMSE_log)-1), ILC_Quadr.RMSE_log, LineWidth=1, DisplayName='ILC Quadr'); hold on;
 grid on;
 xlabel('Iteration'); 
 ylabel('RMSE');
@@ -118,9 +115,9 @@ legend()
 subplot(2,2,4);
 hold on;
 for i = 1:N_iter
-    plot(t_vec, u_cell_quadr{i}, LineWidth=1, Color=[0.5 0.5 0.5], DisplayName=sprintf('Iteration %d', i-1));
+    plot(t_vec, ILC_Quadr.u_cell{i}, LineWidth=1, Color=[0.5 0.5 0.5], HandleVisibility='off');
 end
-plot(t_vec, u_cell_quadr{N_iter+1}, LineWidth=1, DisplayName=sprintf('Iteration %d', N_iter));
+plot(t_vec, ILC_Quadr.u_cell{N_iter+1}, LineWidth=1, DisplayName=sprintf('Iteration %d', N_iter));
 grid on;
 xlabel('Zeit [s]'); 
 ylabel('F [N]');
