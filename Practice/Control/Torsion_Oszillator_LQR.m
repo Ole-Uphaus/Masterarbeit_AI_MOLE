@@ -166,7 +166,7 @@ plot(t_vec, phi2_cont_ff, LineWidth=1, DisplayName='phi2');
 grid on;
 xlabel('Zeit [s]'); 
 ylabel('phi [rad]');
-title('Simulation results (feedforward control)');
+title('Simulation results (static feedforward control)');
 legend('Location', 'best');
 
 subplot(2,2,2);  
@@ -175,7 +175,7 @@ plot(t_vec, phi2_p_cont_ff, LineWidth=1, DisplayName='phi2p');
 grid on;
 xlabel('Zeit [s]'); 
 ylabel('phip [rad/s]');
-title('Simulation results (feedforward control)');
+title('Simulation results (static feedforward control)');
 legend('Location', 'best');
 
 subplot(2,2,3);   

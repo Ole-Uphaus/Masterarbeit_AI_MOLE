@@ -135,7 +135,7 @@ params.weight_init_method = 'Stochastic';
 
 % Choose nonlinearity damping method ('none', 'relative_1', 'relative_2', 'minimize')
 params.nonlin_damping = 'relative_2';
-params.beta = 0;
+params.beta = 0.5;
 
 % Initialisation
 SISO_MOLE = SISO_MOLE_IO(r_vec, u_init, params);
