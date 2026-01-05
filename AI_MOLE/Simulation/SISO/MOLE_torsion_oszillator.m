@@ -16,14 +16,22 @@ base_dir = fileparts(mfilename("fullpath"));
 Model_Path = fullfile(base_dir, '..', '..', '..', 'System_Models');
 addpath(Model_Path);
 
+%% Reference Trajectory
+filename = 'Trajectory_01.mat';
+filepath = fullfile(pwd, '..', '..', 'Test_Bench', 'Torsion_Oszillator', 'Reference_Trajectories', filename);
+load(filepath);
+
+r_vec = ref_traj.phi2;
+r_vec = r_vec(:);
+
 %% Parameters
 % MOLE architcture ('uncontrolled', 'serial_PI', 'serial_LQR', 'serial_LQR_ff')
 architecture = 'serial_LQR_ff';
 
 % Simulation parameters
-Ts = 0.01;
-T_end = 5;
-t_vec = 0:Ts:T_end;
+Ts = ref_traj.t_vec(2) - ref_traj.t_vec(1);
+T_end = ref_traj.t_vec(end);
+t_vec = ref_traj.t_vec;
 
 % Solver settings
 opts = odeset( ...
@@ -31,14 +39,6 @@ opts = odeset( ...
     'AbsTol', 1e-8, ...  % Tolerance
     'MaxStep', Ts/5, ...        % Use smaller step size for better Results
     'InitialStep', Ts/20);
-
-% Load reference trajectory file
-filename = 'Trajectory_01.mat';
-filepath = fullfile(pwd, '..', '..', 'Test_Bench', 'Torsion_Oszillator', 'Reference_Trajectories', filename);
-load(filepath);
-
-r_vec = ref_traj.phi2;
-r_vec = r_vec(:);
 
 %% MOLE initialisation
 switch architecture
