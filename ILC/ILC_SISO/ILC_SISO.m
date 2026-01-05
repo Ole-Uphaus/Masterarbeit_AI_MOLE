@@ -11,6 +11,9 @@ classdef ILC_SISO < handle
         error_vec   % Tracking error
         RMSE_log    % Error log
         P           % Lifted Dynamics
+        y_cell      % Cell array storing output trajectories (per iteration)
+        u_cell      % Cell array storing input trajectories (per iteration)
+        i_iter      % Current Iteration counter
         
         W           % Wheighting Matrix error
         S           % Wheighting Matrix change of u
@@ -24,15 +27,21 @@ classdef ILC_SISO < handle
     end
     
     methods
-        function obj = ILC_SISO(r_vec, m, u_init)
+        function obj = ILC_SISO(r_vec, m, u_init, N_iter)
             %ILC_LINEAR_SISO Construct an instance of this class
             %
             %   Inputs:
             %       r_vec - Reference signal (column vector)
             %       m     - System delay (integer)
+            
+            % Storage cells
+            obj.y_cell = cell(N_iter+1, 1);
+            obj.u_cell = cell(N_iter+1, 1);
 
+            % Assign Values
             obj.r_vec = r_vec;
             obj.m = m;
+            obj.u_cell{1} = u_init;
 
             % Initialize input vector u
             obj.u_vec = u_init(1:(size(r_vec, 1)-m), 1);
@@ -81,6 +90,12 @@ classdef ILC_SISO < handle
             %   Outputs:
             %       u_vec_new - Updated input signal for the next trial
 
+            % Get current iteration counter
+            obj.i_iter = sum(~cellfun(@isempty, obj.u_cell));
+
+            % Save Trajectory (measured or simulated)
+            obj.y_cell{obj.i_iter} = y_vec;
+
             % Calculate error e(k+1)
             obj.error_vec = obj.r_vec((1+obj.m):end) - y_vec((1+obj.m):end);
 
@@ -90,6 +105,9 @@ classdef ILC_SISO < handle
             % Update input u(k) and apply filter
             u_vec_new = obj.apply_Q_lowpass(obj.Q*obj.u_vec + obj.L*obj.error_vec);
             obj.u_vec = u_vec_new;
+
+            % Save new input
+            obj.u_cell{obj.i_iter+1} = [u_vec_new; 0];
         end
 
         function Log_error(obj)
@@ -112,6 +130,12 @@ classdef ILC_SISO < handle
 
             % Log error
             obj.Log_error()
+
+            % Get current iteration counter
+            obj.i_iter = sum(~cellfun(@isempty, obj.u_cell));
+
+            % Save Trajectory (measured or simulated)
+            obj.y_cell{obj.i_iter} = y_vec;
         end
 
         function init_Q_lowpass(obj, fc, order, Ts)
@@ -158,6 +182,9 @@ classdef ILC_SISO < handle
             %       u_vec_new : new input vector (damped)
 
             obj.u_vec = u_vec_new;
+
+            % Save new input
+            obj.u_cell{obj.i_iter+1} = [u_vec_new; 0];
         end
     end
 end

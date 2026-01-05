@@ -48,7 +48,7 @@ classdef SISO_MOLE_IO < handle
             end
 
             % Initialize ILC
-            obj.ILC_SISO = ILC_SISO(r_vec, params.m_delay, u_init);
+            obj.ILC_SISO = ILC_SISO(r_vec, params.m_delay, u_init, params.N_iter);
 
             % Storage cells
             obj.y_cell = cell(params.N_iter+1, 1);
