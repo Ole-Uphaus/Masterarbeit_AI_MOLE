@@ -13,7 +13,11 @@ close all
 % Generate Dynamic file Path
 base_dir = fileparts(mfilename("fullpath"));
 MOLE_Path = fullfile(base_dir, '..', '..', 'Simulation', 'SISO');
+ILC_Path = fullfile(base_dir, '..', '..', '..', 'ILC', 'ILC_SISO');
+GP_Path = fullfile(base_dir, '..', '..', '..', 'GP', 'GP_SISO');
 addpath(MOLE_Path);
+addpath(ILC_Path);
+addpath(GP_Path);
 
 %% Load MOLE object
 % MOLE object
