@@ -22,7 +22,7 @@ T_hold = 2 * T_end/5;       % Constant velocity time
 T_dec = 1.5 * T_end/5;      % Deceleration time
 
 % Constant velocityS
-omega = deg2rad(90);    % deg/s --> rad/s
+omega = deg2rad(400);    % deg/s --> rad/s
 
 % Save trajectory
 save_traj = false;
