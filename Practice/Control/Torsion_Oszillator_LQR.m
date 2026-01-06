@@ -70,6 +70,24 @@ eig_cont = eig(A - b*k_T);
 fprintf('Eigenwerte des geregelten Systems (A_cont)\n');
 disp(eig_cont);
 
+%% Controller design discrete (for comparision)
+% Discrete System
+Ts = 0.001;
+sys_contin = ss(A, b, c_T, 0);
+sys_disc = c2d(sys_contin, Ts, 'zoh');
+
+% System matrices
+Ad = sys_disc.A;
+bd = sys_disc.B;
+
+% LQR gain
+k_T_disc = dlqr(Ad, bd, Q_LQR, R_LQR);
+
+% Print
+fprintf('\nVergleich der Verstärkungsmatrizen (kontinuierlich vs. diskret):\n');
+disp(k_T);
+disp(k_T_disc);
+
 %% Simulation (controlled System)
 % Simulation
 [~, x_sim] = ode45(@(t,x) torsion_oszillator_linear_LQR(t, x, u_inp, t_vec), t_vec, x0, opts);
