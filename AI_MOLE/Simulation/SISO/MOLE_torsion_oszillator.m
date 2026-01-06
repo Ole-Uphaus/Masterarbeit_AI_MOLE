@@ -43,7 +43,7 @@ opts = odeset( ...
 %% MOLE initialisation
 switch architecture
     case 'uncontrolled'
-        % Use the uncontrolled System and initialize with simple input
+        % Use the uncontrolled system and initialize with simple input
         % trajectory
 
         % Choose system model
