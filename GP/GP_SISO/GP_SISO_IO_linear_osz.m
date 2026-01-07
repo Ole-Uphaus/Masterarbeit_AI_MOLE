@@ -74,17 +74,19 @@ GP_IO = GP_SISO_IO();
 % Train Gaussian Process
 GP_IO.train_GP_model(y_sim_train_cell, u_vec_train_cell);
 
-% Predict new Trajectory
-[y_pred_test, y_std_test] = GP_IO.predict_trajectory(u_vec_test);
-y_pred_test_upper = y_pred_test + 2*y_std_test;
-y_pred_test_lower = y_pred_test - 2*y_std_test;
+% Predict new Trajectory (with measurement noise)
+[y_pred_test, y_std_test] = GP_IO.predict_trajectory_measurement(u_vec_test);
+% y_pred_test_upper = y_pred_test + 2*y_std_test;
+% y_pred_test_lower = y_pred_test - 2*y_std_test;
 
-% Predict new Trajectory with full covriance matrix
+% Predict new Trajectory with full covriance matrix (without measurement noise)
 [~, Cov_y_test] = GP_IO.predict_trajectory_covariance(u_vec_test);
+y_pred_test_upper = y_pred_test + 2*sqrt(diag(Cov_y_test));
+y_pred_test_lower = y_pred_test - 2*sqrt(diag(Cov_y_test));
 
-% Error predicted variance
+% Error predicted variance (with measurement noise)
 Var_y_test = y_std_test.^2;
-error_var_test = Var_y_test - diag(Cov_y_test);
+error_var_test = Var_y_test - (diag(Cov_y_test) + GP_IO.GP.Sigma^2);
 fprintf('Maximaler absoluter Unterschied bei der Bestimmung von Var_y: %.3e \n\n', max(abs(error_var_test)));
 
 %% Linearize GP at given input trajectory
@@ -152,7 +154,7 @@ fprintf('Maximaler absoluter (relativer) Unterschied bei der Bestimmung von P (f
 
 % Prediction with linearized gp model
 delta_u = u_vec_test - u_vec_train_cell{1};
-y_pred_lin_test = GP_IO.predict_trajectory(u_vec_train_cell{1}) + P*delta_u;
+y_pred_lin_test = GP_IO.predict_trajectory_measurement(u_vec_train_cell{1}) + P*delta_u;
 
 % Calculate linearisation uncertanty as Variance of a new GP
 Var_delta_y = linearisation_prediction_variance(GP_IO, delta_u, Cov_dy_dv_cell2);
@@ -161,34 +163,34 @@ Sigma_delta_y = sqrt(abs(Var_delta_y));
 y_pred_lin_test_upper2 = y_pred_lin_test + 2*Sigma_delta_y;
 y_pred_lin_test_lower2 = y_pred_lin_test - 2*Sigma_delta_y;
 
-%% Estimate Uncertainty in P (delta_P)
-% Use variance of every Element in P
-delta_P1 = element_wise_variance(GP_IO, Cov_dy_dv_cell2);
-
-% Compare Spectral morm
-norm_P = norm(P, 2);
-norm_delta_P = norm(delta_P1, 2);
-
-% Approx norm
-norm_delta_P2 = approx_norm(GP_IO, Cov_dy_dv_cell2);
-
-% Sample covariance Matrix random
-[norms_delta_P, delta_P_cell] = sample_deltaP_norms(GP_IO, Cov_dy_dv_cell2, 100);
-[norm_delta_P3, idx] = max(norms_delta_P);
-delta_P3 = delta_P_cell{idx};
-
-% Norm from bachelor Thesis
-norm_delta_P4 = norm_bachelor_thesis(GP_IO, Cov_dy_dv_cell2);
-
-fprintf(['Spektralnorm von P: %.3e, \n' ...
-    'Spektralnorm von delta_P (elementweise Satndardabweichung): %.3e, \n' ...
-    'Spektralnorm von delta_P (vektoriesierung Lifted Matrix): %.3e, \n' ...
-    'Spektralnorm von delta_P (Sampling basiert): %.3e, \n' ...
-    'Spektralnorm von delta_P (aus Bachelorarbeit): %.3e \n\n'], norm_P, norm_delta_P, norm_delta_P2, norm_delta_P3, norm_delta_P4);
-
-% Calculate linearisation uncertaincy based on Sampling
-y_pred_lin_test_upper3 = y_pred_lin_test + delta_P3*abs(delta_u);
-y_pred_lin_test_lower3 = y_pred_lin_test - delta_P3*abs(delta_u);
+% %% Estimate Uncertainty in P (delta_P)
+% % Use variance of every Element in P
+% delta_P1 = element_wise_variance(GP_IO, Cov_dy_dv_cell2);
+% 
+% % Compare Spectral morm
+% norm_P = norm(P, 2);
+% norm_delta_P = norm(delta_P1, 2);
+% 
+% % Approx norm
+% norm_delta_P2 = approx_norm(GP_IO, Cov_dy_dv_cell2);
+% 
+% % Sample covariance Matrix random
+% [norms_delta_P, delta_P_cell] = sample_deltaP_norms(GP_IO, Cov_dy_dv_cell2, 100);
+% [norm_delta_P3, idx] = max(norms_delta_P);
+% delta_P3 = delta_P_cell{idx};
+% 
+% % Norm from bachelor Thesis
+% norm_delta_P4 = norm_bachelor_thesis(GP_IO, Cov_dy_dv_cell2);
+% 
+% fprintf(['Spektralnorm von P: %.3e, \n' ...
+%     'Spektralnorm von delta_P (elementweise Satndardabweichung): %.3e, \n' ...
+%     'Spektralnorm von delta_P (vektoriesierung Lifted Matrix): %.3e, \n' ...
+%     'Spektralnorm von delta_P (Sampling basiert): %.3e, \n' ...
+%     'Spektralnorm von delta_P (aus Bachelorarbeit): %.3e \n\n'], norm_P, norm_delta_P, norm_delta_P2, norm_delta_P3, norm_delta_P4);
+% 
+% % Calculate linearisation uncertaincy based on Sampling
+% y_pred_lin_test_upper3 = y_pred_lin_test + delta_P3*abs(delta_u);
+% y_pred_lin_test_lower3 = y_pred_lin_test - delta_P3*abs(delta_u);
 
 %% Compare Lifted System representation
 
@@ -230,12 +232,12 @@ fprintf('Spektralnorm des absoluten Unterschieds zwischen P_analytic und P_lin: 
 error_y_pred = abs(y_sim_test - y_pred_test);
 error_y_lin = abs(y_sim_test - y_pred_lin_test);
 
-%% Monotonic Convergence Condition
-% Compute bound
-% bound = monotonic_convergence_condition(P, norm_error_P2, delta_P3(2:end, 1:end-1));
-bound = monotonic_convergence_condition(P, norm_error_P2, error_P2);
-
-fprintf('Monotone Konvergenzbedingung (abhängig von unsicherheitsschätzung): %.3e (< 1)\n', bound);
+% %% Monotonic Convergence Condition
+% % Compute bound
+% % bound = monotonic_convergence_condition(P, norm_error_P2, delta_P3(2:end, 1:end-1));
+% bound = monotonic_convergence_condition(P, norm_error_P2, error_P2);
+% 
+% fprintf('Monotone Konvergenzbedingung (abhängig von unsicherheitsschätzung): %.3e (< 1)\n', bound);
 
 %% Plot
 % 1. Plot

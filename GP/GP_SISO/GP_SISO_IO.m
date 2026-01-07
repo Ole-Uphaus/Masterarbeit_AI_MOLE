@@ -112,7 +112,7 @@ classdef GP_SISO_IO < handle
             end
         end
 
-        function [y_pred, y_std] = predict_trajectory(obj, u_test)
+        function [y_pred, y_std] = predict_trajectory_measurement(obj, u_test)
             %predict_GP Predict system output for a new input trajectory.
 
             u_test = u_test(:);  % Ensure column vector
@@ -153,9 +153,6 @@ classdef GP_SISO_IO < handle
             % factors)
             B = obj.L_chol \ K_t_tr;           % B = L^-1 * K*
             Cov_y = K_t_t - B.' * B;        % K_f = K** - B^T*B = K** - K*^T [K + sigma^2*I] K*
-
-            % Add measurement noise
-            Cov_y = Cov_y + (obj.GP.Sigma^2) * eye(obj.N);
         end
 
         function V_test = constr_test_matrix(obj, u_test)
