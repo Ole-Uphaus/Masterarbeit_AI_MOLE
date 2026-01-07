@@ -243,10 +243,11 @@ classdef SISO_MOLE_IO < handle
                     % actual GP to parametrize alpha
         
                     % Prediction using GP
-                    [y_pred_GP, y_std_GP] = obj.GP_SISO.predict_trajectory([u_vec_new; 0]);
+                    [y_pred_GP, Cov_y] = obj.GP_SISO.predict_trajectory_covariance([u_vec_new; 0]);
+                    y_std_GP = sqrt(diag(Cov_y));
         
                     % Prediction using Linearisation
-                    y_pred_lin = obj.GP_SISO.predict_trajectory(obj.u_cell{obj.i_iter}) + P*delta_u;
+                    y_pred_lin = obj.GP_SISO.predict_trajectory_measurement(obj.u_cell{obj.i_iter}) + P*delta_u;
         
                     % Relative prediction difference (use variances too)
                     eta = norm((abs(y_pred_GP - y_pred_lin) + obj.beta*y_std_GP), 2) / (norm((P*delta_u), 2) + eps);
@@ -263,10 +264,11 @@ classdef SISO_MOLE_IO < handle
                     % actual GP to parametrize alpha
         
                     % Prediction using GP
-                    [y_pred_GP, y_std_GP] = obj.GP_SISO.predict_trajectory([u_vec_new; 0]);
+                    [y_pred_GP, Cov_y] = obj.GP_SISO.predict_trajectory_covariance([u_vec_new; 0]);
+                    y_std_GP = sqrt(diag(Cov_y));
         
                     % Prediction using Linearisation
-                    y_pred_lin = obj.GP_SISO.predict_trajectory(obj.u_cell{obj.i_iter}) + P*delta_u;
+                    y_pred_lin = obj.GP_SISO.predict_trajectory_measurement(obj.u_cell{obj.i_iter}) + P*delta_u;
         
                     % Relative prediction difference (use variances too)
                     eta = norm((abs(y_pred_GP - y_pred_lin) + obj.beta*y_std_GP), 2) / (norm((abs(P*delta_u) + abs(y_pred_GP - y_pred_lin) + obj.beta*y_std_GP), 2) + eps);
@@ -291,7 +293,8 @@ classdef SISO_MOLE_IO < handle
                     for i = 1:length(alpha_vec)
                         % GP prediction depending of alpha
                         u_vec_temp = obj.u_cell{obj.i_iter} + alpha_vec(i)*delta_u;
-                        [y_pred_temp, y_std_temp] = obj.GP_SISO.predict_trajectory(u_vec_temp);
+                        [y_pred_temp, Cov_y_temp] = obj.GP_SISO.predict_trajectory_covariance(u_vec_temp);
+                        y_std_temp = sqrt(diag(Cov_y_temp));
 
                         % Calculate expected squared error
                         expected_sq_error_vec(i) = sum((obj.ILC_SISO.r_vec - y_pred_temp).^2) + sum(y_std_temp.^2);
