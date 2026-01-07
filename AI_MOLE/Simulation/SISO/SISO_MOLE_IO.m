@@ -294,10 +294,9 @@ classdef SISO_MOLE_IO < handle
                         % GP prediction depending of alpha
                         u_vec_temp = obj.u_cell{obj.i_iter} + alpha_vec(i)*delta_u;
                         [y_pred_temp, Cov_y_temp] = obj.GP_SISO.predict_trajectory_covariance(u_vec_temp);
-                        y_std_temp = sqrt(diag(Cov_y_temp));
 
                         % Calculate expected squared error
-                        expected_sq_error_vec(i) = sum((obj.ILC_SISO.r_vec - y_pred_temp).^2) + sum(y_std_temp.^2);
+                        expected_sq_error_vec(i) = sum((obj.ILC_SISO.r_vec - y_pred_temp).^2) + trace(Cov_y_temp);
                         % expected_sq_error_vec(i) = norm((obj.ILC_SISO.r_vec - y_pred_temp), 2) + 3*norm(y_std_temp, 2);
                     end
 
