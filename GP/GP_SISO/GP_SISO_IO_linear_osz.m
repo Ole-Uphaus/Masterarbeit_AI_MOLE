@@ -79,6 +79,14 @@ GP_IO.train_GP_model(y_sim_train_cell, u_vec_train_cell);
 y_pred_test_upper = y_pred_test + 2*y_std_test;
 y_pred_test_lower = y_pred_test - 2*y_std_test;
 
+% Predict new Trajectory with full covriance matrix
+[~, Cov_y_test] = GP_IO.predict_trajectory_covariance(u_vec_test);
+
+% Error predicted variance
+Var_y_test = y_std_test.^2;
+error_var_test = Var_y_test - diag(Cov_y_test);
+fprintf('Maximaler absoluter Unterschied bei der Bestimmung von Var_y: %.3e \n\n', max(abs(error_var_test)));
+
 %% Linearize GP at given input trajectory
 % Linearisation
 tic;
@@ -87,7 +95,7 @@ t = toc;
 fprintf('Dauer der Linearisierung: %g s\n', t);
 
 tic;
-[P2, Cov_dy_dv_cell2, Cov_dy_du_cell2, H_dy_dv_cell2, H_dy_du_cell2] = GP_IO.linearize_at_given_trajectory_fast(u_vec_train_cell{1});
+[P2, Cov_dy_dv_cell2, Cov_dy_du_cell2] = GP_IO.linearize_covariance_at_given_trajectory_fast(u_vec_train_cell{1});
 t = toc;
 fprintf('Dauer der Linearisierung und Varianzberechnung (fast): %g s\n\n', t);
 

@@ -124,6 +124,40 @@ classdef GP_SISO_IO < handle
             [y_pred, y_std] = predict(obj.GP, V_test);
         end
 
+        function [y_pred, Cov_y] = predict_trajectory_covariance(obj, u_test)
+            %predict_GP Predict system output for a new input trajectory.
+
+            u_test = u_test(:);  % Ensure column vector
+            
+            % Construct test Matrix
+            V_test = obj.constr_test_matrix(u_test);
+
+            % Prediction
+            [y_pred, ~] = predict(obj.GP, V_test);
+
+            % Kernel Parameters
+            k_params = obj.GP.KernelInformation.KernelParameters;
+            obj.sigmaL2_inv = 1/(k_params(1)^2);
+            obj.sigmaF2 = k_params(2)^2;
+
+            % Receive Cholesky Factor of (K + sigma_N^2*I)
+            obj.L_chol = obj.GP.Impl.LFactor;
+
+            % Compute kernel Value (X* = V_test, K** = K(X*, X*))
+            K_t_t = obj.squared_exponantial_kernel_cross(V_test, V_test);
+
+            % Compute kernel Value (K* = K(X*, X_train))
+            K_t_tr = obj.squared_exponantial_kernel_cross(obj.V, V_test);
+
+            % Efficient computation of the covariance (unsing cholesky
+            % factors)
+            B = obj.L_chol \ K_t_tr;           % B = L^-1 * K*
+            Cov_y = K_t_t - B.' * B;        % K_f = K** - B^T*B = K** - K*^T [K + sigma^2*I] K*
+
+            % Add measurement noise
+            Cov_y = Cov_y + (obj.GP.Sigma^2) * eye(obj.N);
+        end
+
         function V_test = constr_test_matrix(obj, u_test)
             %constr_test_matrix Construct test regression matrix for prediction or linearization.
             %
