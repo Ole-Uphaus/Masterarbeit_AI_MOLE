@@ -126,7 +126,7 @@ y_vec = y_vec_sys(idx_down);
 
 %% Save Results
 % Name
-res_name = sprintf('Sim_Run_%s_%s.mat', parts{2}, date_string);
+res_name = sprintf('Trial_%s.mat', date_string);
 
 % Save
 sim_trial_timestamp = datetime('now');  % Timestamp of simulation
