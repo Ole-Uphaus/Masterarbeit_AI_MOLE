@@ -19,14 +19,12 @@ addpath(MOLE_Path);
 
 %% Load MOLE and simulation/trial 
 % MOLE object
-date_string = '2025_12_29';
-run_filename = 'Run_01_uncontrolled.mat';
+date_string = '2026_01_08';
+run_filename = 'Run_01_serial.mat';
 run_filepath = fullfile(pwd, 'Runs', date_string, run_filename);
 
 % Current Simulation/Trial
-name = erase(run_filename, '.mat');
-parts = split(name, '_');
-sim_trial_filename = sprintf('Sim_Run_%s_%s.mat', parts{2}, date_string);
+sim_trial_filename = sprintf('Trial_%s.mat', date_string);
 
 % Load files
 load(run_filepath);
@@ -82,7 +80,8 @@ title('Compare desired and simulated Trajectory');
 legend('Location', 'best');
 
 subplot(2,2,3);   % 1 Zeile, 2 Spalten, erster Plot
-plot(0:(length(SISO_MOLE.ILC_SISO.RMSE_log)-1), SISO_MOLE.ILC_SISO.RMSE_log, LineWidth=1, DisplayName='ILC Quadr');
+% plot(0:(length(SISO_MOLE.ILC_SISO.RMSE_log)-1), SISO_MOLE.ILC_SISO.RMSE_log, LineWidth=1, DisplayName='ILC Quadr');
+semilogy(0:(length(SISO_MOLE.ILC_SISO.RMSE_log)-1), SISO_MOLE.ILC_SISO.RMSE_log, LineWidth=1, DisplayName='ILC Quadr');
 grid on;
 xlabel('Iteration'); 
 ylabel('RMSE');
