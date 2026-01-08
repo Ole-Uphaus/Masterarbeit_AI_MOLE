@@ -39,14 +39,13 @@ load(sim_trial_filename);
 save_results = false;
 
 %% MOLE Update
-idx_u = find(~cellfun('isempty', SISO_MOLE.u_cell), 1, 'last');
-idx_y = find(~cellfun('isempty', SISO_MOLE.y_cell), 1, 'last');
-
 % Check if timestamps are in the right order (this prevents from performing
 % an update before performing a new simulation/trial)
 if init_update_timestamp < sim_trial_timestamp
     % Chech if this was the last iteration (no update will be performed - just
     % the last trajectory will be saved)
+    idx_u = find(~cellfun('isempty', SISO_MOLE.u_cell), 1, 'last');
+    idx_y = find(~cellfun('isempty', SISO_MOLE.y_cell), 1, 'last');
     if idx_u <= SISO_MOLE.N_iter
         % Perform MOLE update
         [~] = SISO_MOLE.update_input(y_vec);
@@ -74,6 +73,9 @@ if save_results
 end
 
 %% Calculate approximate actuator input
+% Get the latest u input
+idx_u = find(~cellfun('isempty', SISO_MOLE.u_cell), 1, 'last');
+
 switch architecture
     case 'serial'
         % Sample Time
