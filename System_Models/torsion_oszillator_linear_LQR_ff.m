@@ -10,7 +10,7 @@ function dx = torsion_oszillator_linear_LQR_ff(t, x_vec, u_vec, t_vec)
     r = interp1(t_vec, u_vec, t, 'previous', 'extrap');
 
     % Static gain (feedforward control signal)
-    S = 2.685298697615175;
+    S = 3.316624790355372;
     u_ff = S * r;
 
     % State space
