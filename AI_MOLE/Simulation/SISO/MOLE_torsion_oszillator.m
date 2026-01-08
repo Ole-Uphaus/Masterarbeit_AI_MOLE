@@ -26,7 +26,7 @@ r_vec = r_vec(:);
 
 %% Parameters
 % MOLE architcture ('uncontrolled', 'serial_LQR', 'serial_LQR_ff')
-architecture = 'serial_LQR_ff';
+architecture = 'serial_LQR';
 
 % Simulation parameters
 Ts = ref_traj.t_vec(2) - ref_traj.t_vec(1);
@@ -75,7 +75,8 @@ switch architecture
     case 'serial_LQR'
         % Use the state feedback controlled (LQR) system for AI-MOLE while
         % modifying the input trajectory of the controlled system.
-        % Initialize with simple input Trajectory.
+        % Initialize with simple input Trajectory or static feedforward
+        % signal.
 
         % Choose system model
         system_dynamics = @torsion_oszillator_linear_LQR;
@@ -96,9 +97,18 @@ switch architecture
         params.nonlin_damping = 'relative_2';
         params.beta = 0;
         
-        % Initial input Trajectory (simple sin or automatic generated)
-        sigma_I = 0.1;
-        u_init = sigma_I*sin(2*pi/T_end.*t_vec');
+        % Initial input Trajectory (simple sin or static feed forward)
+        use_feedforward_control = true;
+
+        if use_feedforward_control
+            % Static gain (feedforward control signal)
+            S = 3.316624790355372;
+
+            u_init = S .* r_vec;
+        else
+            sigma_I = 0.1;
+            u_init = sigma_I*sin(2*pi/T_end.*t_vec');
+        end
         
         % Initialisation
         SISO_MOLE = SISO_MOLE_IO(r_vec, u_init, params);
