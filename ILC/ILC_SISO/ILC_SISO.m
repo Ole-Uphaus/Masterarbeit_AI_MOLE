@@ -109,6 +109,39 @@ classdef ILC_SISO < handle
             % Save new input
             obj.u_cell{obj.i_iter+1} = [u_vec_new; 0];
         end
+        
+        function u_vec_new = Quadr_update_GP_based(obj, y_vec, y_vec_GP)
+            %Quadr_update_GP_based Perform one Quadratic Optimal ILC
+            %iteration based on the GP model trajectory
+            %
+            %   Inputs:
+            %       y_vec - Measured output signal of the current trial
+            %
+            %   Outputs:
+            %       u_vec_new - Updated input signal for the next trial
+
+            % Get current iteration counter
+            obj.i_iter = sum(~cellfun(@isempty, obj.u_cell));
+
+            % Save Trajectory (measured or simulated)
+            obj.y_cell{obj.i_iter} = y_vec;
+
+            % Calculate error e(k+1)
+            obj.error_vec = obj.r_vec((1+obj.m):end) - y_vec((1+obj.m):end);
+
+            % Log error
+            obj.Log_error()
+
+            % GP error
+            error_vec_GP = obj.r_vec((1+obj.m):end) - y_vec_GP((1+obj.m):end);
+
+            % Update input u(k) and apply filter
+            u_vec_new = obj.apply_Q_lowpass(obj.Q*obj.u_vec + obj.L*error_vec_GP);
+            obj.u_vec = u_vec_new;
+
+            % Save new input
+            obj.u_cell{obj.i_iter+1} = [u_vec_new; 0];
+        end
 
         function Log_error(obj)
             %Log_error Compute and store RMSE of the current tracking error.

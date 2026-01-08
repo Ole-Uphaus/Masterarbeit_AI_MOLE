@@ -102,9 +102,14 @@ classdef SISO_MOLE_IO < handle
             % Calculate weighting matrices (different Methods)
             [W, R, S] = obj.design_weighting_matrices(P_reduced, Cov_dy_du_cell);
 
-            % Perform ILC update
+            % Initialize norm optimal ILC
             obj.ILC_SISO.init_Quadr_type(W, S, R, P_reduced);
-            u_vec_new = obj.ILC_SISO.Quadr_update(y_vec);
+
+            % Perform ILC update (choose between normal and GP method)
+            % u_vec_new = obj.ILC_SISO.Quadr_update(y_vec);
+
+            y_vec_GP = obj.GP_SISO.predict_trajectory_measurement(obj.u_cell{obj.i_iter});
+            u_vec_new = obj.ILC_SISO.Quadr_update_GP_based(y_vec, y_vec_GP);
 
             % Apply damping based on nonlinearity
             u_vec_new = obj.apply_nonlinearity_damping(u_vec_new, P);
