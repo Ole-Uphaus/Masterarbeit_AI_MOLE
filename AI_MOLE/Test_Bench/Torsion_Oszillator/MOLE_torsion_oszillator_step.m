@@ -30,6 +30,9 @@ sim_trial_filename = sprintf('Trial_%s.mat', date_string);
 load(run_filepath);
 load(sim_trial_filename);
 
+% Variable for saving results (only true if AI-MOLE does an update)
+save_results = false;
+
 %% MOLE Update
 % Check if timestamps are in the right order (this prevents from performing
 % an update before performing a new simulation/trial)
@@ -43,10 +46,14 @@ if init_update_timestamp < sim_trial_timestamp
         % Perform MOLE update
         [~] = SISO_MOLE.update_input(y_vec);
         disp('AI-MOLE Update durchgeführt.')
+
+        save_results = true;
     elseif (idx_u == SISO_MOLE.N_iter+1) && (idx_y == SISO_MOLE.N_iter)
         % Save last trajectory
         SISO_MOLE.save_final_trajectory(y_vec);
         disp('Letzte trajektorie gespeichert.')
+
+        save_results = true;
     else
         disp('Es wurde kein Update durchgeführt, da die maximale Anzahl an Iterationen erreicht wurde.')
     end
@@ -55,9 +62,11 @@ else
 end
 
 %% Save results
-% Overwrite existing .mat-file
-init_update_timestamp = datetime('now');    % Timestamp of update
-save(run_filepath, 'SISO_MOLE', 'ref_traj', 'init_update_timestamp');
+if save_results
+    % Overwrite existing .mat-file
+    init_update_timestamp = datetime('now');    % Timestamp of update
+    save(run_filepath, 'SISO_MOLE', 'ref_traj', 'init_update_timestamp');
+end
 
 %% Plot results
 figure;
