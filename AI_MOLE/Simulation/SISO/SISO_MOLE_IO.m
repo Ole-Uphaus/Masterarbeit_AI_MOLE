@@ -106,10 +106,10 @@ classdef SISO_MOLE_IO < handle
             obj.ILC_SISO.init_Quadr_type(W, S, R, P_reduced);
 
             % Perform ILC update (choose between normal and GP method)
-            % u_vec_new = obj.ILC_SISO.Quadr_update(y_vec);
+            u_vec_new = obj.ILC_SISO.Quadr_update(y_vec);
 
-            y_vec_GP = obj.GP_SISO.predict_trajectory_measurement(obj.u_cell{obj.i_iter});
-            u_vec_new = obj.ILC_SISO.Quadr_update_GP_based(y_vec, y_vec_GP);
+            % y_vec_GP = obj.GP_SISO.predict_trajectory_measurement(obj.u_cell{obj.i_iter});
+            % u_vec_new = obj.ILC_SISO.Quadr_update_GP_based(y_vec, y_vec_GP);
 
             % Apply damping based on nonlinearity
             u_vec_new = obj.apply_nonlinearity_damping(u_vec_new, P);
