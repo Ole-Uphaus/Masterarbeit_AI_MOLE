@@ -17,10 +17,60 @@ base_dir = fileparts(mfilename("fullpath"));
 Model_Path = fullfile(base_dir, '..', '..', '..', 'System_Models');
 addpath(Model_Path);
 
+%% Controller design (discrete state feedback DR)
+% Sample Time
+Ts = 0.001;
+
+% Simulation parameters
+J1  = 0.0299;    % kgm^2
+J2  = 0.0299;    % kgm^2
+c_phi = 7.309;   % Nm/rad
+d_v1 = 0.055;    % Nms/rad
+d_v2 = 0.0064;   % Nms/rad
+
+% State space
+A = [0, 1, 0, 0;
+    -c_phi/J1, -d_v1/J1, c_phi/J1, 0;
+    0, 0, 0, 1;
+    c_phi/J2, 0, -c_phi/J2, -d_v2/J2];
+
+b = [0;
+    1/J1;
+    0;
+    0];
+
+c_T = [0, 0, 1, 0];
+
+d = 0;
+
+% Discrete System
+sys_contin = ss(A, b, c_T, 0);
+sys_disc = c2d(sys_contin, Ts, 'zoh');
+
+% System matrices
+Ad = sys_disc.A;
+bd = sys_disc.B;
+c_Td = sys_disc.C;
+dd = sys_disc.D;
+
+% LQR weighting matrices (as in DR)
+Q_LQR = diag([1, 1, 10, 1]);
+R_LQR = 1;
+
+% LQR gain
+k_T_disc = dlqr(Ad, bd, Q_LQR, R_LQR);
+
+% Controlled system dynamics
+Ad_cont = Ad - bd * k_T_disc;
+sys_disc_cont = ss(Ad_cont, bd, c_Td, dd, Ts);
+
+% Static gain (feedforward control signal)
+S = 1 / dcgain(sys_disc_cont);
+
 %% Choose run for Simulation
 % Run
-date_string = '2025_12_29';
-run_filename = 'Run_01_uncontrolled.mat';
+date_string = '2026_01_08';
+run_filename = 'Run_01_serial.mat';
 run_filepath = fullfile(pwd, 'Runs', date_string, run_filename);
 
 % Extract architecture
@@ -41,7 +91,7 @@ switch architecture
         % Use the uncontrolled System
 
         % Choose system model
-        system_dynamics = @torsion_oszillator_linear;
+        system_dynamics = sys_disc;
         x0 = [0; 0; 0; 0];
 
     case 'serial'
@@ -50,25 +100,29 @@ switch architecture
         % is used as initial input.
 
         % Choose system model
-        system_dynamics = @torsion_oszillator_linear_PI;
-        x0 = [0; 0; 0; 0; 0];
+        system_dynamics = sys_disc_cont;
+        x0 = [0; 0; 0; 0];
 
     otherwise
         error('Unbekannte Architektur ausgewählt.')
 end
 
-% Solver setting
-Ts = ref_traj.t_vec(2) - ref_traj.t_vec(1);
-opts = odeset( ...
-    'RelTol', 1e-6, ...         % Tolerance
-    'AbsTol', 1e-8, ...  % Tolerance
-    'MaxStep', Ts/5, ...        % Use smaller step size for better Results
-    'InitialStep', Ts/20);
+% Upsample input trajectory
+t_vec_sys = 0:Ts:ref_traj.t_vec(end);
+t_vec_u = ref_traj.t_vec;
 
-% Simulation step
-[t_sim, x_sim] = ode45(@(t,x) system_dynamics(t, x, u_vec, ref_traj.t_vec), ref_traj.t_vec, x0, opts);
-y_vec = x_sim(:, 3);
-disp('Simulation durchgeführt.')
+u_vec_sys = interp1(t_vec_u, u_vec, t_vec_sys, 'previous', 'extrap');
+
+% Simulate system
+[~, ~, x_sim] = lsim(system_dynamics, u_vec_sys(:), t_vec_sys(:), x0);
+y_vec_sys = x_sim(:, 3);
+
+% Downsample simulation results for ILC
+Ts_u = t_vec_u(2) - t_vec_u(1);
+sample_factor = round(Ts_u / Ts);
+
+idx_down = 1:sample_factor:length(t_vec_sys);
+y_vec = y_vec_sys(idx_down);
 
 %% Save Results
 % Name
