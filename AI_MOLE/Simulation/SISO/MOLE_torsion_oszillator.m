@@ -72,36 +72,6 @@ switch architecture
         % Initialisation
         SISO_MOLE = SISO_MOLE_IO(r_vec, u_init, params);
 
-    case 'serial_PI'
-        % Use the PI-controlled system for AI-MOLE while modifying the
-        % reference trajectory of the controller. The reference trajectory
-        % is used as initial input.
-
-        % Choose system model
-        system_dynamics = @torsion_oszillator_linear_PI;
-        x0 = [0; 0; 0; 0; 0];
-
-        params = struct();
-
-        % Parameters
-        params.m_delay = 1;
-        params.N_iter = 10;
-        params.H_trials = 3;
-        
-        % Choose weight initialisation Method ('Meindl', 'Stochastic', 'Heuristic',
-        % 'Robust', 'Manual')
-        params.weight_init_method = 'Stochastic';
-        
-        % Choose nonlinearity damping method ('none', 'relative_1', 'relative_2', 'minimize')
-        params.nonlin_damping = 'relative_2';
-        params.beta = 0.1;
-        
-        % Initial input Trajectory
-        u_init = r_vec;
-        
-        % Initialisation
-        SISO_MOLE = SISO_MOLE_IO(r_vec, u_init, params);
-
     case 'serial_LQR'
         % Use the state feedback controlled (LQR) system for AI-MOLE while
         % modifying the input trajectory of the controlled system.
