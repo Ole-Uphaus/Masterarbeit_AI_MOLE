@@ -136,7 +136,7 @@ switch architecture
             u_init = S .* r_vec;
         else
             sigma_I = 0.1;
-            u_init = sigma_I*sin(2*pi/T_end.*t_vec');
+            u_init = sigma_I*sin(2*pi/ref_traj.t_vec(end).*ref_traj.t_vec');
         end
 
         % Initialisation
