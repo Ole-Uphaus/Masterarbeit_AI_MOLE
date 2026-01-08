@@ -69,7 +69,7 @@ S = 1 / dcgain(sys_disc_cont);
 architecture = 'serial';
 
 % Choose reference trajectory
-traj_name = 'Trajectory_01.mat';
+traj_name = 'Trajectory_02.mat';
 
 %% Load reference Trajectory
 % File path
