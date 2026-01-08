@@ -14,9 +14,59 @@ base_dir = fileparts(mfilename("fullpath"));
 MOLE_Path = fullfile(base_dir, '..', '..', 'Simulation', 'SISO');
 addpath(MOLE_Path);
 
+%% Controller design (discrete state feedback DR)
+% Sample Time
+Ts = 0.001;
+
+% Simulation parameters
+J1  = 0.0299;    % kgm^2
+J2  = 0.0299;    % kgm^2
+c_phi = 7.309;   % Nm/rad
+d_v1 = 0.055;    % Nms/rad
+d_v2 = 0.0064;   % Nms/rad
+
+% State space
+A = [0, 1, 0, 0;
+    -c_phi/J1, -d_v1/J1, c_phi/J1, 0;
+    0, 0, 0, 1;
+    c_phi/J2, 0, -c_phi/J2, -d_v2/J2];
+
+b = [0;
+    1/J1;
+    0;
+    0];
+
+c_T = [0, 0, 1, 0];
+
+d = 0;
+
+% Discrete System
+sys_contin = ss(A, b, c_T, 0);
+sys_disc = c2d(sys_contin, Ts, 'zoh');
+
+% System matrices
+Ad = sys_disc.A;
+bd = sys_disc.B;
+c_Td = sys_disc.C;
+dd = sys_disc.D;
+
+% LQR weighting matrices (as in DR)
+Q_LQR = diag([1, 1, 10, 1]);
+R_LQR = 1;
+
+% LQR gain
+k_T_disc = dlqr(Ad, bd, Q_LQR, R_LQR);
+
+% Controlled system dynamics
+Ad_cont = Ad - bd * k_T_disc;
+sys_disc_cont = ss(Ad_cont, bd, c_Td, dd, Ts);
+
+% Static gain (feedforward control signal)
+S = 1 / dcgain(sys_disc_cont);
+
 %% Parameters
-% General ILC architecture ('uncontrolled', 'serial', 'parallel')
-architecture = 'uncontrolled';
+% General ILC architecture ('uncontrolled', 'serial')
+architecture = 'serial';
 
 % Choose reference trajectory
 traj_name = 'Trajectory_01.mat';
@@ -33,7 +83,7 @@ r_vec = r_vec(:);
 %% Initialize AI-MOLE object
 switch architecture
     case 'uncontrolled'
-        % Use the uncontrolled System and initialize with simple input
+        % Use the uncontrolled system and initialize with simple input
         % trajectory
 
         params = struct();
@@ -47,9 +97,9 @@ switch architecture
         % 'Robust', 'Manual')
         params.weight_init_method = 'Stochastic';
         
-        % Choose nonlinearity damping Parameters
-        params.use_nonlin_damping = true;
-        params.beta = 2;
+        % Choose nonlinearity damping method ('none', 'relative_1', 'relative_2', 'minimize')
+        params.nonlin_damping = 'relative_2';
+        params.beta = 0;
         
         % Initial input Trajectory (simple sin or automatic generated)
         sigma_I = 0.1;
@@ -60,9 +110,9 @@ switch architecture
         SISO_MOLE = SISO_MOLE_IO(r_vec, u_init, params);
 
     case 'serial'
-        % Use the PI-controlled system for AI-MOLE while modifying the
-        % reference trajectory of the controller. The reference trajectory
-        % is used as initial input.
+        % Use the state feedback controlled (LQR) system for AI-MOLE while
+        % modifying the reference trajectory if the static feedforward
+        % controlled system.
 
         params = struct();
 
@@ -75,13 +125,20 @@ switch architecture
         % 'Robust', 'Manual')
         params.weight_init_method = 'Stochastic';
         
-        % Choose nonlinearity damping Parameters
-        params.use_nonlin_damping = true;
-        params.beta = 2;
+        % Choose nonlinearity damping method ('none', 'relative_1', 'relative_2', 'minimize')
+        params.nonlin_damping = 'relative_2';
+        params.beta = 0;
         
-        % Initial input Trajectory
-        u_init = r_vec;
-        
+        % Initial input Trajectory (simple sin or static feed forward)
+        use_feedforward_control = true;
+
+        if use_feedforward_control
+            u_init = S .* r_vec;
+        else
+            sigma_I = 0.1;
+            u_init = sigma_I*sin(2*pi/T_end.*t_vec');
+        end
+
         % Initialisation
         SISO_MOLE = SISO_MOLE_IO(r_vec, u_init, params);
 
