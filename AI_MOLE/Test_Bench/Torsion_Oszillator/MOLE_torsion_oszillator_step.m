@@ -136,11 +136,14 @@ switch architecture
         u_vec_actuator = u_vec_sys(:) - x_sim*k_T_disc.';
 
     case 'uncontrolled'
+        % Sample Time
+        Ts = 0.001;
+
         % Upsample input trajectory
         t_vec_sys = 0:Ts:ref_traj.t_vec(end);
         t_vec_u = ref_traj.t_vec;
         
-        u_vec_sys = interp1(t_vec_u, SISO_MOLE.u_cell{idx_u}, t_vec_sys, 'previous', 'extrap');
+        u_vec_actuator = interp1(t_vec_u, SISO_MOLE.u_cell{idx_u}, t_vec_sys, 'previous', 'extrap');
     otherwise
         error('Architektur nicht erkannt.')
 end
