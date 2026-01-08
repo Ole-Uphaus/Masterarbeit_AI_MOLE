@@ -25,7 +25,7 @@ r_vec = ref_traj.phi2;
 r_vec = r_vec(:);
 
 %% Parameters
-% MOLE architcture ('uncontrolled', 'serial_PI', 'serial_LQR', 'serial_LQR_ff')
+% MOLE architcture ('uncontrolled', 'serial_LQR', 'serial_LQR_ff')
 architecture = 'serial_LQR_ff';
 
 % Simulation parameters
@@ -63,7 +63,7 @@ switch architecture
         
         % Choose nonlinearity damping method ('none', 'relative_1', 'relative_2', 'minimize')
         params.nonlin_damping = 'relative_2';
-        params.beta = 0.5;
+        params.beta = 0;
         
         % Initial input Trajectory (simple sin or automatic generated)
         sigma_I = 0.1;
@@ -94,7 +94,7 @@ switch architecture
         
         % Choose nonlinearity damping method ('none', 'relative_1', 'relative_2', 'minimize')
         params.nonlin_damping = 'relative_2';
-        params.beta = 0.1;
+        params.beta = 0;
         
         % Initial input Trajectory (simple sin or automatic generated)
         sigma_I = 0.1;
@@ -125,7 +125,7 @@ switch architecture
         
         % Choose nonlinearity damping method ('none', 'relative_1', 'relative_2', 'minimize')
         params.nonlin_damping = 'relative_2';
-        params.beta = 0.1;
+        params.beta = 0;
         
         % Initial input Trajectory
         u_init = r_vec;
