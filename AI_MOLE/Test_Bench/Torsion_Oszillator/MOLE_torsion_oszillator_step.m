@@ -19,8 +19,8 @@ addpath(MOLE_Path);
 
 %% Load MOLE and simulation/trial 
 % MOLE object
-date_string = '2026_01_08';
-run_filename = 'Run_01_serial.mat';
+date_string = '2026_01_09';
+run_filename = 'Run_03_serial.mat';
 run_filepath = fullfile(pwd, 'Runs', date_string, run_filename);
 
 % Current Simulation/Trial
@@ -166,7 +166,7 @@ if ~isempty(SISO_MOLE.y_cell{SISO_MOLE.N_iter+1})
 end
 grid on;
 xlabel('Zeit [s]'); 
-ylabel('x [m]');
+ylabel('phi2 [rad]');
 title('Compare desired and simulated Trajectory');
 legend('Location', 'best');
 
@@ -191,7 +191,7 @@ if ~isempty(SISO_MOLE.u_cell{SISO_MOLE.N_iter+1})
 end
 grid on;
 xlabel('Zeit [s]'); 
-ylabel('F [N]');
+ylabel('T [Nm]');
 title('Input Signal');
 legend('Location', 'best');
 
@@ -199,14 +199,16 @@ subplot(2,2,2);
 % plot(t_vec, v_vec, LineWidth=1, DisplayName='meas');
 grid on;
 xlabel('Zeit [s]'); 
-ylabel('x [m]');
+ylabel('phi2 [rad]');
 title('Noise');
 legend()
 
 figure;
-plot(t_vec_sys, u_vec_actuator, LineWidth=1);
+plot(t_vec_sys, u_vec_actuator, LineWidth=1); hold on;
+yline(9,  'r--', 'LineWidth', 1);
+yline(-9, 'r--', 'LineWidth', 1);
 grid on;
 xlabel('Zeit [s]'); 
 ylabel('F [N]');
 title('Approximate Actuator Input Signal');
-ylim([-9 9]);
+ylim([-10 10]);

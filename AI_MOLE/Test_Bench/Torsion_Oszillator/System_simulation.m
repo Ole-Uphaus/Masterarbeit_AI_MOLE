@@ -69,8 +69,8 @@ S = 1 / dcgain(sys_disc_cont);
 
 %% Choose run for Simulation
 % Run
-date_string = '2026_01_08';
-run_filename = 'Run_01_serial.mat';
+date_string = '2026_01_09';
+run_filename = 'Run_03_serial.mat';
 run_filepath = fullfile(pwd, 'Runs', date_string, run_filename);
 
 % Extract architecture
