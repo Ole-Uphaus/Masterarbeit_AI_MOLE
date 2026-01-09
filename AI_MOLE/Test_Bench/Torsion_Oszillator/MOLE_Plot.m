@@ -21,8 +21,8 @@ addpath(GP_Path);
 
 %% Load MOLE object
 % MOLE object
-date_string = '2025_12_29';
-run_filename = 'Run_01_uncontrolled.mat';
+date_string = '2026_01_09';
+run_filename = 'Run_03_serial.mat';
 run_filepath = fullfile(pwd, 'Runs', date_string, run_filename);
 
 load(run_filepath);
@@ -43,12 +43,13 @@ if ~isempty(SISO_MOLE.y_cell{SISO_MOLE.N_iter+1})
 end
 grid on;
 xlabel('Zeit [s]'); 
-ylabel('x [m]');
+ylabel('phi2 [rad]');
 title('Compare desired and simulated Trajectory');
 legend('Location', 'best');
 
 subplot(2,2,3);   % 1 Zeile, 2 Spalten, erster Plot
-plot(0:(length(SISO_MOLE.ILC_SISO.RMSE_log)-1), SISO_MOLE.ILC_SISO.RMSE_log, LineWidth=1, DisplayName='ILC Quadr');
+% plot(0:(length(SISO_MOLE.ILC_SISO.RMSE_log)-1), SISO_MOLE.ILC_SISO.RMSE_log, LineWidth=1, DisplayName='ILC Quadr');
+semilogy(0:(length(SISO_MOLE.ILC_SISO.RMSE_log)-1), SISO_MOLE.ILC_SISO.RMSE_log, LineWidth=1, DisplayName='ILC Quadr');
 grid on;
 xlabel('Iteration'); 
 ylabel('RMSE');
@@ -67,7 +68,7 @@ if ~isempty(SISO_MOLE.u_cell{SISO_MOLE.N_iter+1})
 end
 grid on;
 xlabel('Zeit [s]'); 
-ylabel('F [N]');
+ylabel('T [Nm]');
 title('Input Signal');
 legend('Location', 'best');
 
@@ -75,6 +76,6 @@ subplot(2,2,2);
 % plot(t_vec, v_vec, LineWidth=1, DisplayName='meas');
 grid on;
 xlabel('Zeit [s]'); 
-ylabel('x [m]');
+ylabel('phi2 [rad]');
 title('Noise');
 legend()
