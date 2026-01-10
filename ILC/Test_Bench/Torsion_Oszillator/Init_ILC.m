@@ -86,12 +86,19 @@ N = size(ref_traj.t_vec, 2);
 m_delay = 1;
 
 %% Initialize ILC object
+% ILC sample Time
+Ts_ILC = ref_traj.t_vec(2) -ref_traj.t_vec(1);
+
 switch architecture
     case 'uncontrolled'
         % Use the uncontrolled system and initialize with zero Input.
 
+        % System dynamics (ILC sample time)
+        sys_disc_ILC = c2d(sys_contin, Ts_ILC, 'zoh');
+        [Ad_ILC,Bd_ILC,Cd_ILC,Dd_ILC] = ssdata(sys_disc_ILC);
+
         % Lifted system dynamics (uncontrolled)
-        P = Lifted_dynamics_linear_SISO(Ad, bd, c_Td, N, m_delay);
+        P = Lifted_dynamics_linear_SISO(Ad_ILC, Bd_ILC, Cd_ILC, N, m_delay);
         
         % Parameters
         N_iter = 10;
@@ -112,8 +119,15 @@ switch architecture
         % modifying the unput trajectory of the static feedforward
         % controlled system.
 
+        % System dynamics (ILC sample time)
+        sys_disc_ILC = c2d(sys_contin, Ts_ILC, 'zoh');
+        [Ad_ILC,Bd_ILC,Cd_ILC,Dd_ILC] = ssdata(sys_disc_ILC);
+
+        % Controlled System dynamics
+        Ad_ILC_cont = Ad_ILC - Bd_ILC*k_T_disc;
+
         % Lifted system dynamics (controlled)
-        P = Lifted_dynamics_linear_SISO(Ad_cont, bd, c_Td, N, m_delay);
+        P = Lifted_dynamics_linear_SISO(Ad_ILC_cont, Bd_ILC, Cd_ILC, N, m_delay);
         
         % Parameters
         N_iter = 10;
