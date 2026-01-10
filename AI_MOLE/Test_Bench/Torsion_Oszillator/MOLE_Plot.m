@@ -13,7 +13,7 @@ close all
 % Generate Dynamic file Path
 base_dir = fileparts(mfilename("fullpath"));
 MOLE_Path = fullfile(base_dir, '..', '..', 'Simulation', 'SISO');
-ILC_Path = fullfile(base_dir, '..', '..', '..', 'ILC', 'ILC_SISO');
+ILC_Path = fullfile(base_dir, '..', '..', '..', 'ILC', 'Simulation', 'ILC_SISO');
 GP_Path = fullfile(base_dir, '..', '..', '..', 'GP', 'GP_SISO');
 addpath(MOLE_Path);
 addpath(ILC_Path);
@@ -21,8 +21,8 @@ addpath(GP_Path);
 
 %% Load MOLE object
 % MOLE object
-date_string = '2026_01_09';
-run_filename = 'Run_03_serial.mat';
+date_string = '2026_01_08';
+run_filename = 'Run_01_serial.mat';
 run_filepath = fullfile(pwd, 'Runs', date_string, run_filename);
 
 load(run_filepath);
