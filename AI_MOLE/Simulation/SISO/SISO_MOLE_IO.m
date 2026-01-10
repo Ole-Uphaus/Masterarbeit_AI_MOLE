@@ -34,7 +34,7 @@ classdef SISO_MOLE_IO < handle
             % Generate dynamic paths
             base_dir = fileparts(mfilename("fullpath"));
             GP_path = fullfile(base_dir, '..', '..', '..', 'GP', 'GP_SISO');
-            ILC_path = fullfile(base_dir, '..', '..', '..', 'ILC', 'ILC_SISO');
+            ILC_path = fullfile(base_dir, '..', '..', '..', 'ILC', 'Simulation', 'ILC_SISO');
 
             % Add temporary paths
             addpath(GP_path);

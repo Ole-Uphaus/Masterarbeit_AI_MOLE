@@ -14,7 +14,7 @@ rng(43);
 % Generate Dynamic file Path to Meindls implementation
 base_dir = fileparts(mfilename("fullpath"));
 Meindl_path = fullfile(base_dir, '..', '..', '..', '..', 'Repo_Meindl_AI_MOLE', '1_matlab_ws', '1_SISO_MOLE', '0_lib');
-ILC_path = fullfile(base_dir, '..', '..', '..', 'ILC', 'ILC_SISO');
+ILC_path = fullfile(base_dir, '..', '..', '..', 'ILC', 'Simulation', 'ILC_SISO');
 Model_Path = fullfile(base_dir, '..', '..', '..', 'System_Models');
 addpath(Meindl_path);
 addpath(ILC_path);
