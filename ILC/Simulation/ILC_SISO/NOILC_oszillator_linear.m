@@ -13,7 +13,7 @@ rng(43);
 
 % Generate Dynamic file Paths
 base_dir = fileparts(mfilename("fullpath"));
-Model_Path = fullfile(base_dir, '..', '..', 'System_Models');
+Model_Path = fullfile(base_dir, '..', '..', '..', 'System_Models');
 addpath(Model_Path);
 
 %% System Dynamics

@@ -14,12 +14,12 @@ rng(43);
 
 % Generate Dynamic file Paths
 base_dir = fileparts(mfilename("fullpath"));
-Model_Path = fullfile(base_dir, '..', '..', 'System_Models');
+Model_Path = fullfile(base_dir, '..', '..', '..', 'System_Models');
 addpath(Model_Path);
 
 %% Reference Trajectory
 filename = 'Trajectory_01.mat';
-filepath = fullfile(pwd, '..', '..', 'AI_MOLE', 'Test_Bench', 'Torsion_Oszillator', 'Reference_Trajectories', filename);
+filepath = fullfile(pwd, '..', '..', '..', 'AI_MOLE', 'Test_Bench', 'Torsion_Oszillator', 'Reference_Trajectories', filename);
 load(filepath);
 
 r_vec = ref_traj.phi2;
