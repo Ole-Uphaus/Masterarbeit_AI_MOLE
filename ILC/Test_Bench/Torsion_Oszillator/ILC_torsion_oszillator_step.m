@@ -20,7 +20,7 @@ addpath(ILC_Path);
 %% Load ILC and simulation/trial 
 % ILC object
 date_string = '2026_01_10';
-run_filename = 'Run_03_serial.mat';
+run_filename = 'Run_02_serial.mat';
 run_filepath = fullfile(pwd, 'Runs', date_string, run_filename);
 
 % Current Simulation/Trial
