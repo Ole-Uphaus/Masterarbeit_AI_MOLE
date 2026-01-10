@@ -15,7 +15,7 @@ close all
 
 % Generate Dynamic file Paths
 base_dir = fileparts(mfilename("fullpath"));
-ILC_path = fullfile(base_dir, '..', '..', 'ILC', 'ILC_SISO');
+ILC_path = fullfile(base_dir, '..', '..', 'ILC', 'Simulation', 'ILC_SISO');
 Model_Path = fullfile(base_dir, '..', '..', 'System_Models');
 addpath(ILC_path);
 addpath(Model_Path);
@@ -72,7 +72,7 @@ GP_IO = GP_SISO_IO(1.e-5);
 GP_IO.train_GP_model(y_sim_train_cell, u_vec_train_cell);
 
 % Predict new Trajectory
-[y_pred_test, y_std_test] = GP_IO.predict_trajectory(u_vec_test);
+[y_pred_test, y_std_test] = GP_IO.predict_trajectory_measurement(u_vec_test);
 
 %% Linearize GP at given input trajectory
 % Linearisation
@@ -82,7 +82,7 @@ t = toc;
 fprintf('Dauer der Linearisierung: %g s\n', t);
 
 tic;
-[P2, Var_P2] = GP_IO.linearize_at_given_trajectory_fast(u_vec_train_cell{1});
+[P2, Var_P2] = GP_IO.linearize_covariance_at_given_trajectory_fast(u_vec_train_cell{1});
 t = toc;
 fprintf('Dauer der Linearisierung und Varianzberechnung (fast): %g s\n\n', t);
 

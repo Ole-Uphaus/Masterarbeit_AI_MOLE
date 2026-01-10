@@ -16,7 +16,7 @@ rng(43);
 
 % Generate Dynamic file Paths
 base_dir = fileparts(mfilename("fullpath"));
-ILC_path = fullfile(base_dir, '..', '..', 'ILC', 'ILC_SISO');
+ILC_path = fullfile(base_dir, '..', '..', 'ILC', 'Simulation', 'ILC_SISO');
 Model_Path = fullfile(base_dir, '..', '..', 'System_Models');
 addpath(ILC_path);
 addpath(Model_Path);

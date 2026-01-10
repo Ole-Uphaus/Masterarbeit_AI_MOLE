@@ -13,7 +13,7 @@ close all
 
 % Generate Dynamic file Paths
 base_dir = fileparts(mfilename("fullpath"));
-ILC_path = fullfile(base_dir, '..', '..', 'ILC', 'ILC_SISO');
+ILC_path = fullfile(base_dir, '..', '..', 'ILC', 'Simulation', 'ILC_SISO');
 Model_Path = fullfile(base_dir, '..', '..', 'System_Models');
 addpath(ILC_path);
 addpath(Model_Path);
@@ -85,8 +85,8 @@ GP_IO.train_GP_model(y_sim_train_cell, u_vec_train_cell);
 GP_IO_fric.train_GP_model(y_sim_train_fric_cell, u_vec_train_cell);
 
 % Predict new Trajectory
-[y_pred_test, y_std_test] = GP_IO.predict_trajectory(u_vec_test);
-[y_pred_test_fric, y_std_test_fric] = GP_IO_fric.predict_trajectory(u_vec_test);
+[y_pred_test, y_std_test] = GP_IO.predict_trajectory_measurement(u_vec_test);
+[y_pred_test_fric, y_std_test_fric] = GP_IO_fric.predict_trajectory_measurement(u_vec_test);
 
 % Calculate prediction error
 error_y = abs(y_pred_test - y_sim_test);
