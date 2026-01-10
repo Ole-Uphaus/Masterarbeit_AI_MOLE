@@ -67,7 +67,7 @@ S_gain = 1 / dcgain(sys_disc_cont);
 
 %% Parameters
 % General ILC architecture ('uncontrolled', 'serial')
-architecture = 'uncontrolled';
+architecture = 'serial';
 
 % Choose reference trajectory
 traj_name = 'Trajectory_02.mat';

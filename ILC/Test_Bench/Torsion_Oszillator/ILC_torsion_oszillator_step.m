@@ -20,7 +20,7 @@ addpath(ILC_Path);
 %% Load ILC and simulation/trial 
 % ILC object
 date_string = '2026_01_10';
-run_filename = 'Run_01_uncontrolled.mat';
+run_filename = 'Run_03_serial.mat';
 run_filepath = fullfile(pwd, 'Runs', date_string, run_filename);
 
 % Current Simulation/Trial
@@ -52,7 +52,7 @@ if init_update_timestamp < sim_trial_timestamp
     if idx_u <= N_iter
         % Perform ILC update
         [~] = ILC_Quadr.Quadr_update(y_vec);
-        disp('AI-MOLE Update durchgeführt.')
+        disp('ILC Update durchgeführt.')
 
         save_results = true;
     elseif (idx_u == N_iter+1) && (idx_y == N_iter)
