@@ -1,30 +1,30 @@
 % -------------------------------------------------------------
 % Autor:      Ole Uphaus
-% Datum:      09.01.2026
+% Datum:      10.01.2026
 % Beschreibung:
-% Das ist eine Checkliste für den Workflow von AI-MOLE am Prüfstand.
+% Das ist eine Checkliste für den Workflow vom Modellbasierten ILC am Prüfstand.
 % -------------------------------------------------------------
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Neuen AI-MOLE Run beginnen
+Neuen ILC Run beginnen
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-1.  AI-MOLE objekt mit 'Init_MOLE' mit gewünschten Parametern erzeugen
-2.  AI-MOLE objekt in Initialisierungsskript des Prüfstandes auswählen
-    ('ini_TSchw_SS25_MOLE')
-3.  AI-MOLE objekt in Updateskript auswählen ('MOLE_torsion_oszillator_step')
+1.  ILC objekt mit 'Init_ILC' mit gewünschten Parametern erzeugen
+2.  ILC objekt in Initialisierungsskript des Prüfstandes auswählen
+    ('ini_TSchw_SS25_ILC')
+3.  AI-MOLE objekt in Updateskript auswählen ('ILC_torsion_oszillator_step')
 4.  Konfiguration des Simulink Modells überprüfen (alle switches richtig gesetzt)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 AI-MOLE Step durchführen
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-1.  Initialisierungsskript ('ini_TSchw_SS25_MOLE') ausführen (Eingangstrajektorie
+1.  Initialisierungsskript ('ini_TSchw_SS25_ILC') ausführen (Eingangstrajektorie
     wird in Workspace geladen - zugriff von Simulink Modell aus)
 2.  Simulink laufen lassen (zuvor Konfiguration prüfen)
 3.  Skript 'Mat_Files_zusammenfueren' für aktuelle Messung ausführen
     (Run muss zuvor ausgewählt werden)
-4.  Skript 'Load_trial_results' ausführen, um die für AI-MOLE passende 
+4.  Skript 'Load_trial_results' ausführen, um die für ILC passende 
     Ausgangstrajektorie (angepasste Abtastzeit Ts) zu erzeugen
-5.  Skript 'MOLE_torsion_oszillator_step' ausführen, um AI-MOLE update 
+5.  Skript 'ILC_torsion_oszillator_step' ausführen, um ILC update 
     durchzuführen (Aktuatortrajektorie überprüfen)
 
 ----> zurück zu Schritt 1, bis alle Iterationen durchgeführt
