@@ -18,7 +18,7 @@ Model_Path = fullfile(base_dir, '..', '..', '..', 'System_Models');
 addpath(Model_Path);
 
 %% Reference Trajectory
-filename = 'Trajectory_01.mat';
+filename = 'Trajectory_02.mat';
 filepath = fullfile(pwd, '..', '..', '..', 'AI_MOLE', 'Test_Bench', 'Torsion_Oszillator', 'Reference_Trajectories', filename);
 load(filepath);
 
@@ -47,7 +47,7 @@ D = 0;
 
 %% Parameters
 % ILC architcture ('uncontrolled', 'serial_LQR', 'serial_LQR_ff')
-architecture = 'serial_LQR_ff';
+architecture = 'uncontrolled';
 
 % Simulation parameters
 Ts = ref_traj.t_vec(2) - ref_traj.t_vec(1);
