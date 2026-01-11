@@ -15,7 +15,9 @@ close all
 % Generate Dynamic file Path
 base_dir = fileparts(mfilename("fullpath"));
 ILC_Path = fullfile(base_dir, '..', '..', 'Simulation', 'ILC_SISO');
+Model_Path = fullfile(base_dir, '..', '..', '..', 'System_Models');
 addpath(ILC_Path);
+addpath(Model_Path);
 
 %% Load ILC and simulation/trial 
 % ILC object
