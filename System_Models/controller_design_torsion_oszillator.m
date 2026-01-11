@@ -1,4 +1,4 @@
-function [sys_disc ,sys_disc_cont, Ts, S_gain] = controller_design_torsion_oszillator()
+function [sys_contin, sys_disc ,sys_disc_cont, Ts, S_gain, k_T_disc] = controller_design_torsion_oszillator()
     %% Controller design (discrete state feedback DR)
     % Sample Time
     Ts = 0.001;
