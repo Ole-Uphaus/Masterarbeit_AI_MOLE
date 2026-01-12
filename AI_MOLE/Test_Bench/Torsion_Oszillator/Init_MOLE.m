@@ -82,10 +82,10 @@ switch architecture
         
         % Choose nonlinearity damping method ('none', 'relative_1', 'relative_2', 'minimize')
         params.nonlin_damping = 'relative_2';
-        params.beta = 0;
+        params.beta = 2;
         
         % Initial input Trajectory (simple sin or static feed forward)
-        use_feedforward_control = false;
+        use_feedforward_control = true;
 
         if use_feedforward_control
             u_init = S_gain .* r_vec;
