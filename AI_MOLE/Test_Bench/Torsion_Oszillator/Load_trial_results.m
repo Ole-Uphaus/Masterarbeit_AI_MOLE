@@ -12,7 +12,7 @@ clc
 clear
 close all
 
-%% Load lates measurement Folder data
+%% Find the right directory
 % Path to base dict
 base_dir = fullfile(pwd, '..', '..', '..', '..');
 
@@ -34,6 +34,10 @@ end
 [~, idx] = max(numbers);
 latest_folder_name = folder_names(idx).name;
 latest_folder_path = fullfile(base_dir, latest_folder_name);
+
+%% Merge and load measurement data
+% Use script to merge data
+run('C:\Users\Mitarbeiter\Desktop\MA_Uphaus\Run_Zusammenfueren.m')
 
 % Load measurement data
 load(fullfile(latest_folder_path, 'Messungen_gesamt.mat'));
