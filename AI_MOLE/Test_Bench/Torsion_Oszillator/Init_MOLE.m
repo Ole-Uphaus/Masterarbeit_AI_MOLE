@@ -85,12 +85,12 @@ switch architecture
         params.beta = 0;
         
         % Initial input Trajectory (simple sin or static feed forward)
-        use_feedforward_control = true;
+        use_feedforward_control = false;
 
         if use_feedforward_control
             u_init = S_gain .* r_vec;
         else
-            sigma_I = 0.1;
+            sigma_I = 20;
             u_init = sigma_I*sin(2*pi/ref_traj.t_vec(end).*ref_traj.t_vec');
         end
 
