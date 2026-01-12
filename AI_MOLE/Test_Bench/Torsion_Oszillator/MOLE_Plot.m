@@ -21,7 +21,7 @@ addpath(GP_Path);
 
 %% Load MOLE object
 % MOLE object
-date_string = '2026_01_08';
+date_string = '2026_01_12';
 run_filename = 'Run_01_serial.mat';
 run_filepath = fullfile(pwd, 'Runs', date_string, run_filename);
 
@@ -35,7 +35,7 @@ subplot(2,2,1);   % 1 Zeile, 2 Spalten, erster Plot
 plot(ref_traj.t_vec, ref_traj.phi2, LineWidth=1, DisplayName='desired'); hold on;
 for i = 1:SISO_MOLE.N_iter
     if ~isempty(SISO_MOLE.y_cell{i})
-        plot(ref_traj.t_vec, SISO_MOLE.y_cell{i}, LineWidth=1, Color=[0.5 0.5 0.5], HandleVisibility='off');
+        % plot(ref_traj.t_vec, SISO_MOLE.y_cell{i}, LineWidth=1, Color=[0.5 0.5 0.5], HandleVisibility='off');
     end
 end
 if ~isempty(SISO_MOLE.y_cell{SISO_MOLE.N_iter+1})
@@ -48,8 +48,8 @@ title('Compare desired and simulated Trajectory');
 legend('Location', 'best');
 
 subplot(2,2,3);   % 1 Zeile, 2 Spalten, erster Plot
-% plot(0:(length(SISO_MOLE.ILC_SISO.RMSE_log)-1), SISO_MOLE.ILC_SISO.RMSE_log, LineWidth=1, DisplayName='ILC Quadr');
-semilogy(0:(length(SISO_MOLE.ILC_SISO.RMSE_log)-1), SISO_MOLE.ILC_SISO.RMSE_log, LineWidth=1, DisplayName='ILC Quadr');
+plot(0:(length(SISO_MOLE.ILC_SISO.RMSE_log)-1), SISO_MOLE.ILC_SISO.RMSE_log, LineWidth=1, DisplayName='ILC Quadr');
+% semilogy(0:(length(SISO_MOLE.ILC_SISO.RMSE_log)-1), SISO_MOLE.ILC_SISO.RMSE_log, LineWidth=1, DisplayName='ILC Quadr');
 grid on;
 xlabel('Iteration'); 
 ylabel('RMSE');

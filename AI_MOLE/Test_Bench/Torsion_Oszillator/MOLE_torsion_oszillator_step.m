@@ -21,7 +21,7 @@ addpath(Model_Path);
 
 %% Load MOLE and simulation/trial 
 % MOLE object
-date_string = '2026_01_11';
+date_string = '2026_01_12';
 run_filename = 'Run_01_serial.mat';
 run_filepath = fullfile(pwd, 'Runs', date_string, run_filename);
 
