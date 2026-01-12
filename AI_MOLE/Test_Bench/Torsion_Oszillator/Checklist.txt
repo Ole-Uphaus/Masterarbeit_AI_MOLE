@@ -20,11 +20,9 @@ AI-MOLE Step durchführen
 1.  Initialisierungsskript ('ini_TSchw_SS25_MOLE') ausführen (Eingangstrajektorie
     wird in Workspace geladen - zugriff von Simulink Modell aus)
 2.  Simulink laufen lassen (zuvor Konfiguration prüfen)
-3.  Skript 'Mat_Files_zusammenfueren' für aktuelle Messung ausführen
-    (Run muss zuvor ausgewählt werden)
-4.  Skript 'Load_trial_results' ausführen, um die für AI-MOLE passende 
+3.  Skript 'Load_trial_results' ausführen, um die für AI-MOLE passende 
     Ausgangstrajektorie (angepasste Abtastzeit Ts) zu erzeugen
-5.  Skript 'MOLE_torsion_oszillator_step' ausführen, um AI-MOLE update 
+4.  Skript 'MOLE_torsion_oszillator_step' ausführen, um AI-MOLE update 
     durchzuführen (Aktuatortrajektorie überprüfen)
 
 ----> zurück zu Schritt 1, bis alle Iterationen durchgeführt
