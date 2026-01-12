@@ -73,7 +73,7 @@ switch architecture
 
         % Parameters
         params.m_delay = 1;
-        params.N_iter = 10;
+        params.N_iter = 20;
         params.H_trials = 3;
         
         % Choose weight initialisation Method ('Meindl', 'Stochastic', 'Heuristic',
@@ -82,7 +82,7 @@ switch architecture
         
         % Choose nonlinearity damping method ('none', 'relative_1', 'relative_2', 'minimize')
         params.nonlin_damping = 'relative_2';
-        params.beta = 2;
+        params.beta = 1;
         
         % Initial input Trajectory (simple sin or static feed forward)
         use_feedforward_control = true;
