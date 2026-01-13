@@ -13,6 +13,7 @@ classdef SISO_MOLE_IO < handle
         weight_init_method  % Tells, how the weighting Matrices are getting Initialized
         nonlin_damping      % Tells, if nonlin damping should be used for Regularisation
         beta                % Parameter for nonlin damping
+        alpha_log           % Vector containing the used damping factors alpha
     end
     
     methods
@@ -53,6 +54,7 @@ classdef SISO_MOLE_IO < handle
             % Storage cells
             obj.y_cell = cell(params.N_iter+1, 1);
             obj.u_cell = cell(params.N_iter+1, 1);
+            obj.alpha_log = NaN(params.N_iter, 1);
 
             % Assign values
             obj.N_iter = params.N_iter;
@@ -351,6 +353,9 @@ classdef SISO_MOLE_IO < handle
 
             % Calculate damped input Trajectory
             u_vec_new_damped = obj.u_cell{obj.i_iter} + alpha*delta_u;
+
+            % Log alpha
+            obj.alpha_log(obj.i_iter) = alpha;
 
             % Delete last element to ensure reduced size representation
             u_vec_new_damped = u_vec_new_damped(1:end-1);
