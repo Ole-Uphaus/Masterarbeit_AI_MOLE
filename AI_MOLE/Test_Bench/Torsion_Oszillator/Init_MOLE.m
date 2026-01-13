@@ -57,7 +57,7 @@ switch architecture
         params.beta = 0;
         
         % Initial input Trajectory (simple sin or automatic generated)
-        sigma_I = 0.1;
+        sigma_I = 7.5;
         u_init_sin = sigma_I*sin(2*pi/ref_traj.t_vec(end).*ref_traj.t_vec');
         u_init = u_init_sin;        % u_init_sin / u_init_auto
         
@@ -73,7 +73,7 @@ switch architecture
 
         % Parameters
         params.m_delay = 1;
-        params.N_iter = 20;
+        params.N_iter = 10;
         params.H_trials = 3;
         
         % Choose weight initialisation Method ('Meindl', 'Stochastic', 'Heuristic',
@@ -81,7 +81,7 @@ switch architecture
         params.weight_init_method = 'Stochastic';
         
         % Choose nonlinearity damping method ('none', 'relative_1', 'relative_2', 'minimize')
-        params.nonlin_damping = 'relative_2';
+        params.nonlin_damping = 'minimize';
         params.beta = 1;
         
         % Initial input Trajectory (simple sin or static feed forward)
