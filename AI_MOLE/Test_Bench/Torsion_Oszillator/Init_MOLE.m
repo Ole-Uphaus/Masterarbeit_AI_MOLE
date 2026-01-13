@@ -21,7 +21,7 @@ addpath(Model_Path);
 
 %% Parameters
 % General ILC architecture ('uncontrolled', 'serial')
-architecture = 'uncontrolled';
+architecture = 'serial';
 
 % Choose reference trajectory
 traj_name = 'Trajectory_02.mat';
@@ -73,7 +73,7 @@ switch architecture
 
         % Parameters
         params.m_delay = 1;
-        params.N_iter = 20;
+        params.N_iter = 10;
         params.H_trials = 3;
         
         % Choose weight initialisation Method ('Meindl', 'Stochastic', 'Heuristic',
@@ -81,7 +81,7 @@ switch architecture
         params.weight_init_method = 'Stochastic';
         
         % Choose nonlinearity damping method ('none', 'relative_1', 'relative_2', 'minimize')
-        params.nonlin_damping = 'relative_2';
+        params.nonlin_damping = 'minimize';
         params.beta = 1;
         
         % Initial input Trajectory (simple sin or static feed forward)
