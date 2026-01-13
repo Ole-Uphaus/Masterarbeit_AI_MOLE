@@ -21,7 +21,7 @@ addpath(Model_Path);
 
 %% Parameters
 % General ILC architecture ('uncontrolled', 'serial')
-architecture = 'serial';
+architecture = 'uncontrolled';
 
 % Choose reference trajectory
 traj_name = 'Trajectory_02.mat';
@@ -57,7 +57,7 @@ switch architecture
         params.beta = 0;
         
         % Initial input Trajectory (simple sin or automatic generated)
-        sigma_I = 0.1;
+        sigma_I = 7.5;
         u_init_sin = sigma_I*sin(2*pi/ref_traj.t_vec(end).*ref_traj.t_vec');
         u_init = u_init_sin;        % u_init_sin / u_init_auto
         
