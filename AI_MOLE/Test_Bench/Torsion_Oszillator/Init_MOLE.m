@@ -81,11 +81,11 @@ switch architecture
         params.weight_init_method = 'Stochastic';
         
         % Choose nonlinearity damping method ('none', 'relative_1', 'relative_2', 'minimize')
-        params.nonlin_damping = 'minimize';
+        params.nonlin_damping = 'none';
         params.beta = 0;
         
         % Initial input Trajectory (simple sin or static feed forward)
-        use_feedforward_control = false;
+        use_feedforward_control = true;
 
         if use_feedforward_control
             u_init = S_gain .* r_vec;
