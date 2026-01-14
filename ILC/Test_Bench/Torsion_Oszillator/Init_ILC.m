@@ -89,11 +89,11 @@ switch architecture
         N_iter = 10;
         W = eye(size(P));
         % Simulation with s = 0.1 leads to expected errors
-        S = 1*eye(size(P));
+        S = 0.1*eye(size(P));
         R = 0*eye(size(P));
         
         % Initial input Trajectory (simple sin or static feed forward)
-        use_feedforward_control = true;
+        use_feedforward_control = false;
 
         if use_feedforward_control
             u_init = S_gain .* r_vec;
