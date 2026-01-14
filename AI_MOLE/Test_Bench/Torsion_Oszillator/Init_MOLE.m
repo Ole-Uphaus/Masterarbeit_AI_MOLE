@@ -78,7 +78,7 @@ switch architecture
         
         % Choose weight initialisation Method ('Meindl', 'Stochastic', 'Heuristic',
         % 'Robust', 'Manual')
-        params.weight_init_method = 'Stochastic';
+        params.weight_init_method = 'Meindl';
         
         % Choose nonlinearity damping method ('none', 'relative_1', 'relative_2', 'minimize')
         params.nonlin_damping = 'none';
