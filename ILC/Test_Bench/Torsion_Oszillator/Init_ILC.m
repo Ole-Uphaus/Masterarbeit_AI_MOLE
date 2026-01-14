@@ -89,7 +89,7 @@ switch architecture
         N_iter = 10;
         W = eye(size(P));
         % Simulation with s = 0.1 leads to expected errors
-        S = 0.01*eye(size(P));
+        S = 1*eye(size(P));
         R = 0*eye(size(P));
         
         % Initial input Trajectory (simple sin or static feed forward)
