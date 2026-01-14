@@ -73,7 +73,7 @@ switch architecture
 
         % Parameters
         params.m_delay = 1;
-        params.N_iter = 20;
+        params.N_iter = 10;
         params.H_trials = 3;
         
         % Choose weight initialisation Method ('Meindl', 'Stochastic', 'Heuristic',
@@ -81,7 +81,7 @@ switch architecture
         params.weight_init_method = 'Stochastic';
         
         % Choose nonlinearity damping method ('none', 'relative_1', 'relative_2', 'minimize')
-        params.nonlin_damping = 'relative_2';
+        params.nonlin_damping = 'none';
         params.beta = 0;
         
         % Initial input Trajectory (simple sin or static feed forward)
@@ -95,7 +95,7 @@ switch architecture
         end
 
         % Initialisation
-        SISO_MOLE = SISO_MOLE_IO(r_vec, u_init, params);
+        SISO_MOLE = SISO_MOLE_IO(r_vec, u_init, params, 0.001);
 
     otherwise
         error('Unbekannte Architektur ausgewählt.')
