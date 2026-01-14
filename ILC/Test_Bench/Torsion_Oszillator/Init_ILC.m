@@ -86,7 +86,7 @@ switch architecture
         P = Lifted_dynamics_linear_SISO(Ad_ILC_cont, Bd_ILC, Cd_ILC, N, m_delay);
         
         % Parameters
-        N_iter = 10;
+        N_iter = 20;
         W = eye(size(P));
         % Simulation with s = 0.1 leads to expected errors
         S = 0.1*eye(size(P));
