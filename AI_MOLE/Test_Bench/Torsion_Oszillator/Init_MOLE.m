@@ -24,7 +24,7 @@ addpath(Model_Path);
 architecture = 'serial';
 
 % Choose reference trajectory
-traj_name = 'Trajectory_02.mat';
+traj_name = 'Trajectory_03.mat';
 
 %% Load reference Trajectory
 % File path
@@ -78,14 +78,14 @@ switch architecture
         
         % Choose weight initialisation Method ('Meindl', 'Stochastic', 'Heuristic',
         % 'Robust', 'Manual')
-        params.weight_init_method = 'Meindl';
+        params.weight_init_method = 'Stochastic';
         
         % Choose nonlinearity damping method ('none', 'relative_1', 'relative_2', 'minimize')
-        params.nonlin_damping = 'none';
+        params.nonlin_damping = 'relative_2';
         params.beta = 0;
         
         % Initial input Trajectory (simple sin or static feed forward)
-        use_feedforward_control = false;
+        use_feedforward_control = true;
 
         if use_feedforward_control
             u_init = S_gain .* r_vec;

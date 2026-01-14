@@ -56,7 +56,7 @@ data_vec_ILC = Data_ges(idx_ilc, :);
 
 %% Downsample measurement data for ILC
 % Demanded sample Time (has to fit the actual sample time)
-Ts_ILC = 0.01;
+Ts_ILC = 0.05;
 
 % Compare to actual sample time
 Ts = t_vec_ILC(2) - t_vec_ILC(1);
