@@ -24,7 +24,7 @@ addpath(Model_Path);
 architecture = 'serial';
 
 % Choose reference trajectory
-traj_name = 'Trajectory_03.mat';
+traj_name = 'Trajectory_04.mat';
 
 %% Load reference Trajectory
 % File path
