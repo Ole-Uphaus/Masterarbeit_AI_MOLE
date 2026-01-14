@@ -12,7 +12,7 @@ close all
 
 %% Trajectory Parameters
 % Time
-Ts = 0.01;
+Ts = 0.1;
 T_end = 5;
 t_vec = 0:Ts:T_end;
 

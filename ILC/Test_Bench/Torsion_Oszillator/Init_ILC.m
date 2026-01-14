@@ -93,7 +93,7 @@ switch architecture
         R = 0*eye(size(P));
         
         % Initial input Trajectory (simple sin or static feed forward)
-        use_feedforward_control = true;
+        use_feedforward_control = false;
 
         if use_feedforward_control
             u_init = S_gain .* r_vec;

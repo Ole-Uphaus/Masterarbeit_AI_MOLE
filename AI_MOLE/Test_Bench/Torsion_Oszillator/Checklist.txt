@@ -26,3 +26,12 @@ AI-MOLE Step durchführen
     durchzuführen (Aktuatortrajektorie überprüfen)
 
 ----> zurück zu Schritt 1, bis alle Iterationen durchgeführt
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Abtastzeit ändern
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+1.  Referenztrajektorie mit gewünschter Abtastzeit erstellen und AI-MOLE 
+    Objekt basierend auf dieser erstellen
+2.  Referenztrajektorie in 'ini_TSchw_SS25_MOLE' ändern
+3.  ILC Abtastzeit in 'Load_trial_results' anpassen
