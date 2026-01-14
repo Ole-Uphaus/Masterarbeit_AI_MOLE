@@ -24,7 +24,7 @@ addpath(Model_Path);
 architecture = 'serial';
 
 % Choose reference trajectory
-traj_name = 'Trajectory_04.mat';
+traj_name = 'Trajectory_02.mat';
 
 %% Load reference Trajectory
 % File path
@@ -95,7 +95,7 @@ switch architecture
         end
 
         % Initialisation
-        SISO_MOLE = SISO_MOLE_IO(r_vec, u_init, params);
+        SISO_MOLE = SISO_MOLE_IO(r_vec, u_init, params, 0.001);
 
     otherwise
         error('Unbekannte Architektur ausgewählt.')
