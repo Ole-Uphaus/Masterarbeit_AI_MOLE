@@ -22,7 +22,7 @@ addpath(GP_Path);
 %% Load MOLE object
 % MOLE object
 date_string = '2026_01_14';
-run_filename = 'Run_01_serial.mat';
+run_filename = 'Run_04_serial.mat';
 run_filepath = fullfile(pwd, 'Runs', date_string, run_filename);
 
 load(run_filepath);
