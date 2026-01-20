@@ -36,7 +36,7 @@ opts = odeset( ...
     'InitialStep', Ts/20);
 
 % Noise Parameters
-sigma_v = 0.01;      % Measurement Noise 0.01
+sigma_v = 0.0;      % Measurement Noise 0.01
 fc_v = 20;
 white = true;       % if white == true -> white noise is sampled - no filter
 
@@ -47,7 +47,7 @@ sigma = 1;
 %% System model
 
 % Choose system model ('linear', 'nonlinear', 'nonlinear_stribeck')
-system_model = 'linear';
+system_model = 'nonlinear_stribeck';
 
 switch system_model
     case 'linear'
@@ -134,7 +134,7 @@ params.H_trials = 3;
 params.weight_init_method = 'Stochastic';
 
 % Choose nonlinearity damping method ('none', 'relative_1', 'relative_2', 'minimize')
-params.nonlin_damping = 'relative_2';
+params.nonlin_damping = 'none';
 params.beta = 2;
 
 % Initialisation
@@ -144,12 +144,19 @@ SISO_MOLE = SISO_MOLE_IO(r_vec, u_init, params);
 tic;
 % Update Loop
 u_sim = u_init;
+
+% Input restrictions (-3.5, 3.5)
+% u_sim = max(min(u_sim, 6), -6);
+
 v_vec = Gen_noise_Butter(t_vec, sigma_v, fc_v, white);
 [t_sim, x_sim] = ode45(@(t,x) dynamic_model(t, x, u_sim, t_vec), t_vec, x0, opts);
 y_sim = x_sim(:, 1) + v_vec;
 for i = 1:params.N_iter
     % Update input
     u_sim = [SISO_MOLE.update_input(y_sim); 0];
+
+    % Input restrictions (-3.5, 3.5)
+    % u_sim = max(min(u_sim, 6), -6);
 
     % Simulate the system
     v_vec = Gen_noise_Butter(t_vec, sigma_v, fc_v, white);
