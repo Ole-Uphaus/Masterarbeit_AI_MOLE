@@ -10,7 +10,6 @@ classdef Plot_Manager < handle
         title_cell
         legend_cell
 
-        print_legend
         filename
         save_pdf
 
@@ -28,7 +27,7 @@ classdef Plot_Manager < handle
         scatter_color = [0 0 0]
 
         fill_color = [0.8 0.8 1]
-        fill_alpha = 0.35
+        fill_alpha = 0.5
     end
     
     methods
@@ -41,7 +40,6 @@ classdef Plot_Manager < handle
             obj.y_label_cell = args.y_label_cell;
             obj.title_cell = args.title_cell;
             obj.legend_cell = args.legend_cell;
-            obj.print_legend = args.print_legend;
             obj.filename = args.filename;
             obj.save_pdf = args.save_pdf;
         end
@@ -129,7 +127,7 @@ classdef Plot_Manager < handle
             ax.Title.FontSize = 12;
 
             % Legend
-            if obj.print_legend
+            if ~isempty(obj.legend_cell{i})
                 legend(ax, obj.legend_cell{i}, 'Interpreter', 'latex', 'FontSize', 9, 'Location','best');
             end
 

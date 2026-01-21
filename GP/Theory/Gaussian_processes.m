@@ -44,7 +44,6 @@ args.y_label_cell = {'y'};
 args.title_cell = {'Title'};
 args.legend_cell = {{'GT Funktion', 'Trainingsdaten'}};
 
-args.print_legend = true;
 args.filename = fullfile('02_Grundlagen', 'Trainingsdaten_Funktion.pdf');
 args.save_pdf = save_pdf;
 
@@ -77,7 +76,7 @@ plot_single_GP_prediction(x_plot, y_plot, x_train, y_train, mu_star_0, sigma_sta
 
 %% Investigate hyperparameter influence
 % Hyperparameter variation
-ells = [0.2, 2.0];
+ells = [0.3, 6.0];
 sigfs = [0.4, 2.0];
 signs = [0.03, 0.5];
 
@@ -95,9 +94,64 @@ for i = 1:numel(ells)
     sigma_ell_cell{i} = sigma_star;
 end
 
-% Plot
+% Sigma_f
+mu_sigf_cell = cell(numel(ells), 1);
+sigma_sigf_cell = cell(numel(ells), 1);
+for i = 1:numel(ells)
+    % Hyperparameter
+    hyp = hyp_0;
+    hyp.sigma_f = sigfs(i);
+
+    % Train GP
+    [mu_star, sigma_star] = gp_predict_rbf(x_train, y_train, x_plot, hyp);
+    mu_sigf_cell{i} = mu_star;
+    sigma_sigf_cell{i} = sigma_star;
+end
+
+% Sigma_n
+mu_sign_cell = cell(numel(ells), 1);
+sigma_sign_cell = cell(numel(ells), 1);
+for i = 1:numel(ells)
+    % Hyperparameter
+    hyp = hyp_0;
+    hyp.sigma_n = signs(i);
+
+    % Train GP
+    [mu_star, sigma_star] = gp_predict_rbf(x_train, y_train, x_plot, hyp);
+    mu_sign_cell{i} = mu_star;
+    sigma_sign_cell{i} = sigma_star;
+end
+
+%% Plot
 filename = fullfile('02_Grundlagen', 'GP_einfluss_laengenskala.pdf');
 plot_tiled_GP_prediction(x_plot, x_train, y_train, mu_ell_cell, sigma_ell_cell, filename, save_pdf)
+
+filename = fullfile('02_Grundlagen', 'GP_einfluss_sigmaf.pdf');
+plot_tiled_GP_prediction(x_plot, x_train, y_train, mu_sigf_cell, sigma_sigf_cell, filename, save_pdf)
+
+filename = fullfile('02_Grundlagen', 'GP_einfluss_sigman.pdf');
+plot_tiled_GP_prediction(x_plot, x_train, y_train, mu_sign_cell, sigma_sign_cell, filename, save_pdf)
+
+%% Optimal hyperparameter
+% Use fitrgp
+optimal_GP = fitrgp( ...
+        x_train, y_train, ...
+        'BasisFunction','none', ...
+        'KernelFunction','squaredexponential', ...
+        'Standardize', false);
+
+% Extract optimal Hyperparameters
+hyp_opt.ell = optimal_GP.KernelInformation.KernelParameters(1);
+hyp_opt.sigma_f = optimal_GP.KernelInformation.KernelParameters(2);
+hyp_opt.sigma_n = optimal_GP.Sigma;
+
+% Run GP prediction
+[mu_star_opt, sigma_star_opt] = gp_predict_rbf(x_train, y_train, x_plot, hyp_opt);
+
+%% Plot
+% Plot optimal regression
+filename = fullfile('02_Grundlagen', 'GP_optimal_Plot.pdf');
+plot_single_GP_prediction(x_plot, y_plot, x_train, y_train, mu_star_opt, sigma_star_opt, filename, save_pdf)
 
 %% Local functions
 function [mu_star, sigma_star] = gp_predict_rbf(x_train, y_train, x_star, hyp)
@@ -147,7 +201,6 @@ function plot_single_GP_prediction(x_plot, y_plot, x_train, y_train, mu_star, si
     args.title_cell = {'Title'};
     args.legend_cell = {{'3$\sigma$-Band', 'GT Funktion', 'GP Pr\"{a}diktion', 'Trainingsdaten'}};
     
-    args.print_legend = true;
     args.filename = filename;
     args.save_pdf = save_pdf;
     
@@ -177,9 +230,8 @@ function plot_tiled_GP_prediction(x_plot, x_train, y_train, mu_star_cell, sigma_
     args.x_label_cell = {'x', 'x'};
     args.y_label_cell = {'y', ''};
     args.title_cell = {'Title', 'Title'};
-    args.legend_cell = {{'3$\sigma$-Band', 'GT Funktion', 'GP Pr\"{a}diktion', 'Trainingsdaten'}};
+    args.legend_cell = {{}, {'3$\sigma$-Band', 'GP Pr\"{a}diktion', 'Trainingsdaten'}};
     
-    args.print_legend = false;
     args.filename = filename;
     args.save_pdf = save_pdf;
     

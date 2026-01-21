@@ -40,9 +40,8 @@ args.y_cell = {{gauss_prob}};
 args.x_label_cell = {'x'};
 args.y_label_cell = {'y'};
 args.title_cell = {'Title'};
-args.legend_cell = {{''}};
+args.legend_cell = {{}};
 
-args.print_legend = false;
 args.filename = fullfile('02_Grundlagen', 'Gaußverteilung.pdf');
 args.save_pdf = save_pdf;
 
@@ -121,9 +120,8 @@ function plot_gaussian_vectors(X_vec, filename, save_pdf)
     args.x_label_cell = {'y'};
     args.y_label_cell = {'x'};
     args.title_cell = {'Title'};
-    args.legend_cell = {{''}};
+    args.legend_cell = {{}};
     
-    args.print_legend = false;
     args.filename = filename;
     args.save_pdf = save_pdf;
     
