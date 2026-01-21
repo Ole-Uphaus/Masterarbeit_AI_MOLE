@@ -40,13 +40,14 @@ args.title_cell = {'Title'};
 args.legend_cell = {{''}};
 
 args.print_legend = false;
-args.filename = [];
-args.save_pdf = [];
+args.filename = fullfile('02_Grundlagen', 'Gaußverteilung.pdf');
+args.save_pdf = false;
 
 % Assign values (opts)
 opts = struct();
 opts.fig_height = 8;
 opts.linewidth = 1.5;
+opts.y_scale = 'linear';
 opts.y_rel_offset = 0;
 opts.x_rel_offset = 0;
 

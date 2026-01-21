@@ -69,6 +69,9 @@ classdef Plot_Manager < handle
             ax.XGrid = 'on';
             ax.YGrid = 'on';
 
+            % Set y scale
+            ax.YScale = opts.y_scale;
+
             % Set y limits
             yl = ax.YLim;
             dy = diff(yl);
@@ -107,26 +110,28 @@ classdef Plot_Manager < handle
 
         end
 
-        function single_plot(obj, opts)
-            %single_plot create plot with one axis in figure
-            % Create figure
-            fig = figure('Visible', 'on', ...
-                           'Units', 'centimeters', ...
-                           'Position', [2 2 obj.textwidth_cm opts.fig_height], ...
-                           'Color', 'w');
+        function export_plot(obj, fig, opts)
+            %export_plot export plot to latex repo
+            % Path to latex repo
+            base_dir = fileparts(mfilename("fullpath"));
+            Plot_base_path = fullfile(base_dir, '..', '..', 'Latex', 'Masterarbeit_Repo_Overleaf', 'Bilder', 'Kapitel');
 
-            % Create axes inside figure
-            ax = axes('Parent', fig);
+            % Save Path
+            Plot_path = fullfile(Plot_base_path, obj.filename);
 
-            % Plot signals
-            obj.axis_plot(ax, 1, opts);
+            % Options
+            fig.PaperUnits = 'centimeters';
+            fig.PaperSize = [obj.textwidth_cm, opts.fig_height];
+            fig.PaperPosition = [0 0 obj.textwidth_cm, opts.fig_height];
 
-            % Axis Options
-            obj.axis_options(ax, opts);
-
-            % Axis size
-            ax.Position = [0.20, 0.17, 0.68, 0.72];
+            if obj.save_pdf
+                print(fig, Plot_path, '-dpdf');
+            end
         end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                           Plot Functions
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
         function single_histo_plot(obj, opts, x_hist)
             %single_plot create plot with one axis in figure
@@ -150,6 +155,9 @@ classdef Plot_Manager < handle
 
             % Axis size
             ax.Position = [0.20, 0.17, 0.68, 0.72];
+
+            % Export figure
+            obj.export_plot(fig, opts)
         end  
     end
 end
