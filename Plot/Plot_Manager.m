@@ -16,6 +16,11 @@ classdef Plot_Manager < handle
 
         % Fixed parameters
         textwidth_cm = 13.75
+
+        num_Bins_hist = 30
+        bar_width_hist = 0.8
+
+        marker_size = 12;
     end
     
     methods
@@ -39,25 +44,25 @@ classdef Plot_Manager < handle
             % Plot signals
             hold(ax, 'on');
             for j = 1:numel(obj.y_cell{i})
-                plot(ax, obj.x, obj.y_cell{i}{j}, 'linewidth', opts.linewidth);
+                plot(ax, obj.x, obj.y_cell{i}{j}, ...
+                    'linewidth', opts.linewidth, ...
+                    'Marker', opts.marker, ...
+                    'MarkerSize', obj.marker_size);
             end
             hold(ax, 'off');
         end
 
         function axis_hist(obj, ax, x_hist)
             %axis_hist creates histogram in axis
-            
-            numBins = 30;
-
             % Hist data
-            [counts, edges] = histcounts(x_hist, numBins, 'Normalization', 'pdf');
+            [counts, edges] = histcounts(x_hist, obj.num_Bins_hist, 'Normalization', 'pdf');
 
             % Bin center
             binCenters = edges(1:end-1) + diff(edges)/2;
 
             % Plot hist
             b = bar(ax, binCenters, counts, ...
-                'BarWidth', 0.8, ...
+                'BarWidth', obj.bar_width_hist, ...
                 'EdgeColor', 'none');
         end
         
@@ -158,7 +163,31 @@ classdef Plot_Manager < handle
 
             % Export figure
             obj.export_plot(fig, opts)
-        end  
+        end
+
+        function single_plot(obj, opts)
+            %single_plot create plot with one axis in figure
+            % Create figure
+            fig = figure('Visible', 'on', ...
+                           'Units', 'centimeters', ...
+                           'Position', [2 2 obj.textwidth_cm opts.fig_height], ...
+                           'Color', 'w');
+
+            % Create axes inside figure
+            ax = axes('Parent', fig);
+
+            % Plot signals
+            obj.axis_plot(ax, 1, opts);
+
+            % Axis Options
+            obj.axis_options(ax, 1, opts);
+
+            % Axis size
+            ax.Position = [0.20, 0.17, 0.68, 0.72];
+
+            % Export figure
+            obj.export_plot(fig, opts)
+        end
     end
 end
 
