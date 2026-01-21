@@ -5,7 +5,7 @@ classdef Plot_Manager < handle
         % General
         x
         y_cell
-        x_label
+        x_label_cell
         y_label_cell
         title_cell
         legend_cell
@@ -16,6 +16,7 @@ classdef Plot_Manager < handle
 
         % Fixed parameters
         textwidth_cm = 13.75
+        single_plot_position = [0.20, 0.17, 0.68, 0.72]
 
         num_Bins_hist = 30
         bar_width_hist = 0.8
@@ -24,6 +25,10 @@ classdef Plot_Manager < handle
 
         scatter_size = 40
         scatter_linewidth = 1.3
+        scatter_color = [0 0 0]
+
+        fill_color = [0.8 0.8 1]
+        fill_alpha = 0.35
     end
     
     methods
@@ -32,7 +37,7 @@ classdef Plot_Manager < handle
             % Assign values
             obj.x = args.x;
             obj.y_cell = args.y_cell;
-            obj.x_label = args.x_label;
+            obj.x_label_cell = args.x_label_cell;
             obj.y_label_cell = args.y_label_cell;
             obj.title_cell = args.title_cell;
             obj.legend_cell = args.legend_cell;
@@ -72,7 +77,19 @@ classdef Plot_Manager < handle
             % Plot scatter
             scatter(ax, x_scatter, y_scatter, obj.scatter_size, ...
                 'Marker', '+', ...
-                'LineWidth', obj.scatter_linewidth)
+                'LineWidth', obj.scatter_linewidth, ...
+                'MarkerEdgeColor', obj.scatter_color)
+        end
+
+        function axis_fill(obj, ax, y_fill_upper, y_fill_lower)
+            %axis_scatter creates fill area in axis
+            % Fill
+            hfill = fill(ax, [obj.x; flipud(obj.x)], [y_fill_upper; flipud(y_fill_lower)], ...
+                obj.fill_color, ...
+                'EdgeColor','none', ...
+                'FaceAlpha', obj.fill_alpha);
+
+            uistack(hfill, 'bottom')
         end
         
         function axis_options(obj, ax, i, opts)
@@ -99,7 +116,7 @@ classdef Plot_Manager < handle
             ax.XLim = new_xlim;
 
             % Labels
-            ax.XLabel.String = obj.x_label;
+            ax.XLabel.String = obj.x_label_cell{i};
             ax.XLabel.Interpreter = 'latex';
             ax.XLabel.FontSize = 11;
             
@@ -113,7 +130,7 @@ classdef Plot_Manager < handle
 
             % Legend
             if obj.print_legend
-                legend(obj.legend_cell{i}, 'Interpreter', 'latex', 'FontSize', 9, 'Location','best');
+                legend(ax, obj.legend_cell{i}, 'Interpreter', 'latex', 'FontSize', 9, 'Location','best');
             end
 
             % Style Settings
@@ -171,7 +188,7 @@ classdef Plot_Manager < handle
             obj.axis_options(ax, 1, opts);
 
             % Axis size
-            ax.Position = [0.20, 0.17, 0.68, 0.72];
+            ax.Position = obj.single_plot_position;
 
             % Export figure
             obj.export_plot(fig, opts)
@@ -197,14 +214,14 @@ classdef Plot_Manager < handle
             obj.axis_options(ax, 1, opts);
 
             % Axis size
-            ax.Position = [0.20, 0.17, 0.68, 0.72];
+            ax.Position = obj.single_plot_position;
 
             % Export figure
             obj.export_plot(fig, opts)
         end
 
         function single_scatter_plot(obj, opts, x_scatter, y_scatter)
-            %single_plot create plot with one axis in figure
+            %single_scatter_plot create plot with one axis in figure
             % Create figure
             fig = figure('Visible', 'on', ...
                            'Units', 'centimeters', ...
@@ -226,10 +243,76 @@ classdef Plot_Manager < handle
             obj.axis_options(ax, 1, opts);
 
             % Axis size
-            ax.Position = [0.20, 0.17, 0.68, 0.72];
+            ax.Position = obj.single_plot_position;
 
             % Export figure
             obj.export_plot(fig, opts)
+        end
+        
+        function single_scatter_fill_plot(obj, opts, x_scatter, y_scatter, y_fill_upper, y_fill_lower)
+            %single_scatter_fill_plot create plot with one axis in figure
+            % Create figure
+            fig = figure('Visible', 'on', ...
+                           'Units', 'centimeters', ...
+                           'Position', [2 2 obj.textwidth_cm opts.fig_height], ...
+                           'Color', 'w');
+
+            % Create axes inside figure
+            ax = axes('Parent', fig);
+
+            % Plot signals
+            hold(ax, 'on');
+            obj.axis_plot(ax, 1, opts);
+
+            % Scatter
+            obj.axis_scatter(ax, x_scatter, y_scatter);
+
+            % Fill area  
+            obj.axis_fill(ax, y_fill_upper, y_fill_lower);
+            hold(ax, 'off');
+
+            % Axis Options
+            obj.axis_options(ax, 1, opts);
+
+            % Axis size
+            ax.Position = obj.single_plot_position;
+
+            % Export figure
+            obj.export_plot(fig, opts)
+        end
+
+        function tiled_scatter_fill_plot(obj, opts, orientation, x_scatter_cell, y_scatter_cell, y_fill_upper_cell, y_fill_lower_cell)
+            %tiled_scatter_fill_plot create plots with several axis in figure
+            % Create figure
+            fig = figure('Visible', 'on', ...
+                           'Units', 'centimeters', ...
+                           'Position', [2 2 obj.textwidth_cm opts.fig_height], ...
+                           'Color', 'w');
+
+            % Create tiled layout
+            tiled = tiledlayout(fig, orientation(1), orientation(2), ...
+                'TileSpacing', 'compact', ...
+                'Padding', 'compact');
+
+            % Create Plots in axes
+            for i = 1:(orientation(1)*orientation(2))
+                % Get ax object
+                ax = nexttile(tiled);
+
+                % Plot signals
+                hold(ax, 'on');
+                obj.axis_plot(ax, i, opts);
+    
+                % Scatter
+                obj.axis_scatter(ax, x_scatter_cell{i}, y_scatter_cell{i});
+    
+                % Fill area  
+                obj.axis_fill(ax, y_fill_upper_cell{i}, y_fill_lower_cell{i});
+                hold(ax, 'off');
+    
+                % Axis Options
+                obj.axis_options(ax, i, opts);
+            end
         end
     end
 end

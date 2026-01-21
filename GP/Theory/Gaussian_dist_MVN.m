@@ -37,7 +37,7 @@ args = struct();
 
 args.x = x_plot;
 args.y_cell = {{gauss_prob}};
-args.x_label = 'x';
+args.x_label_cell = {'x'};
 args.y_label_cell = {'y'};
 args.title_cell = {'Title'};
 args.legend_cell = {{''}};
@@ -118,7 +118,7 @@ function plot_gaussian_vectors(X_vec, filename, save_pdf)
         temp{i} = X_vec(:, i);
     end
     args.y_cell = {temp};
-    args.x_label = 'y';
+    args.x_label_cell = {'y'};
     args.y_label_cell = {'x'};
     args.title_cell = {'Title'};
     args.legend_cell = {{''}};

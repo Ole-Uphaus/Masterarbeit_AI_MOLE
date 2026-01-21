@@ -39,7 +39,7 @@ args = struct();
 
 args.x = x_plot;
 args.y_cell = {{y_plot}};
-args.x_label = 'x';
+args.x_label_cell = {'x'};
 args.y_label_cell = {'y'};
 args.title_cell = {'Title'};
 args.legend_cell = {{'GT Funktion', 'Trainingsdaten'}};
@@ -60,3 +60,158 @@ opts.marker = 'none';
 % Create Plot
 train_plot = Plot_Manager(args);
 train_plot.single_scatter_plot(opts, x_train, y_train);
+
+%% Train GP with baseline hyperparameters
+% Hyperparameters
+hyp_0.ell = 0.8;
+hyp_0.sigma_f = 1;
+hyp_0.sigma_n = 0.15;
+
+% Run GP prediction
+[mu_star_0, sigma_star_0] = gp_predict_rbf(x_train, y_train, x_plot, hyp_0);
+
+%% Plot
+% Plot baseline regression
+filename = fullfile('02_Grundlagen', 'GP_baseline_Plot.pdf');
+plot_single_GP_prediction(x_plot, y_plot, x_train, y_train, mu_star_0, sigma_star_0, filename, save_pdf)
+
+%% Investigate hyperparameter influence
+% Hyperparameter variation
+ells = [0.2, 2.0];
+sigfs = [0.4, 2.0];
+signs = [0.03, 0.5];
+
+% Lengthscale
+mu_ell_cell = cell(numel(ells), 1);
+sigma_ell_cell = cell(numel(ells), 1);
+for i = 1:numel(ells)
+    % Hyperparameter
+    hyp = hyp_0;
+    hyp.ell = ells(i);
+
+    % Train GP
+    [mu_star, sigma_star] = gp_predict_rbf(x_train, y_train, x_plot, hyp);
+    mu_ell_cell{i} = mu_star;
+    sigma_ell_cell{i} = sigma_star;
+end
+
+% Plot
+filename = fullfile('02_Grundlagen', 'GP_einfluss_laengenskala.pdf');
+plot_tiled_GP_prediction(x_plot, x_train, y_train, mu_ell_cell, sigma_ell_cell, filename, save_pdf)
+
+%% Local functions
+function [mu_star, sigma_star] = gp_predict_rbf(x_train, y_train, x_star, hyp)
+    % Compute kernel value
+    K = rbf_kernel(x_train, x_train, hyp.ell, hyp.sigma_f);
+    n = size(x_train, 1);
+    K_y = K + (hyp.sigma_n^2)*eye(n);
+
+    % Cholesky
+    L = chol(K_y, 'lower');
+
+    % alpha
+    alpha = L'\(L\y_train);
+
+    % Cross kernel
+    K_s = rbf_kernel(x_train, x_star, hyp.ell, hyp.sigma_f);
+
+    % Posterior mean
+    mu_star = K_s'*alpha;
+
+    % Posterior covariance
+    v = L\K_s;
+    K_ss = rbf_kernel(x_star, x_star, hyp.ell, hyp.sigma_f);
+    Cov = K_ss - v.'*v;
+
+    % Sandard deviation
+    Var = diag(Cov);
+    sigma_star = sqrt(Var);
+end
+
+function K = rbf_kernel(x1, x2, ell, sigma_f)
+    % Squared distances
+    Dists2 = (x1 - x2.').^2;
+
+    % Kernel matrix
+    K = sigma_f^2 * exp(-0.5 * Dists2 /(ell^2));
+end
+
+function plot_single_GP_prediction(x_plot, y_plot, x_train, y_train, mu_star, sigma_star, filename, save_pdf)
+    % Assign values (args)
+    args = struct();
+    
+    args.x = x_plot;
+    args.y_cell = {{y_plot, mu_star}};
+    args.x_label_cell = {'x'};
+    args.y_label_cell = {'y'};
+    args.title_cell = {'Title'};
+    args.legend_cell = {{'3$\sigma$-Band', 'GT Funktion', 'GP Pr\"{a}diktion', 'Trainingsdaten'}};
+    
+    args.print_legend = true;
+    args.filename = filename;
+    args.save_pdf = save_pdf;
+    
+    % Assign values (opts)
+    opts = struct();
+    opts.fig_height = 8;
+    opts.linewidth = 1.5;
+    opts.y_scale = 'linear';
+    opts.y_rel_offset = 0.05;
+    opts.x_rel_offset = 0;
+    opts.marker = 'none';
+    
+    % Create Plot
+    y_upper = mu_star + 3*sigma_star;
+    y_lower = mu_star - 3*sigma_star;
+    regression_plot = Plot_Manager(args);
+    regression_plot.single_scatter_fill_plot(opts, x_train, y_train, y_upper, y_lower);
+end
+
+function plot_tiled_GP_prediction(x_plot, x_train, y_train, mu_star_cell, sigma_star_cell, filename, save_pdf)
+    % Assign values (args)
+    n = numel(mu_star_cell);
+    args = struct();
+    
+    args.x = x_plot;
+    args.y_cell = {{mu_star_cell{1}}, {mu_star_cell{2}}};
+    args.x_label_cell = {'x', 'x'};
+    args.y_label_cell = {'y', ''};
+    args.title_cell = {'Title', 'Title'};
+    args.legend_cell = {{'3$\sigma$-Band', 'GT Funktion', 'GP Pr\"{a}diktion', 'Trainingsdaten'}};
+    
+    args.print_legend = false;
+    args.filename = filename;
+    args.save_pdf = save_pdf;
+    
+    % Assign values (opts)
+    opts = struct();
+    opts.fig_height = 8;
+    opts.linewidth = 1.5;
+    opts.y_scale = 'linear';
+    opts.y_rel_offset = 0.05;
+    opts.x_rel_offset = 0;
+    opts.marker = 'none';
+    
+    % Uncertainty
+    y_upper_cell = cell(n, 1);
+    y_lower_cell = cell(n, 1);
+
+    for i = 1:n
+        y_upper_cell{i} = mu_star_cell{i} + 3*sigma_star_cell{i};
+        y_lower_cell{i} = mu_star_cell{i} - 3*sigma_star_cell{i};
+    end
+
+    % Training data
+    x_train_cell = cell(n, 1);
+    y_train_cell = cell(n, 1);
+
+    for i = 1:n
+        x_train_cell{i} = x_train;
+        y_train_cell{i} = y_train;
+    end
+
+    % Create Plot
+    orientation = [1, n];
+    tiled_regression_plot = Plot_Manager(args);
+    tiled_regression_plot.tiled_scatter_fill_plot(opts, orientation, x_train_cell, y_train_cell, y_upper_cell, y_lower_cell);
+end
