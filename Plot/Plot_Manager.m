@@ -311,6 +311,9 @@ classdef Plot_Manager < handle
                 % Axis Options
                 obj.axis_options(ax, i, opts);
             end
+
+            % Export figure
+            obj.export_plot(fig, opts)
         end
     end
 end
