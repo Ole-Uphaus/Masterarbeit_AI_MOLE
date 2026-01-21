@@ -20,7 +20,10 @@ classdef Plot_Manager < handle
         num_Bins_hist = 30
         bar_width_hist = 0.8
 
-        marker_size = 12;
+        marker_size = 12
+
+        scatter_size = 40
+        scatter_linewidth = 1.3
     end
     
     methods
@@ -42,14 +45,12 @@ classdef Plot_Manager < handle
             %render_axis creates plots per axis
 
             % Plot signals
-            hold(ax, 'on');
             for j = 1:numel(obj.y_cell{i})
                 plot(ax, obj.x, obj.y_cell{i}{j}, ...
                     'linewidth', opts.linewidth, ...
                     'Marker', opts.marker, ...
                     'MarkerSize', obj.marker_size);
             end
-            hold(ax, 'off');
         end
 
         function axis_hist(obj, ax, x_hist)
@@ -61,9 +62,17 @@ classdef Plot_Manager < handle
             binCenters = edges(1:end-1) + diff(edges)/2;
 
             % Plot hist
-            b = bar(ax, binCenters, counts, ...
+            bar(ax, binCenters, counts, ...
                 'BarWidth', obj.bar_width_hist, ...
                 'EdgeColor', 'none');
+        end
+
+        function axis_scatter(obj, ax, x_scatter, y_scatter)
+            %axis_scatter creates scatter in axis
+            % Plot scatter
+            scatter(ax, x_scatter, y_scatter, obj.scatter_size, ...
+                'Marker', '+', ...
+                'LineWidth', obj.scatter_linewidth)
         end
         
         function axis_options(obj, ax, i, opts)
@@ -102,6 +111,7 @@ classdef Plot_Manager < handle
             ax.Title.Interpreter = 'latex';
             ax.Title.FontSize = 12;
 
+            % Legend
             if obj.print_legend
                 legend(obj.legend_cell{i}, 'Interpreter', 'latex', 'FontSize', 9, 'Location','best');
             end
@@ -150,10 +160,12 @@ classdef Plot_Manager < handle
             ax = axes('Parent', fig);
 
             % Plot histogram
+            hold(ax, 'on');
             obj.axis_hist(ax, x_hist);
 
             % Plot signals
             obj.axis_plot(ax, 1, opts);
+            hold(ax, 'off');
 
             % Axis Options
             obj.axis_options(ax, 1, opts);
@@ -177,7 +189,38 @@ classdef Plot_Manager < handle
             ax = axes('Parent', fig);
 
             % Plot signals
+            hold(ax, 'on');
             obj.axis_plot(ax, 1, opts);
+            hold(ax, 'off');
+
+            % Axis Options
+            obj.axis_options(ax, 1, opts);
+
+            % Axis size
+            ax.Position = [0.20, 0.17, 0.68, 0.72];
+
+            % Export figure
+            obj.export_plot(fig, opts)
+        end
+
+        function single_scatter_plot(obj, opts, x_scatter, y_scatter)
+            %single_plot create plot with one axis in figure
+            % Create figure
+            fig = figure('Visible', 'on', ...
+                           'Units', 'centimeters', ...
+                           'Position', [2 2 obj.textwidth_cm opts.fig_height], ...
+                           'Color', 'w');
+
+            % Create axes inside figure
+            ax = axes('Parent', fig);
+
+            % Plot signals
+            hold(ax, 'on');
+            obj.axis_plot(ax, 1, opts);
+
+            % Scatter
+            obj.axis_scatter(ax, x_scatter, y_scatter);
+            hold(ax, 'off');
 
             % Axis Options
             obj.axis_options(ax, 1, opts);
