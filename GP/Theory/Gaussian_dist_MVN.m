@@ -159,9 +159,9 @@ function plot_2_gaussian_vectors(X_vec1, X_vec2, filename, save_pdf)
         temp2{i} = X_vec2(:, i);
     end
     args.y_cell = {temp1, temp2};
-    args.x_label_cell = {'y', 'y'};
-    args.y_label_cell = {'x', ''};
-    args.title_cell = {'a)', 'b)'};
+    args.x_label_cell = {'$y$', '$y$'};
+    args.y_label_cell = {'$x$', ''};
+    args.title_cell = {'\textbf{a)}', '\textbf{b)}'};
     args.legend_cell = {{}, {}};
     
     args.filename = filename;
