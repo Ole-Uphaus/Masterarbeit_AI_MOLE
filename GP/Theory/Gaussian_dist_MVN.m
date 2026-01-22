@@ -35,7 +35,7 @@ gauss_prob = normpdf(x_plot, mu, sigma);
 % Assign values (args)
 args = struct();
 
-args.x = x_plot;
+args.x_cell = {x_plot};
 args.y_cell = {{gauss_prob}};
 args.x_label_cell = {'$x$'};
 args.y_label_cell = {'$P_X(x)$'};
@@ -67,13 +67,17 @@ X_vec_2 = randn(2, 10);
 X_vec_10 = randn(10, 10);
 
 %% Plot
-% Create Plot 1
-filename = fullfile('02_Grundlagen', 'Unabhaengige_Zufallsvektoren_2.pdf');
-plot_gaussian_vectors(X_vec_2, filename, save_pdf)
+% % Create Plot 1
+% filename = fullfile('02_Grundlagen', 'Unabhaengige_Zufallsvektoren_2.pdf');
+% plot_gaussian_vectors(X_vec_2, filename, save_pdf)
+% 
+% % Create Plot 2
+% filename = fullfile('02_Grundlagen', 'Unabhaengige_Zufallsvektoren_10.pdf');
+% plot_gaussian_vectors(X_vec_10, filename, save_pdf)
 
-% Create Plot 2
-filename = fullfile('02_Grundlagen', 'Unabhaengige_Zufallsvektoren_10.pdf');
-plot_gaussian_vectors(X_vec_10, filename, save_pdf)
+% Create Plot 3
+filename = fullfile('02_Grundlagen', 'Unabhaengige_Zufallsvektoren_2_10.pdf');
+plot_2_gaussian_vectors(X_vec_2, X_vec_10, filename, save_pdf)
 
 %% Gaussian vectors with squared exponantial covariance
 % Dependent vectors (Dimension 10)
@@ -112,7 +116,7 @@ function plot_gaussian_vectors(X_vec, filename, save_pdf)
     % Assign values (args)
     args = struct();
     
-    args.x = linspace(0, 1, size(X_vec, 1));
+    args.x_cell = {linspace(0, 1, size(X_vec, 1))};
     temp = cell(size(X_vec, 2), 1);
     for i = 1:size(X_vec, 2)
         temp{i} = X_vec(:, i);
@@ -120,7 +124,7 @@ function plot_gaussian_vectors(X_vec, filename, save_pdf)
     args.y_cell = {temp};
     args.x_label_cell = {'y'};
     args.y_label_cell = {'x'};
-    args.title_cell = {'Title'};
+    args.title_cell = {''};
     args.legend_cell = {{}};
     
     args.filename = filename;
@@ -132,11 +136,48 @@ function plot_gaussian_vectors(X_vec, filename, save_pdf)
     opts.linewidth = 1.5;
     opts.y_scale = 'linear';
     opts.y_rel_offset = 0;
-    opts.x_rel_offset = 0;
+    opts.x_rel_offset = 0.05;
     opts.marker = '.';
     
     % Create Plot
     Position = [0.27, 0.20, 0.55, 0.72];
     plot = Plot_Manager(args);
     plot.single_plot(opts, Position);
+end
+
+function plot_2_gaussian_vectors(X_vec1, X_vec2, filename, save_pdf)
+    % Assign values (args)
+    args = struct();
+    
+    args.x_cell = {linspace(0, 1, size(X_vec1, 1)), linspace(0, 1, size(X_vec2, 1))};
+    temp1 = cell(size(X_vec1, 2), 1);
+    for i = 1:size(X_vec1, 2)
+        temp1{i} = X_vec1(:, i);
+    end
+    temp2 = cell(size(X_vec2, 2), 1);
+    for i = 1:size(X_vec2, 2)
+        temp2{i} = X_vec2(:, i);
+    end
+    args.y_cell = {temp1, temp2};
+    args.x_label_cell = {'y', 'y'};
+    args.y_label_cell = {'x', ''};
+    args.title_cell = {'a)', 'b)'};
+    args.legend_cell = {{}, {}};
+    
+    args.filename = filename;
+    args.save_pdf = save_pdf;
+    
+    % Assign values (opts)
+    opts = struct();
+    opts.fig_height = 7;
+    opts.linewidth = 1.5;
+    opts.y_scale = 'linear';
+    opts.y_rel_offset = 0;
+    opts.x_rel_offset = 0.05;
+    opts.marker = '.';
+    
+    % Create Plot
+    plot = Plot_Manager(args);
+    orientation = [1, 2];
+    plot.tiled_plot(opts, orientation);
 end
