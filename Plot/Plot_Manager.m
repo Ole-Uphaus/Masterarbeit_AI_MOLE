@@ -3,7 +3,7 @@ classdef Plot_Manager < handle
     
     properties
         % General
-        x
+        x_cell
         y_cell
         x_label_cell
         y_label_cell
@@ -33,7 +33,7 @@ classdef Plot_Manager < handle
         function obj = Plot_Manager(args)
             %PLOT_MANAGER Construct an instance of this class
             % Assign values
-            obj.x = args.x;
+            obj.x_cell = args.x_cell;
             obj.y_cell = args.y_cell;
             obj.x_label_cell = args.x_label_cell;
             obj.y_label_cell = args.y_label_cell;
@@ -48,7 +48,7 @@ classdef Plot_Manager < handle
 
             % Plot signals
             for j = 1:numel(obj.y_cell{i})
-                plot(ax, obj.x, obj.y_cell{i}{j}, ...
+                plot(ax, obj.x_cell{i}, obj.y_cell{i}{j}, ...
                     'linewidth', opts.linewidth, ...
                     'Marker', opts.marker, ...
                     'MarkerSize', obj.marker_size);
@@ -78,10 +78,10 @@ classdef Plot_Manager < handle
                 'MarkerEdgeColor', obj.scatter_color)
         end
 
-        function axis_fill(obj, ax, y_fill_upper, y_fill_lower)
+        function axis_fill(obj, ax, x_fill, y_fill_upper, y_fill_lower)
             %axis_scatter creates fill area in axis
             % Fill
-            hfill = fill(ax, [obj.x; flipud(obj.x)], [y_fill_upper; flipud(y_fill_lower)], ...
+            hfill = fill(ax, [x_fill; flipud(x_fill)], [y_fill_upper; flipud(y_fill_lower)], ...
                 obj.fill_color, ...
                 'EdgeColor','none', ...
                 'FaceAlpha', obj.fill_alpha);
@@ -107,7 +107,7 @@ classdef Plot_Manager < handle
             ax.YLim = new_ylim;
 
             % Set x limits
-            xl = [min(obj.x), max(obj.x)];
+            xl = [min(obj.x_cell{i}), max(obj.x_cell{i})];
             dx = diff(xl);
             new_xlim = [xl(1) - opts.x_rel_offset*dx, xl(2) + opts.x_rel_offset*dx];
             ax.XLim = new_xlim;
@@ -217,7 +217,7 @@ function single_histo_plot(obj, opts, position, x_hist)
             obj.export_plot(fig, opts)
         end
 
-        function single_scatter_plot(obj, opts, x_scatter, y_scatter)
+        function single_scatter_plot(obj, opts, position, x_scatter, y_scatter)
             %single_scatter_plot create plot with one axis in figure
             % Create figure
             fig = figure('Visible', 'on', ...
@@ -240,13 +240,13 @@ function single_histo_plot(obj, opts, position, x_hist)
             obj.axis_options(ax, 1, opts);
 
             % Axis size
-            ax.Position = obj.single_plot_position;
+            ax.Position = position;
 
             % Export figure
             obj.export_plot(fig, opts)
         end
         
-        function single_scatter_fill_plot(obj, opts, x_scatter, y_scatter, y_fill_upper, y_fill_lower)
+        function single_scatter_fill_plot(obj, opts, position, x_scatter, y_scatter, x_fill, y_fill_upper, y_fill_lower)
             %single_scatter_fill_plot create plot with one axis in figure
             % Create figure
             fig = figure('Visible', 'on', ...
@@ -265,20 +265,50 @@ function single_histo_plot(obj, opts, position, x_hist)
             obj.axis_scatter(ax, x_scatter, y_scatter);
 
             % Fill area  
-            obj.axis_fill(ax, y_fill_upper, y_fill_lower);
+            obj.axis_fill(ax, x_fill, y_fill_upper, y_fill_lower);
             hold(ax, 'off');
 
             % Axis Options
             obj.axis_options(ax, 1, opts);
 
             % Axis size
-            ax.Position = obj.single_plot_position;
+            ax.Position = position;
 
             % Export figure
             obj.export_plot(fig, opts)
         end
 
-        function tiled_scatter_fill_plot(obj, opts, orientation, x_scatter_cell, y_scatter_cell, y_fill_upper_cell, y_fill_lower_cell)
+        function tiled_plot(obj, opts, orientation)
+            %tiled_plot create plots with several axis in figure
+            % Create figure
+            fig = figure('Visible', 'on', ...
+                           'Units', 'centimeters', ...
+                           'Position', [2 2 obj.textwidth_cm opts.fig_height], ...
+                           'Color', 'w');
+
+            % Create tiled layout
+            tiled = tiledlayout(fig, orientation(1), orientation(2), ...
+                'TileSpacing', 'compact', ...
+                'Padding', 'compact');
+
+            % Create Plots in axes
+            for i = 1:(orientation(1)*orientation(2))
+                % Get ax object
+                ax = nexttile(tiled);
+
+                % Plot signals
+                hold(ax, 'on');
+                obj.axis_plot(ax, i, opts);
+    
+                % Axis Options
+                obj.axis_options(ax, i, opts);
+            end
+
+            % Export figure
+            obj.export_plot(fig, opts)
+        end
+
+        function tiled_scatter_fill_plot(obj, opts, orientation, x_scatter_cell, y_scatter_cell, x_fill_cell, y_fill_upper_cell, y_fill_lower_cell)
             %tiled_scatter_fill_plot create plots with several axis in figure
             % Create figure
             fig = figure('Visible', 'on', ...
@@ -304,7 +334,7 @@ function single_histo_plot(obj, opts, position, x_hist)
                 obj.axis_scatter(ax, x_scatter_cell{i}, y_scatter_cell{i});
     
                 % Fill area  
-                obj.axis_fill(ax, y_fill_upper_cell{i}, y_fill_lower_cell{i});
+                obj.axis_fill(ax, x_fill_cell{i}, y_fill_upper_cell{i}, y_fill_lower_cell{i});
                 hold(ax, 'off');
     
                 % Axis Options

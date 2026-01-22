@@ -37,7 +37,7 @@ y_train = function_GT(x_train) + sigma_n_GT*randn(size(x_train));
 % Assign values (args)
 args = struct();
 
-args.x = x_plot;
+args.x_cell = {x_plot};
 args.y_cell = {{y_plot}};
 args.x_label_cell = {'x'};
 args.y_label_cell = {'y'};
@@ -57,8 +57,9 @@ opts.x_rel_offset = 0;
 opts.marker = 'none';
 
 % Create Plot
+Position = [0.27, 0.20, 0.55, 0.72];
 train_plot = Plot_Manager(args);
-train_plot.single_scatter_plot(opts, x_train, y_train);
+train_plot.single_scatter_plot(opts, Position, x_train, y_train);
 
 %% Train GP with baseline hyperparameters
 % Hyperparameters
@@ -194,7 +195,7 @@ function plot_single_GP_prediction(x_plot, y_plot, x_train, y_train, mu_star, si
     % Assign values (args)
     args = struct();
     
-    args.x = x_plot;
+    args.x_cell = {x_plot};
     args.y_cell = {{y_plot, mu_star}};
     args.x_label_cell = {'x'};
     args.y_label_cell = {'y'};
@@ -216,8 +217,10 @@ function plot_single_GP_prediction(x_plot, y_plot, x_train, y_train, mu_star, si
     % Create Plot
     y_upper = mu_star + 3*sigma_star;
     y_lower = mu_star - 3*sigma_star;
+
+    Position = [0.27, 0.20, 0.55, 0.72];
     regression_plot = Plot_Manager(args);
-    regression_plot.single_scatter_fill_plot(opts, x_train, y_train, y_upper, y_lower);
+    regression_plot.single_scatter_fill_plot(opts, Position, x_train, y_train, x_plot, y_upper, y_lower);
 end
 
 function plot_tiled_GP_prediction(x_plot, x_train, y_train, mu_star_cell, sigma_star_cell, filename, save_pdf)
@@ -225,7 +228,7 @@ function plot_tiled_GP_prediction(x_plot, x_train, y_train, mu_star_cell, sigma_
     n = numel(mu_star_cell);
     args = struct();
     
-    args.x = x_plot;
+    args.x_cell = {x_plot, x_plot};
     args.y_cell = {{mu_star_cell{1}}, {mu_star_cell{2}}};
     args.x_label_cell = {'x', 'x'};
     args.y_label_cell = {'y', ''};
@@ -247,10 +250,12 @@ function plot_tiled_GP_prediction(x_plot, x_train, y_train, mu_star_cell, sigma_
     % Uncertainty
     y_upper_cell = cell(n, 1);
     y_lower_cell = cell(n, 1);
+    x_fill_cell = cell(n, 1);
 
     for i = 1:n
         y_upper_cell{i} = mu_star_cell{i} + 3*sigma_star_cell{i};
         y_lower_cell{i} = mu_star_cell{i} - 3*sigma_star_cell{i};
+        x_fill_cell{i} = x_plot;
     end
 
     % Training data
@@ -265,5 +270,5 @@ function plot_tiled_GP_prediction(x_plot, x_train, y_train, mu_star_cell, sigma_
     % Create Plot
     orientation = [1, n];
     tiled_regression_plot = Plot_Manager(args);
-    tiled_regression_plot.tiled_scatter_fill_plot(opts, orientation, x_train_cell, y_train_cell, y_upper_cell, y_lower_cell);
+    tiled_regression_plot.tiled_scatter_fill_plot(opts, orientation, x_train_cell, y_train_cell, x_fill_cell, y_upper_cell, y_lower_cell);
 end
