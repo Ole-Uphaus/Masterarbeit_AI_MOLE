@@ -16,7 +16,7 @@ Plot_path = fullfile(pwd, '..', '..', 'Plot');
 addpath(Plot_path);
 
 %% Geeral
-save_pdf = false;
+save_pdf = true;
 
 %% Gaussian Distribution
 % Random data
@@ -37,9 +37,9 @@ args = struct();
 
 args.x = x_plot;
 args.y_cell = {{gauss_prob}};
-args.x_label_cell = {'x'};
-args.y_label_cell = {'y'};
-args.title_cell = {'Title'};
+args.x_label_cell = {'$x$'};
+args.y_label_cell = {'$P_X(x)$'};
+args.title_cell = {''};
 args.legend_cell = {{}};
 
 args.filename = fullfile('02_Grundlagen', 'Gaußverteilung.pdf');
@@ -47,7 +47,7 @@ args.save_pdf = save_pdf;
 
 % Assign values (opts)
 opts = struct();
-opts.fig_height = 8;
+opts.fig_height = 6.5;
 opts.linewidth = 1.5;
 opts.y_scale = 'linear';
 opts.y_rel_offset = 0;
@@ -55,8 +55,9 @@ opts.x_rel_offset = 0;
 opts.marker = 'none';
 
 % Create Plot
+Position = [0.27, 0.20, 0.55, 0.72];
 gaus_dist_plot = Plot_Manager(args);
-gaus_dist_plot.single_histo_plot(opts, x);
+gaus_dist_plot.single_histo_plot(opts, Position, x);
 
 %% Idenpendent gaussian vectors
 % Vector size = 2
@@ -127,7 +128,7 @@ function plot_gaussian_vectors(X_vec, filename, save_pdf)
     
     % Assign values (opts)
     opts = struct();
-    opts.fig_height = 8;
+    opts.fig_height = 6.5;
     opts.linewidth = 1.5;
     opts.y_scale = 'linear';
     opts.y_rel_offset = 0;
@@ -135,6 +136,7 @@ function plot_gaussian_vectors(X_vec, filename, save_pdf)
     opts.marker = '.';
     
     % Create Plot
+    Position = [0.27, 0.20, 0.55, 0.72];
     plot = Plot_Manager(args);
-    plot.single_plot(opts);
+    plot.single_plot(opts, Position);
 end

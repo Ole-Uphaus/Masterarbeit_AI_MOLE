@@ -15,7 +15,6 @@ classdef Plot_Manager < handle
 
         % Fixed parameters
         textwidth_cm = 13.75
-        single_plot_position = [0.20, 0.17, 0.68, 0.72]
 
         num_Bins_hist = 30
         bar_width_hist = 0.8
@@ -163,7 +162,7 @@ classdef Plot_Manager < handle
 %                           Plot Functions
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-        function single_histo_plot(obj, opts, x_hist)
+function single_histo_plot(obj, opts, position, x_hist)
             %single_plot create plot with one axis in figure
             % Create figure
             fig = figure('Visible', 'on', ...
@@ -186,13 +185,13 @@ classdef Plot_Manager < handle
             obj.axis_options(ax, 1, opts);
 
             % Axis size
-            ax.Position = obj.single_plot_position;
+            ax.Position = position;
 
             % Export figure
             obj.export_plot(fig, opts)
         end
 
-        function single_plot(obj, opts)
+        function single_plot(obj, opts, position)
             %single_plot create plot with one axis in figure
             % Create figure
             fig = figure('Visible', 'on', ...
@@ -212,7 +211,7 @@ classdef Plot_Manager < handle
             obj.axis_options(ax, 1, opts);
 
             % Axis size
-            ax.Position = obj.single_plot_position;
+            ax.Position = position;
 
             % Export figure
             obj.export_plot(fig, opts)
