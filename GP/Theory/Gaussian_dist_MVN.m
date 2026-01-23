@@ -108,7 +108,7 @@ opts.marker = 'none';
 % Create Plot
 Position = [0.30, 0.20, 0.45, 0.72];
 View = [-15, 30];
-z_label = '$P_\mathbf{X}(\mathbf{x})$';
+z_label = '$P_X$(\textbf{\textit{x}})';
 gaus_mvn_plot = Plot_Manager(args);
 gaus_mvn_plot.single_3d_plot(opts, Position, View, Z, z_label);
 
@@ -137,16 +137,20 @@ plot_2_gaussian_vectors(X_vec_2, X_vec_10, filename, save_pdf)
 X_vec_dep_10 = dep_gaussian_vectores(10, 10, 0.5, 1);
 
 % Dependent vectors (Dimension 10)
-X_vec_dep_100 = dep_gaussian_vectores(100, 10, 0.5, 1);
+X_vec_dep_100 = dep_gaussian_vectores(40, 10, 0.5, 1);
 
 %% Plot
-% Create Plot 1
-filename = fullfile('02_Grundlagen', 'Abhaengige_Zufallsvektoren_10.pdf');
-plot_gaussian_vectors(X_vec_dep_10, filename, save_pdf)
+% % Create Plot 1
+% filename = fullfile('02_Grundlagen', 'Abhaengige_Zufallsvektoren_10.pdf');
+% plot_gaussian_vectors(X_vec_dep_10, filename, save_pdf)
+% 
+% % Create Plot 2
+% filename = fullfile('02_Grundlagen', 'Abhaengige_Zufallsvektoren_100.pdf');
+% plot_gaussian_vectors(X_vec_dep_100, filename, save_pdf)
 
-% Create Plot 2
-filename = fullfile('02_Grundlagen', 'Abhaengige_Zufallsvektoren_100.pdf');
-plot_gaussian_vectors(X_vec_dep_100, filename, save_pdf)
+% Create Plot 3
+filename = fullfile('02_Grundlagen', 'Abhaengige_Zufallsvektoren_10_100.pdf');
+plot_2_gaussian_vectors(X_vec_dep_10, X_vec_dep_100, filename, save_pdf)
 
 %% Local functions
 function X_vec_dep = dep_gaussian_vectores(size_x, n_x, ell, sigma)

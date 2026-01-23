@@ -230,8 +230,23 @@ classdef Plot_Manager < handle
             % View
             view(ax, View);
 
-            % % Export figure
-            % obj.export_plot(fig, opts)
+            % Export figure
+            % Path to latex repo
+            base_dir = fileparts(mfilename("fullpath"));
+            Plot_base_path = fullfile(base_dir, '..', '..', 'Latex', 'Masterarbeit_Repo_Overleaf', 'Bilder', 'Kapitel');
+
+            % Save Path
+            Plot_path = fullfile(Plot_base_path, obj.filename);
+
+            % Options
+            fig.PaperUnits = 'centimeters';
+            fig.PaperSize = [obj.textwidth_cm, opts.fig_height];
+            fig.PaperPosition = [0 0 obj.textwidth_cm, opts.fig_height];
+
+            if obj.save_pdf
+                % print(fig, Plot_path, '-dpdf');
+                exportgraphics(fig, Plot_path, 'ContentType','vector');
+            end
         end
 
         function single_plot(obj, opts, position)
