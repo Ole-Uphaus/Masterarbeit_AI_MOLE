@@ -88,6 +88,17 @@ classdef Plot_Manager < handle
 
             uistack(hfill, 'bottom')
         end
+
+        function axis_mesh(obj, ax, i, opts, Z)
+            %axis_scatter creates mesh plot in axis
+            % Get the grid
+            [X1, X2] = meshgrid(obj.x_cell{i}, obj.y_cell{i}{1});
+
+            % Mesh plot
+            h = mesh(ax, X1, X2, Z);
+            h.FaceColor = 'none';               
+            h.LineWidth = opts.linewidth;
+        end
         
         function axis_options(obj, ax, i, opts)
             %axis_options set the axis options
@@ -162,7 +173,7 @@ classdef Plot_Manager < handle
 %                           Plot Functions
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function single_histo_plot(obj, opts, position, x_hist)
+        function single_histo_plot(obj, opts, position, x_hist)
             %single_plot create plot with one axis in figure
             % Create figure
             fig = figure('Visible', 'on', ...
@@ -189,6 +200,38 @@ function single_histo_plot(obj, opts, position, x_hist)
 
             % Export figure
             obj.export_plot(fig, opts)
+        end
+
+        function single_3d_plot(obj, opts, position, View, Z, z_label)
+            %single_3d_plot create 3 dimensional plot
+            % Create figure
+            fig = figure('Visible', 'on', ...
+                           'Units', 'centimeters', ...
+                           'Position', [2 2 obj.textwidth_cm opts.fig_height], ...
+                           'Color', 'w');
+
+            % Create axes inside figure
+            ax = axes('Parent', fig);
+
+            % Plot mesh
+            obj.axis_mesh(ax, 1, opts, Z);
+
+            % Axis Options
+            obj.axis_options(ax, 1, opts);
+
+            % Z-Label
+            ax.ZLabel.String = z_label;
+            ax.ZLabel.Interpreter = 'latex';
+            ax.ZLabel.FontSize = 11;
+
+            % Axis size
+            ax.Position = position;
+
+            % View
+            view(ax, View);
+
+            % % Export figure
+            % obj.export_plot(fig, opts)
         end
 
         function single_plot(obj, opts, position)

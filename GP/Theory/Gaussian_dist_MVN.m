@@ -16,7 +16,7 @@ Plot_path = fullfile(pwd, '..', '..', 'Plot');
 addpath(Plot_path);
 
 %% Geeral
-save_pdf = true;
+save_pdf = false;
 
 %% Gaussian Distribution
 % Random data
@@ -58,6 +58,59 @@ opts.marker = 'none';
 Position = [0.27, 0.20, 0.55, 0.72];
 gaus_dist_plot = Plot_Manager(args);
 gaus_dist_plot.single_histo_plot(opts, Position, x);
+
+%% Multivariate Gaussian distribution
+% Plot vectors
+x_plot_1 = linspace(-4, 4, 20);
+x_plot_2 = linspace(-4, 4, 20);
+[X1, X2] = meshgrid(x_plot_1, x_plot_2);    % Create Mesh
+
+% Parameters
+mu = [0, 0];
+Sigma = [1, 0.6;
+    0.6, 1];
+
+% Put mesh in vectors
+X = [X1(:), X2(:)];     
+invS = inv(Sigma);
+detS = det(Sigma);
+dists = X - mu;
+
+% Calculate density
+Z = exp(-0.5*sum((dists*invS).*dists, 2)) / (2*pi*sqrt(detS));
+
+% Put z in mesh order
+Z = reshape(Z, size(X1));
+
+%% Plot
+% Assign values (args)
+args = struct();
+
+args.x_cell = {x_plot_1};
+args.y_cell = {{x_plot_2}};
+args.x_label_cell = {'$x_1$'};
+args.y_label_cell = {'$x_2$'};
+args.title_cell = {''};
+args.legend_cell = {{}};
+
+args.filename = fullfile('02_Grundlagen', 'Multivariate_Normalverteilung.pdf');
+args.save_pdf = save_pdf;
+
+% Assign values (opts)
+opts = struct();
+opts.fig_height = 7;
+opts.linewidth = 1.5;
+opts.y_scale = 'linear';
+opts.y_rel_offset = 0;
+opts.x_rel_offset = 0;
+opts.marker = 'none';
+
+% Create Plot
+Position = [0.30, 0.20, 0.45, 0.72];
+View = [-15, 30];
+z_label = '$P_\mathbf{X}(\mathbf{x})$';
+gaus_mvn_plot = Plot_Manager(args);
+gaus_mvn_plot.single_3d_plot(opts, Position, View, Z, z_label);
 
 %% Idenpendent gaussian vectors
 % Vector size = 2
