@@ -22,7 +22,7 @@ classdef Plot_Manager < handle
         marker_size = 12
 
         scatter_size = 40
-        scatter_linewidth = 1.3
+        scatter_linewidth = 1
         scatter_color = [0 0 0]
 
         fill_color = [0.8 0.8 1]

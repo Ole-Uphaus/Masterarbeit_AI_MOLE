@@ -39,10 +39,10 @@ args = struct();
 
 args.x_cell = {x_plot};
 args.y_cell = {{y_plot}};
-args.x_label_cell = {'x'};
-args.y_label_cell = {'y'};
-args.title_cell = {'Title'};
-args.legend_cell = {{'GT Funktion', 'Trainingsdaten'}};
+args.x_label_cell = {'$x$'};
+args.y_label_cell = {'$f(x)$'};
+args.title_cell = {''};
+args.legend_cell = {{'$f(x)$', '$y_t(x_t)$'}};
 
 args.filename = fullfile('02_Grundlagen', 'Trainingsdaten_Funktion.pdf');
 args.save_pdf = save_pdf;
@@ -197,8 +197,8 @@ function plot_single_GP_prediction(x_plot, y_plot, x_train, y_train, mu_star, si
     
     args.x_cell = {x_plot};
     args.y_cell = {{y_plot, mu_star}};
-    args.x_label_cell = {'x'};
-    args.y_label_cell = {'y'};
+    args.x_label_cell = {'$x$'};
+    args.y_label_cell = {'$y$'};
     args.title_cell = {'Title'};
     args.legend_cell = {{'3$\sigma$-Band', 'GT Funktion', 'GP Pr\"{a}diktion', 'Trainingsdaten'}};
     
@@ -230,8 +230,8 @@ function plot_tiled_GP_prediction(x_plot, x_train, y_train, mu_star_cell, sigma_
     
     args.x_cell = {x_plot, x_plot};
     args.y_cell = {{mu_star_cell{1}}, {mu_star_cell{2}}};
-    args.x_label_cell = {'x', 'x'};
-    args.y_label_cell = {'y', ''};
+    args.x_label_cell = {'$x$', '$x$'};
+    args.y_label_cell = {'$y$', ''};
     args.title_cell = {'Title', 'Title'};
     args.legend_cell = {{}, {'3$\sigma$-Band', 'GP Pr\"{a}diktion', 'Trainingsdaten'}};
     
