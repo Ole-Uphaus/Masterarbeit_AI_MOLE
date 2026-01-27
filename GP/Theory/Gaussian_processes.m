@@ -232,7 +232,7 @@ function plot_tiled_GP_prediction(x_plot, x_train, y_train, mu_star_cell, sigma_
     args.y_cell = {{mu_star_cell{1}}, {mu_star_cell{2}}};
     args.x_label_cell = {'$x$', '$x$'};
     args.y_label_cell = {'${f}(x)$', ''};
-    args.title_cell = {'', ''};
+    args.title_cell = {'$\ell = 0.3$', '$\ell = 6$'};
     args.legend_cell = {{}, {'3$\sigma$-Band', '$\bar{f}_*(x)$', '$y_t(x_t)$'}};
     
     args.filename = filename;
