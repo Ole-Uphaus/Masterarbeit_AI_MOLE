@@ -38,7 +38,14 @@ function dx = torsion_oszillator_linear_LQR_stribeck(t, x_vec, u_vec, t_vec)
     % Control Law
     k_T = [12.524133472585133, 1.268619349231718, -9.207508682229756, 0.314246813584626];
     u = u_in - k_T*x_vec;
-    
+
+    % Actuator limits
+    u_max = 9;
+    u_min = -9;
+
+    % Saturation
+    u = min(max(u, u_min), u_max);
+
     % Dynamics
     dx = A*x_vec + b*u - [0; F_fric_1/J1; 0; F_fric_2/J2];
 end

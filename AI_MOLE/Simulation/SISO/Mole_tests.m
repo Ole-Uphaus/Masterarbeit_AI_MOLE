@@ -29,6 +29,9 @@ Ts = ref_traj.t_vec(2) - ref_traj.t_vec(1);
 T_end = ref_traj.t_vec(end);
 t_vec = ref_traj.t_vec;
 
+% Process Noise
+sigma_w = 0.2;
+
 % Solver settings
 opts = odeset( ...
     'RelTol', 1e-6, ...         % Tolerance
@@ -38,7 +41,7 @@ opts = odeset( ...
 
 %% MOLE initialisation
 % Choose system model
-system_dynamics = @torsion_oszillator_linear;
+system_dynamics = @torsion_oszillator_linear_LQR_stribeck;
 x0 = [0; 0; 0; 0];
 
 params = struct();
@@ -57,8 +60,13 @@ params.nonlin_damping = 'relative_2';
 params.beta = 0;
 
 % Initial input Trajectory (simple sin or automatic generated)
-sigma_I = 0.1;
+sigma_I = 20;
 u_init = sigma_I*sin(2*pi/T_end.*t_vec');
+
+% Static gain (feedforward control signal)
+% S = 3.316624790355372;
+% 
+% u_init = S .* r_vec;
 
 % Initialisation
 SISO_MOLE = SISO_MOLE_IO(r_vec, u_init, params);
@@ -67,6 +75,7 @@ SISO_MOLE = SISO_MOLE_IO(r_vec, u_init, params);
 tic;
 % Update Loop
 u_sim = u_init;
+
 [t_sim, x_sim] = ode45(@(t,x) system_dynamics(t, x, u_sim, t_vec), t_vec, x0, opts);
 y_sim = x_sim(:, 3);
 for i = 1:params.N_iter
