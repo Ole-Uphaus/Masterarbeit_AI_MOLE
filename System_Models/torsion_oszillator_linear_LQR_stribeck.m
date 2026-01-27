@@ -1,4 +1,4 @@
-function dx = torsion_oszillator_linear_stribeck(t, x_vec, u_vec, t_vec)
+function dx = torsion_oszillator_linear_LQR_stribeck(t, x_vec, u_vec, t_vec)
     % Simulation parameters
     J1  = 0.0299;    % kgm^2
     J2  = 0.0299;    % kgm^2
@@ -23,7 +23,7 @@ function dx = torsion_oszillator_linear_stribeck(t, x_vec, u_vec, t_vec)
     F_fric_2 = dv_2*phi_2p;
 
     % Input
-    u = interp1(t_vec, u_vec, t, 'previous', 'extrap');
+    u_in = interp1(t_vec, u_vec, t, 'previous', 'extrap');
 
     % State space
     A = [0, 1, 0, 0;
@@ -34,6 +34,10 @@ function dx = torsion_oszillator_linear_stribeck(t, x_vec, u_vec, t_vec)
         1/J1;
         0;
         0];
+
+    % Control Law
+    k_T = [12.524133472585133, 1.268619349231718, -9.207508682229756, 0.314246813584626];
+    u = u_in - k_T*x_vec;
     
     % Dynamics
     dx = A*x_vec + b*u - [0; F_fric_1/J1; 0; F_fric_2/J2];
