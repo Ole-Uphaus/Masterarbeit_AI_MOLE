@@ -127,11 +127,11 @@ end
 filename = fullfile('02_Grundlagen', 'GP_einfluss_laengenskala.pdf');
 plot_tiled_GP_prediction(x_plot, x_train, y_train, mu_ell_cell, sigma_ell_cell, filename, save_pdf)
 
-filename = fullfile('02_Grundlagen', 'GP_einfluss_sigmaf.pdf');
-plot_tiled_GP_prediction(x_plot, x_train, y_train, mu_sigf_cell, sigma_sigf_cell, filename, save_pdf)
-
-filename = fullfile('02_Grundlagen', 'GP_einfluss_sigman.pdf');
-plot_tiled_GP_prediction(x_plot, x_train, y_train, mu_sign_cell, sigma_sign_cell, filename, save_pdf)
+% filename = fullfile('02_Grundlagen', 'GP_einfluss_sigmaf.pdf');
+% plot_tiled_GP_prediction(x_plot, x_train, y_train, mu_sigf_cell, sigma_sigf_cell, filename, save_pdf)
+% 
+% filename = fullfile('02_Grundlagen', 'GP_einfluss_sigman.pdf');
+% plot_tiled_GP_prediction(x_plot, x_train, y_train, mu_sign_cell, sigma_sign_cell, filename, save_pdf)
 
 %% Optimal hyperparameter
 % Use fitrgp
