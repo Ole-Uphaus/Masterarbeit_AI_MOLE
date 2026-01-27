@@ -73,7 +73,7 @@ switch architecture
 
         % Parameters
         params.m_delay = 1;
-        params.N_iter = 10;
+        params.N_iter = 20;
         params.H_trials = 3;
         
         % Choose weight initialisation Method ('Meindl', 'Stochastic', 'Heuristic',
@@ -85,7 +85,7 @@ switch architecture
         params.beta = 0;
         
         % Initial input Trajectory (simple sin or static feed forward)
-        use_feedforward_control = true;
+        use_feedforward_control = false;
 
         if use_feedforward_control
             u_init = S_gain .* r_vec;
