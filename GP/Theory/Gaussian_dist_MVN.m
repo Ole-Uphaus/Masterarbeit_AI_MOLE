@@ -37,8 +37,8 @@ args = struct();
 
 args.x_cell = {x_plot};
 args.y_cell = {{gauss_prob}};
-args.x_label_cell = {'$x$'};
-args.y_label_cell = {'$p(x)$'};
+args.x_label_cell = {'$\psi$'};
+args.y_label_cell = {'$p(\psi)$'};
 args.title_cell = {''};
 args.legend_cell = {{}};
 
@@ -88,8 +88,8 @@ args = struct();
 
 args.x_cell = {x_plot_1};
 args.y_cell = {{x_plot_2}};
-args.x_label_cell = {'$x_1$'};
-args.y_label_cell = {'$x_2$'};
+args.x_label_cell = {'$\psi_1$'};
+args.y_label_cell = {'$\psi_2$'};
 args.title_cell = {''};
 args.legend_cell = {{}};
 
@@ -108,7 +108,7 @@ opts.marker = 'none';
 % Create Plot
 Position = [0.30, 0.20, 0.45, 0.72];
 View = [-15, 30];
-z_label = '$p$(\textbf{\textit{x}})';
+z_label = '$p(\mathbf{\psi})$';
 gaus_mvn_plot = Plot_Manager(args);
 gaus_mvn_plot.single_3d_plot(opts, Position, View, Z, z_label);
 
@@ -180,7 +180,7 @@ function plot_gaussian_vectors(X_vec, filename, save_pdf)
     end
     args.y_cell = {temp};
     args.x_label_cell = {'y'};
-    args.y_label_cell = {'x'};
+    args.y_label_cell = {'\psi'};
     args.title_cell = {''};
     args.legend_cell = {{}};
     
@@ -217,7 +217,7 @@ function plot_2_gaussian_vectors(X_vec1, X_vec2, filename, save_pdf)
     end
     args.y_cell = {temp1, temp2};
     args.x_label_cell = {'$y$', '$y$'};
-    args.y_label_cell = {'$x$', ''};
+    args.y_label_cell = {'$\psi$', ''};
     args.title_cell = {'\textbf{a)}', '\textbf{b)}'};
     args.legend_cell = {{}, {}};
     
