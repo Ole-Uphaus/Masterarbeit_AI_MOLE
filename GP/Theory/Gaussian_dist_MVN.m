@@ -216,7 +216,7 @@ function plot_2_gaussian_vectors(X_vec1, X_vec2, filename, save_pdf)
         temp2{i} = X_vec2(:, i);
     end
     args.y_cell = {temp1, temp2};
-    args.x_label_cell = {'$y$', '$y$'};
+    args.x_label_cell = {'$x$', '$x$'};
     args.y_label_cell = {'$\psi$', ''};
     args.title_cell = {'\textbf{a)}', '\textbf{b)}'};
     args.legend_cell = {{}, {}};
