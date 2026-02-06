@@ -38,7 +38,7 @@ args = struct();
 args.x_cell = {x_plot};
 args.y_cell = {{gauss_prob}};
 args.x_label_cell = {'$\psi$'};
-args.y_label_cell = {'$p(\psi)$'};
+args.y_label_cell = {'$p_{\Psi}(\psi)$'};
 args.title_cell = {''};
 args.legend_cell = {{}};
 
@@ -108,7 +108,7 @@ opts.marker = 'none';
 % Create Plot
 Position = [0.30, 0.20, 0.45, 0.72];
 View = [-15, 30];
-z_label = '$p(\mathbf{\psi})$';
+z_label = '$p_{\mathbf{\Psi}}(\mathbf{\psi})$';
 gaus_mvn_plot = Plot_Manager(args);
 gaus_mvn_plot.single_3d_plot(opts, Position, View, Z, z_label);
 
