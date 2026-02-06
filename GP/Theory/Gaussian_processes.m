@@ -39,10 +39,10 @@ args = struct();
 
 args.x_cell = {x_plot};
 args.y_cell = {{y_plot}};
-args.x_label_cell = {'$x$'};
-args.y_label_cell = {'$f(x)$'};
+args.x_label_cell = {'$z$'};
+args.y_label_cell = {'$f(z)$'};
 args.title_cell = {''};
-args.legend_cell = {{'$f(x)$', '$y_t(x_t)$'}};
+args.legend_cell = {{'$f(z)$', '$y_{tr}(z_{tr})$'}};
 
 args.filename = fullfile('02_Grundlagen', 'Trainingsdaten_Funktion.pdf');
 args.save_pdf = save_pdf;
@@ -197,10 +197,10 @@ function plot_single_GP_prediction(x_plot, y_plot, x_train, y_train, mu_star, si
     
     args.x_cell = {x_plot};
     args.y_cell = {{y_plot, mu_star}};
-    args.x_label_cell = {'$x$'};
-    args.y_label_cell = {'$f(x)$'};
+    args.x_label_cell = {'$z$'};
+    args.y_label_cell = {'$f(z)$'};
     args.title_cell = {''};
-    args.legend_cell = {{'3$\sigma$-Band', '$f(x)$', '$\bar{f}_*(x)$', '$y_t(x_t)$'}};
+    args.legend_cell = {{'3$\sigma$-Band', '$f(z)$', '$\bar{f}_*(z)$', '$y_{tr}(z_{tr})$'}};
     
     args.filename = filename;
     args.save_pdf = save_pdf;
@@ -230,10 +230,10 @@ function plot_tiled_GP_prediction(x_plot, x_train, y_train, mu_star_cell, sigma_
     
     args.x_cell = {x_plot, x_plot};
     args.y_cell = {{mu_star_cell{1}}, {mu_star_cell{2}}};
-    args.x_label_cell = {'$x$', '$x$'};
-    args.y_label_cell = {'${f}(x)$', ''};
+    args.x_label_cell = {'$z$', '$z$'};
+    args.y_label_cell = {'${f}(z)$', ''};
     args.title_cell = {'$\ell = 0.3$', '$\ell = 6$'};
-    args.legend_cell = {{}, {'3$\sigma$-Band', '$\bar{f}_*(x)$', '$y_t(x_t)$'}};
+    args.legend_cell = {{}, {'3$\sigma$-Band', '$\bar{f}_*(z)$', '$y_{tr}(z_{tr})$'}};
     
     args.filename = filename;
     args.save_pdf = save_pdf;
