@@ -61,8 +61,8 @@ gaus_dist_plot.single_histo_plot(opts, Position, x);
 
 %% Multivariate Gaussian distribution
 % Plot vectors
-x_plot_1 = linspace(-4, 4, 20);
-x_plot_2 = linspace(-4, 4, 20);
+x_plot_1 = linspace(-4, 4, 70);
+x_plot_2 = linspace(-4, 4, 70);
 [X1, X2] = meshgrid(x_plot_1, x_plot_2);    % Create Mesh
 
 % Parameters
