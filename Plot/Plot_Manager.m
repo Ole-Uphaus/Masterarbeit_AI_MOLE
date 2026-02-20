@@ -114,11 +114,19 @@ classdef Plot_Manager < handle
             % Set y limit
             if ~isempty(opts.y_lim{i})
                 ax.YLim = opts.y_lim{i};
+            else
+                yl = ax.YLim;
+                new_ylim = [yl(1), yl(2)];
+                ax.YLim = new_ylim;
             end
 
             % Set x limit
             if ~isempty(opts.x_lim{i})
                 ax.XLim = opts.x_lim{i};
+            else
+                xl = [min(obj.x_cell{i}), max(obj.x_cell{i})];
+                new_xlim = [xl(1), xl(2)];
+                ax.XLim = new_xlim;
             end
 
             % Labels
