@@ -111,17 +111,15 @@ classdef Plot_Manager < handle
             % Set y scale
             ax.YScale = opts.y_scale;
 
-            % Set y limits
-            yl = ax.YLim;
-            dy = diff(yl);
-            new_ylim = [yl(1) - opts.y_rel_offset*dy, yl(2) + opts.y_rel_offset*dy];
-            ax.YLim = new_ylim;
+            % Set y limit
+            if ~isempty(opts.y_lim{i})
+                ax.YLim = opts.y_lim{i};
+            end
 
-            % Set x limits
-            xl = [min(obj.x_cell{i}), max(obj.x_cell{i})];
-            dx = diff(xl);
-            new_xlim = [xl(1) - opts.x_rel_offset*dx, xl(2) + opts.x_rel_offset*dx];
-            ax.XLim = new_xlim;
+            % Set x limit
+            if ~isempty(opts.x_lim{i})
+                ax.XLim = opts.x_lim{i};
+            end
 
             % Labels
             ax.XLabel.String = obj.x_label_cell{i};
