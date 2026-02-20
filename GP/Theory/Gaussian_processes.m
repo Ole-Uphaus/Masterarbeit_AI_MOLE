@@ -52,8 +52,8 @@ opts = struct();
 opts.fig_height = 6.5;
 opts.linewidth = 1.5;
 opts.y_scale = 'linear';
-opts.y_rel_offset = 0.05;
-opts.x_rel_offset = 0;
+opts.y_lim = {[-1.1, 1.1]};
+opts.x_lim = {[]};
 opts.marker = 'none';
 
 % Create Plot
@@ -73,7 +73,8 @@ hyp_0.sigma_n = 0.15;
 %% Plot
 % Plot baseline regression
 filename = fullfile('02_Grundlagen', 'GP_baseline_Plot.pdf');
-plot_single_GP_prediction(x_plot, y_plot, x_train, y_train, mu_star_0, sigma_star_0, filename, save_pdf)
+y_lim = {[-2, 2]};
+plot_single_GP_prediction(x_plot, y_plot, x_train, y_train, mu_star_0, sigma_star_0, y_lim, filename, save_pdf)
 
 %% Investigate hyperparameter influence
 % Hyperparameter variation
@@ -152,7 +153,8 @@ hyp_opt.sigma_n = optimal_GP.Sigma;
 %% Plot
 % Plot optimal regression
 filename = fullfile('02_Grundlagen', 'GP_optimal_Plot.pdf');
-plot_single_GP_prediction(x_plot, y_plot, x_train, y_train, mu_star_opt, sigma_star_opt, filename, save_pdf)
+y_lim = {[-1.2, 1.2]};
+plot_single_GP_prediction(x_plot, y_plot, x_train, y_train, mu_star_opt, sigma_star_opt, y_lim, filename, save_pdf)
 
 %% Local functions
 function [mu_star, sigma_star] = gp_predict_rbf(x_train, y_train, x_star, hyp)
@@ -191,7 +193,7 @@ function K = rbf_kernel(x1, x2, ell, sigma_f)
     K = sigma_f^2 * exp(-0.5 * Dists2 /(ell^2));
 end
 
-function plot_single_GP_prediction(x_plot, y_plot, x_train, y_train, mu_star, sigma_star, filename, save_pdf)
+function plot_single_GP_prediction(x_plot, y_plot, x_train, y_train, mu_star, sigma_star, y_lim, filename, save_pdf)
     % Assign values (args)
     args = struct();
     
@@ -210,8 +212,8 @@ function plot_single_GP_prediction(x_plot, y_plot, x_train, y_train, mu_star, si
     opts.fig_height = 6.5;
     opts.linewidth = 1.5;
     opts.y_scale = 'linear';
-    opts.y_rel_offset = 0.05;
-    opts.x_rel_offset = 0;
+    opts.y_lim = y_lim;
+    opts.x_lim = {[]};
     opts.marker = 'none';
     
     % Create Plot
@@ -243,8 +245,8 @@ function plot_tiled_GP_prediction(x_plot, x_train, y_train, mu_star_cell, sigma_
     opts.fig_height = 7;
     opts.linewidth = 1.5;
     opts.y_scale = 'linear';
-    opts.y_rel_offset = 0.05;
-    opts.x_rel_offset = 0;
+    opts.y_lim = {[], []};
+    opts.x_lim = {[], []};
     opts.marker = 'none';
     
     % Uncertainty
