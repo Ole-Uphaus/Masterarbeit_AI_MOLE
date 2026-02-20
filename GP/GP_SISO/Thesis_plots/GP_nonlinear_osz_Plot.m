@@ -136,7 +136,7 @@ function plot_tiled_GP_prediction(x_plot, y_cell, y_upper_cell, y_lower_cell, y_
     args.x_label_cell = {'', '', '$t$', '$t$'};
     args.y_label_cell = {'$y_L$', '$u_L$', '$y_L$', '$u_L$'};
     args.title_cell = {'$\ell = 0.3$', '$\ell = 6$', '', ''};
-    args.legend_cell = {{'3$\sigma$-Band', '$\hat{y}_{L*}$', '$y_{L*}$'}, {'$u_{L*}$'}, {'3$\sigma$-Band', '$\hat{y}_{L*}$', '$y_{L*}$'}, {'$u_{L*}$'}};
+    args.legend_cell = {{'3$\sigma$-Band', '$\hat{y}_{L*}^{(1)}$', '$y_{L*}^{(1)}$'}, {'$u_{L*}^{(1)}$'}, {'3$\sigma$-Band', '$\hat{y}_{L*}^{(2)}$', '$y_{L*}^{(2)}$'}, {'$u_{L*}^{(2)}$'}};
     
     args.filename = filename;
     args.save_pdf = save_pdf;

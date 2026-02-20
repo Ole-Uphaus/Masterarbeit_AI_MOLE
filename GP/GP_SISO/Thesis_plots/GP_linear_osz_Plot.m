@@ -81,7 +81,7 @@ args.y_cell = {y_sim_train_cell, u_vec_train_cell};
 args.x_label_cell = {'$t$', '$t$'};
 args.y_label_cell = {'$y_L$', '$u_L$'};
 args.title_cell = {'\textbf{a)}', '\textbf{b)}'};
-args.legend_cell = {{'$y_{L,1}$', '$y_{L,2}$'}, {'$u_{L,1}$', '$u_{L,2}$'}};
+args.legend_cell = {{'$y_{L,tr}^{(1)}$', '$y_{L,tr}^{(1)}$'}, {'$u_{L,tr}^{(2)}$', '$u_{L,tr}^{(2)}$'}};
 
 args.filename = fullfile('04_Simulation_Experiment', 'Trainingsdaten_GP_IO.pdf');
 args.save_pdf = save_pdf;
@@ -99,6 +99,34 @@ opts.marker = 'none';
 plot = Plot_Manager(args);
 orientation = [1, 2];
 plot.tiled_plot(opts, orientation);
+
+%% Plot testing Data
+% Assign values (args)
+args = struct();
+
+args.x_cell = {t_vec};
+args.y_cell = {{u_vec_test1, u_vec_test2}};
+args.x_label_cell = {'$t$'};
+args.y_label_cell = {'$u_L$'};
+args.title_cell = {''};
+args.legend_cell = {{'$u_{L*}^{(1)}$', '$u_{L*}^{(2)}$'}};
+
+args.filename = fullfile('04_Simulation_Experiment', 'Testdaten_GP_IO.pdf');
+args.save_pdf = save_pdf;
+
+% Assign values (opts)
+opts = struct();
+opts.fig_height = 6.5;
+opts.linewidth = 1.5;
+opts.y_scale = 'linear';
+opts.y_lim = {[-2.2, 2.2]};
+opts.x_lim = {[]};
+opts.marker = 'none';
+
+% Create Plot
+Position = [0.27, 0.20, 0.55, 0.72];
+plot = Plot_Manager(args);
+plot.single_plot(opts, Position);
 
 %% Predict System Dynamics (with one training trajectory)
 % Init Gaussian Process
@@ -164,7 +192,7 @@ function plot_tiled_GP_prediction(x_plot, y_cell, y_upper_cell, y_lower_cell, y_
     args.x_label_cell = {'', '', '$t$', '$t$'};
     args.y_label_cell = {'$y_L$', '$u_L$', '$y_L$', '$u_L$'};
     args.title_cell = {'$\ell = 0.3$', '$\ell = 6$', '', ''};
-    args.legend_cell = {{'3$\sigma$-Band', '$\hat{y}_{L*}$', '$y_{L*}$'}, {'$u_{L*}$'}, {'3$\sigma$-Band', '$\hat{y}_{L*}$', '$y_{L*}$'}, {'$u_{L*}$'}};
+    args.legend_cell = {{'3$\sigma$-Band', '$\hat{y}_{L*}^{(1)}$', '$y_{L*}^{(1)}$'}, {'$u_{L*}^{(1)}$'}, {'3$\sigma$-Band', '$\hat{y}_{L*}^{(2)}$', '$y_{L*}^{(2)}$'}, {'$u_{L*}^{(2)}$'}};
     
     args.filename = filename;
     args.save_pdf = save_pdf;
