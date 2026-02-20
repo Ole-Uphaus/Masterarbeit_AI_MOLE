@@ -182,8 +182,6 @@ function plot_2_gaussian_vectors(X_vec1, X_vec2, filename, save_pdf)
     opts.y_scale = 'linear';
     opts.y_lim = {[], []};
     opts.x_lim = {[-0.05, 1.05], [-0.05, 1.05]};
-    % opts.y_rel_offset = 0;
-    % opts.x_rel_offset = 0.05;
     opts.marker = '.';
     
     % Create Plot
