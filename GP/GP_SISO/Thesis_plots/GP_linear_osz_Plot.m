@@ -133,7 +133,7 @@ plot.single_plot(opts, Position);
 GP_IO = GP_SISO_IO();
 
 % Train Gaussian Process
-GP_IO.train_GP_model(y_sim_train_cell, {u_vec_train_cell{1}});
+GP_IO.train_GP_model({y_sim_train_cell{1}}, {u_vec_train_cell{1}});
 
 % Predict new Trajectory with full covriance matrix (for sinus input)
 [y_pred_test_sin, Cov_y_test] = GP_IO.predict_trajectory_covariance(u_vec_test1);
