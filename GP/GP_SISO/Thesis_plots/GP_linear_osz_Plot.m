@@ -81,7 +81,7 @@ args.y_cell = {y_sim_train_cell, u_vec_train_cell};
 args.x_label_cell = {'$t$', '$t$'};
 args.y_label_cell = {'$y_L$', '$u_L$'};
 args.title_cell = {'\textbf{a)}', '\textbf{b)}'};
-args.legend_cell = {{'$y_{L,tr}^{(1)}$', '$y_{L,tr}^{(1)}$'}, {'$u_{L,tr}^{(2)}$', '$u_{L,tr}^{(2)}$'}};
+args.legend_cell = {{'$y_{L,tr}^{(1)}$', '$y_{L,tr}^{(2)}$'}, {'$u_{L,tr}^{(1)}$', '$u_{L,tr}^{(2)}$'}};
 
 args.filename = fullfile('04_Simulation_Experiment', 'Trainingsdaten_GP_IO.pdf');
 args.save_pdf = save_pdf;
