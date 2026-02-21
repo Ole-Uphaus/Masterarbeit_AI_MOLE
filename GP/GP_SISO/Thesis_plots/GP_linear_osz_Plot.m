@@ -124,7 +124,7 @@ opts.x_lim = {[]};
 opts.marker = 'none';
 
 % Create Plot
-Position = [0.27, 0.20, 0.55, 0.72];
+Position = [0.24, 0.20, 0.55, 0.72];
 plot = Plot_Manager(args);
 plot.single_plot(opts, Position);
 
