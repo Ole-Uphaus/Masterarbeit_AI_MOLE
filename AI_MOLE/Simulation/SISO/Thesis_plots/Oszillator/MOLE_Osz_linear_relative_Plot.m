@@ -16,9 +16,14 @@ base_dir = fileparts(mfilename("fullpath"));
 ILC_path = fullfile(base_dir, '..', '..', '..', '..', '..', 'ILC', 'Simulation', 'ILC_SISO');
 Model_Path = fullfile(base_dir, '..', '..', '..', '..', '..', 'System_Models');
 MOLE_Path = fullfile(base_dir, '..', '..');
+Plot_Path = fullfile(base_dir, '..', '..', '..', '..', '..', 'Plot');
 addpath(ILC_path);
 addpath(Model_Path);
 addpath(MOLE_Path);
+addpath(Plot_Path);
+
+%% General
+save_pdf = false;
 
 %% Check if .mat-File exists
 % Geth Name of current script
@@ -126,45 +131,72 @@ else
 
 end
 
-%% Plot results
-figure;
-set(gcf, 'Position', [100 100 1200 800]);
+% %% Plot results
+% figure;
+% set(gcf, 'Position', [100 100 1200 800]);
+% 
+% subplot(2,2,1);   % 1 Zeile, 2 Spalten, erster Plot
+% plot(t_vec, SISO_MOLE.ILC_SISO.r_vec, LineWidth=1, DisplayName='desired'); hold on;
+% for i = 1:SISO_MOLE.N_iter
+%     % plot(t_vec, SISO_MOLE.y_cell{i}, LineWidth=1, Color=[0.5 0.5 0.5], HandleVisibility='off');
+% end
+% plot(t_vec, SISO_MOLE.y_cell{SISO_MOLE.N_iter+1}, LineWidth=1, DisplayName=sprintf('Iteration %d', SISO_MOLE.N_iter));
+% grid on;
+% xlabel('Zeit [s]'); 
+% ylabel('x [m]');
+% title('Compare desired and simulated Trajectory');
+% legend('Location', 'best');
+% 
+% subplot(2,2,3);   % 1 Zeile, 2 Spalten, erster Plot
+% semilogy(0:(length(SISO_MOLE.ILC_SISO.RMSE_log)-1), SISO_MOLE.ILC_SISO.RMSE_log, LineWidth=1, DisplayName='ILC Quadr');
+% grid on;
+% xlabel('Iteration'); 
+% ylabel('RMSE');
+% title('Compare error development');
+% legend()
+% 
+% subplot(2,2,4);   % 1 Zeile, 2 Spalten, erster Plot
+% hold on;
+% for i = 1:SISO_MOLE.N_iter
+%     plot(t_vec, SISO_MOLE.u_cell{i}, LineWidth=1, Color=[0.5 0.5 0.5], HandleVisibility='off');
+% end
+% plot(t_vec, SISO_MOLE.u_cell{SISO_MOLE.N_iter+1}, LineWidth=1, DisplayName=sprintf('Iteration %d', SISO_MOLE.N_iter));
+% grid on;
+% xlabel('Zeit [s]'); 
+% ylabel('F [N]');
+% title('Input Signal');
+% legend('Location', 'best');
+% 
+% subplot(2,2,2);
+% grid on;
+% xlabel('Zeit [s]'); 
+% ylabel('x [m]');
+% title('Noise');
+% legend()
 
-subplot(2,2,1);   % 1 Zeile, 2 Spalten, erster Plot
-plot(t_vec, SISO_MOLE.ILC_SISO.r_vec, LineWidth=1, DisplayName='desired'); hold on;
-for i = 1:SISO_MOLE.N_iter
-    % plot(t_vec, SISO_MOLE.y_cell{i}, LineWidth=1, Color=[0.5 0.5 0.5], HandleVisibility='off');
-end
-plot(t_vec, SISO_MOLE.y_cell{SISO_MOLE.N_iter+1}, LineWidth=1, DisplayName=sprintf('Iteration %d', SISO_MOLE.N_iter));
-grid on;
-xlabel('Zeit [s]'); 
-ylabel('x [m]');
-title('Compare desired and simulated Trajectory');
-legend('Location', 'best');
+%% Plot
+% Assign values (args)
+args = struct();
 
-subplot(2,2,3);   % 1 Zeile, 2 Spalten, erster Plot
-semilogy(0:(length(SISO_MOLE.ILC_SISO.RMSE_log)-1), SISO_MOLE.ILC_SISO.RMSE_log, LineWidth=1, DisplayName='ILC Quadr');
-grid on;
-xlabel('Iteration'); 
-ylabel('RMSE');
-title('Compare error development');
-legend()
+args.x_cell = {};
+args.y_cell = {};
+args.x_label_cell = {'', '', '$t$', 'Iteration'};
+args.y_label_cell = {'$y$', 'RMSE', '$u$', '$\eta$'};
+args.title_cell = {'', '', '', ''};
+args.legend_cell = {{'$y_d$', '$y_0$', '$y_5$', '$y_{10}$'}, {}, {'$u_0$', '$u_5$', '$u_{10}$'}, {},};
 
-subplot(2,2,4);   % 1 Zeile, 2 Spalten, erster Plot
-hold on;
-for i = 1:SISO_MOLE.N_iter
-    plot(t_vec, SISO_MOLE.u_cell{i}, LineWidth=1, Color=[0.5 0.5 0.5], HandleVisibility='off');
-end
-plot(t_vec, SISO_MOLE.u_cell{SISO_MOLE.N_iter+1}, LineWidth=1, DisplayName=sprintf('Iteration %d', SISO_MOLE.N_iter));
-grid on;
-xlabel('Zeit [s]'); 
-ylabel('F [N]');
-title('Input Signal');
-legend('Location', 'best');
+args.filename = fullfile('05_Ergebnisse_Diskussion', 'Ergebnis_Osz_linear_relative.pdf');
+args.save_pdf = save_pdf;
 
-subplot(2,2,2);
-grid on;
-xlabel('Zeit [s]'); 
-ylabel('x [m]');
-title('Noise');
-legend()
+% Assign values (opts)
+opts = struct();
+opts.fig_height = 10;
+opts.linewidth = 1.5;
+opts.y_scale = 'linear';
+opts.y_lim = {[], [], [], []};
+opts.x_lim = {[], [], [], [0, 10]};
+opts.marker = 'none';
+
+% Create Plot
+plot = Plot_Manager(args);
+plot.tiled_mole_results_plot(opts, SISO_MOLE, t_vec);
