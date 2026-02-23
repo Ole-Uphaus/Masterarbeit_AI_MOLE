@@ -428,8 +428,14 @@ classdef Plot_Manager < handle
             iter_vec = 0:SISO_MOLE.N_iter;
             output_idx = round(linspace(1, (SISO_MOLE.N_iter + 1), 3));
 
+            % Set last input values to zero
+            u_cell_plot = SISO_MOLE.u_cell(output_idx);
+            for i = 1:length(u_cell_plot)
+                u_cell_plot{i}(end) = u_cell_plot{i}(end-1);
+            end
+            
             obj.x_cell = {t_vec, iter_vec, t_vec, iter_vec(2:end)};
-            obj.y_cell = {[{SISO_MOLE.ILC_SISO.r_vec}; SISO_MOLE.y_cell(output_idx)], {SISO_MOLE.ILC_SISO.RMSE_log}, SISO_MOLE.u_cell(output_idx), {SISO_MOLE.alpha_log}};
+            obj.y_cell = {[{SISO_MOLE.ILC_SISO.r_vec}; SISO_MOLE.y_cell(output_idx)], {SISO_MOLE.ILC_SISO.RMSE_log}, u_cell_plot, {SISO_MOLE.alpha_log}};
 
             % Create Plots in axes
             for i = 1:4

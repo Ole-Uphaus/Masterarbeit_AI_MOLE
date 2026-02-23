@@ -58,7 +58,7 @@ if ~isfile(data_name)
     
     %% System Model
     % Use the linear system for AI-MOLE
-    dynamic_model = @oszillator_linear;
+    dynamic_model = @oszillator_nonlinear;
     
     % Initial input Trajectory (simple sin or automatic generated)
     sigma_I = 0.1;  % for stibeck model = 1, otherwise = 0.1
@@ -142,7 +142,7 @@ args.y_label_cell = {'$y$', 'RMSE', '$u$', '$\eta$'};
 args.title_cell = {'', '', '', ''};
 args.legend_cell = {{'$y_d$', '$y_0$', '$y_5$', '$y_{10}$'}, {}, {'$u_0$', '$u_5$', '$u_{10}$'}, {},};
 
-args.filename = fullfile('05_Ergebnisse_Diskussion', 'Ergebnis_Osz_linear_relative.pdf');
+args.filename = fullfile('05_Ergebnisse_Diskussion', 'Ergebnis_Osz_nonlinear_relative.pdf');
 args.save_pdf = save_pdf;
 
 % Assign values (opts)
