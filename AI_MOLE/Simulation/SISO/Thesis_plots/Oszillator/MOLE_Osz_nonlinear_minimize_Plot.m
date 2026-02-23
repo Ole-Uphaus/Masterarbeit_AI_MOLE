@@ -58,10 +58,10 @@ if ~isfile(data_name)
     
     %% System Model
     % Use the linear system for AI-MOLE
-    dynamic_model = @oszillator_nonlinear_stribeck;
+    dynamic_model = @oszillator_nonlinear;
     
     % Initial input Trajectory (simple sin or automatic generated)
-    sigma_I = 1;  % for stibeck model = 1, otherwise = 0.1
+    sigma_I = 0.1;  % for stibeck model = 1, otherwise = 0.1
     u_init = sigma_I*sin(2*pi/T_end.*t_vec');
     
     %% Initialize AI-MOLE
@@ -70,7 +70,7 @@ if ~isfile(data_name)
     
     % Parameters
     params.m_delay = 1;
-    params.N_iter = 20;
+    params.N_iter = 15;
     params.H_trials = 3;
     
     % Choose weight initialisation Method ('Meindl', 'Stochastic', 'Heuristic',
@@ -78,7 +78,7 @@ if ~isfile(data_name)
     params.weight_init_method = 'Stochastic';
     
     % Choose nonlinearity damping method ('none', 'relative_1', 'relative_2', 'minimize')
-    params.nonlin_damping = 'relative_2';
+    params.nonlin_damping = 'minimize';
     params.beta = 0.5;
     
     % Initialisation
@@ -140,9 +140,9 @@ args.y_cell = {};
 args.x_label_cell = {'', '', '$t$', 'Iteration'};
 args.y_label_cell = {'$y$', 'RMSE', '$u$', '$\eta$'};
 args.title_cell = {'', '', '', ''};
-args.legend_cell = {{'$y_d$', '$y_0$', '$y_{10}$', '$y_{20}$'}, {}, {'$u_0$', '$u_{10}$', '$u_{20}$'}, {},};
+args.legend_cell = {{'$y_d$', '$y_0$', '$y_8$', '$y_{15}$'}, {}, {'$u_0$', '$u_8$', '$u_{15}$'}, {},};
 
-args.filename = fullfile('05_Ergebnisse_Diskussion', 'Ergebnis_Osz_nonlinear_stribeck_relative.pdf');
+args.filename = fullfile('05_Ergebnisse_Diskussion', 'Ergebnis_Osz_nonlinear_minimize.pdf');
 args.save_pdf = save_pdf;
 
 % Assign values (opts)
@@ -151,7 +151,7 @@ opts.fig_height = 10;
 opts.linewidth = 1.5;
 opts.y_scale = 'linear';
 opts.y_lim = {[], [], [], []};
-opts.x_lim = {[], [], [], [0, 20]};
+opts.x_lim = {[], [], [], [0, 15]};
 opts.marker = 'none';
 
 % Create Plot

@@ -78,7 +78,7 @@ if ~isfile(data_name)
     params.weight_init_method = 'Stochastic';
     
     % Choose nonlinearity damping method ('none', 'relative_1', 'relative_2', 'minimize')
-    params.nonlin_damping = 'relative_2';
+    params.nonlin_damping = 'minimize';
     params.beta = 0.5;
     
     % Initialisation
@@ -142,7 +142,7 @@ args.y_label_cell = {'$y$', 'RMSE', '$u$', '$\eta$'};
 args.title_cell = {'', '', '', ''};
 args.legend_cell = {{'$y_d$', '$y_0$', '$y_{10}$', '$y_{20}$'}, {}, {'$u_0$', '$u_{10}$', '$u_{20}$'}, {},};
 
-args.filename = fullfile('05_Ergebnisse_Diskussion', 'Ergebnis_Osz_nonlinear_stribeck_relative.pdf');
+args.filename = fullfile('05_Ergebnisse_Diskussion', 'Ergebnis_Osz_nonlinear_stribeck_minimize.pdf');
 args.save_pdf = save_pdf;
 
 % Assign values (opts)
