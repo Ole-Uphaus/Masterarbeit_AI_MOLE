@@ -17,10 +17,12 @@ ILC_path = fullfile(base_dir, '..', '..', '..', '..', '..', 'ILC', 'Simulation',
 Model_Path = fullfile(base_dir, '..', '..', '..', '..', '..', 'System_Models');
 MOLE_Path = fullfile(base_dir, '..', '..');
 Plot_Path = fullfile(base_dir, '..', '..', '..', '..', '..', 'Plot');
+GP_path = fullfile(base_dir, '..', '..', '..', '..', '..', 'GP', 'GP_SISO');
 addpath(ILC_path);
 addpath(Model_Path);
 addpath(MOLE_Path);
 addpath(Plot_Path);
+addpath(GP_path);
 
 %% General
 save_pdf = false;
