@@ -60,7 +60,7 @@ if ~isfile(data_name)
     
     %% System Model
     % Choose system model
-    dynamic_model = @torsion_oszillator_linear;
+    dynamic_model = @torsion_oszillator_linear_LQR;
     x0 = [0; 0; 0; 0];
     
     % Initial input Trajectory
@@ -78,10 +78,10 @@ if ~isfile(data_name)
     
     % Choose weight initialisation Method ('Meindl', 'Stochastic', 'Heuristic',
     % 'Robust', 'Manual')
-    params.weight_init_method = 'Stochastic';
+    params.weight_init_method = 'Meindl';
     
     % Choose nonlinearity damping method ('none', 'relative_1', 'relative_2', 'minimize')
-    params.nonlin_damping = 'relative_2';
+    params.nonlin_damping = 'none';
     params.beta = 0;
     
     % Initialisation
@@ -145,7 +145,7 @@ args.y_label_cell = {'$y$', 'RMSE', '$u$', '$\eta$'};
 args.title_cell = {'', '', '', ''};
 args.legend_cell = {{'$y_d$', '$y_0$', '$y_5$', '$y_{10}$'}, {}, {'$u_0$', '$u_5$', '$u_{10}$'}, {},};
 
-args.filename = fullfile('05_Ergebnisse_Diskussion', 'Ergebnis_Torsion_uncontrolled_relative.pdf');
+args.filename = fullfile('05_Ergebnisse_Diskussion', 'Ergebnis_Torsion_controlled_Meindl.pdf');
 args.save_pdf = save_pdf;
 
 % Assign values (opts)
