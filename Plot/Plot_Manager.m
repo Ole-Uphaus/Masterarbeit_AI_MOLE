@@ -476,9 +476,77 @@ classdef Plot_Manager < handle
 
             % Export figure
             obj.export_plot(fig, opts)
-
         end
     
+        function tiled_ilc_results_plot(obj, opts, ILC_SISO, t_vec)
+            %tiled_mole_results_plot create standard AI-MOLE results plot
+            %for master thesis
+
+            % Create figure
+            fig = figure('Visible', 'on', ...
+                           'Units', 'centimeters', ...
+                           'Position', [2 2 obj.textwidth_cm opts.fig_height], ...
+                           'Color', 'w');
+
+            % Create tiled layout
+            tiled = tiledlayout(fig, 2, 2, ...
+                'TileSpacing', 'compact', ...
+                'Padding', 'compact');
+
+            % General AI-MOLE Options
+            N_iter = length(ILC_SISO.y_cell) - 1;
+            iter_vec = 0:N_iter;
+            output_idx = round(linspace(1, (N_iter + 1), 3));
+
+            % Set last input values to zero
+            u_cell_plot = ILC_SISO.u_cell(output_idx);
+            for i = 1:length(u_cell_plot)
+                u_cell_plot{i}(end) = u_cell_plot{i}(end-1);
+            end
+            
+            obj.x_cell = {t_vec, iter_vec, t_vec, iter_vec(2:end)};
+            obj.y_cell = {[{ILC_SISO.r_vec}; ILC_SISO.y_cell(output_idx)], {ILC_SISO.RMSE_log}, u_cell_plot, {ones(N_iter, 1)}};
+
+            % Create Plots in axes
+            for i = 1:4
+                % Get ax object
+                ax = nexttile(tiled);
+
+                % Set the y-scale
+                if i == 2
+                    opts.y_scale = 'log';
+                    ax.YTick = [1e-7 1e-6 1e-5 1e-4 1e-3 1e-2 1e-1 1e0 1e1 1e2 1e3 1e4];  
+                else
+                    opts.y_scale = 'linear';
+                end
+
+                % Set Marker
+                if i == 4
+                    opts.marker = '.';
+                else
+                    opts.marker = 'none';
+                end
+
+                % Set the color scheme
+                if i == 3
+                    % Color Order
+                    deafult_order = ax.ColorOrder;
+                    
+                    % Change order (begin with second color
+                    ax.ColorOrder = deafult_order(2:end, :);
+                end
+
+                % Plot signals
+                hold(ax, 'on');
+                obj.axis_plot(ax, i, opts);
+    
+                % Axis Options
+                obj.axis_options(ax, i, opts);
+            end
+
+            % Export figure
+            obj.export_plot(fig, opts)
+        end
     end
 end
 

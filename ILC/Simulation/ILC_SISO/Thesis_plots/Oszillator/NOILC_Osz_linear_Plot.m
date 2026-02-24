@@ -16,6 +16,9 @@ base_dir = fileparts(mfilename("fullpath"));
 Model_Path = fullfile(base_dir, '..', '..', '..', '..', '..', 'System_Models');
 addpath(Model_Path);
 
+%% General
+save_pdf = false;
+
 %% System Dynamics
 % Simulation parameters
 m  = 2; % kg
@@ -94,46 +97,29 @@ end
 % Calculate and log final error
 ILC_Quadr.calculate_final_error(y_sim);
 
-%% Plot results
-figure;
-set(gcf, 'Position', [100 100 1200 800]);
+%% Plot
+% Assign values (args)
+args = struct();
 
-subplot(2,2,1);
-plot(t_vec, r_vec, LineWidth=1, DisplayName='desired'); hold on;
-for i = 1:N_iter
-    plot(t_vec, ILC_Quadr.y_cell{i}, LineWidth=1, Color=[0.5 0.5 0.5], HandleVisibility='off');
-end
-plot(t_vec, ILC_Quadr.y_cell{N_iter+1}, LineWidth=1, DisplayName=sprintf('Iteration %d', N_iter));
-grid on;
-xlabel('Zeit [s]'); 
-ylabel('x [m]');
-title('Compare desired and simulated Trajectory');
-legend()
+args.x_cell = {};
+args.y_cell = {};
+args.x_label_cell = {'', '', '$t$', 'Iteration'};
+args.y_label_cell = {'$y$', 'RMSE', '$u$', '$\eta$'};
+args.title_cell = {'', '', '', ''};
+args.legend_cell = {{'$y_d$', '$y_0$', '$y_5$', '$y_{10}$'}, {}, {'$u_0$', '$u_5$', '$u_{10}$'}, {},};
 
-subplot(2,2,3);
-% plot(0:(length(ILC_Quadr.RMSE_log)-1), ILC_Quadr.RMSE_log, LineWidth=1, DisplayName='ILC Quadr'); hold on;
-semilogy(0:(length(ILC_Quadr.RMSE_log)-1), ILC_Quadr.RMSE_log, LineWidth=1, DisplayName='ILC Quadr'); hold on;
-grid on;
-xlabel('Iteration'); 
-ylabel('RMSE');
-title('Compare error development');
-legend()
+args.filename = fullfile('05_Ergebnisse_Diskussion', 'Ergebnis_Osz_linear_Modell.pdf');
+args.save_pdf = save_pdf;
 
-subplot(2,2,2);
-grid on;
-xlabel('Zeit [s]'); 
-ylabel('x [m]');
-title('Compare process and measurement noise');
-legend()
+% Assign values (opts)
+opts = struct();
+opts.fig_height = 10;
+opts.linewidth = 1.5;
+opts.y_scale = 'linear';
+opts.y_lim = {[], [], [], []};
+opts.x_lim = {[], [], [], [0, 10]};
+opts.marker = 'none';
 
-subplot(2,2,4);
-hold on;
-for i = 1:N_iter
-    plot(t_vec, ILC_Quadr.u_cell{i}, LineWidth=1, Color=[0.5 0.5 0.5], HandleVisibility='off');
-end
-plot(t_vec, ILC_Quadr.u_cell{N_iter+1}, LineWidth=1, DisplayName=sprintf('Iteration %d', N_iter));
-grid on;
-xlabel('Zeit [s]'); 
-ylabel('F [N]');
-title('Input Signal');
-legend()
+% Create Plot
+plot = Plot_Manager(args);
+plot.tiled_ilc_results_plot(opts, ILC_Quadr, t_vec);
