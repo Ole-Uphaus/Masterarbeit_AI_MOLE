@@ -60,7 +60,7 @@ if ~isfile(data_name)
     
     %% System Model
     % Choose system model
-    dynamic_model = @torsion_oszillator_linear;
+    dynamic_model = @torsion_oszillator_linear_LQR;
     x0 = [0; 0; 0; 0];
     
     % Initial input Trajectory
