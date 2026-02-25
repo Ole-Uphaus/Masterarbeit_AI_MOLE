@@ -42,7 +42,7 @@ N = size(t_vec, 2);
 m_delay = 1;
 
 % Parameters
-N_iter = 15;
+N_iter = 20;
 x0 = [0;
     0]; 
 W = eye(N - m_delay);
@@ -61,7 +61,7 @@ opts = odeset( ...
 
 % Update Loop
 u_sim = [ILC_Quadr.u_vec; 0];
-[t_sim, x_sim] = ode45(@(t,x) oszillator_nonlinear(t, x, (u_sim), t_vec), t_vec, x0, opts);
+[t_sim, x_sim] = ode45(@(t,x) oszillator_nonlinear_stribeck(t, x, (u_sim), t_vec), t_vec, x0, opts);
 y_sim = x_sim(:, 1);
 for i = 1:N_iter
     % Update input
@@ -70,7 +70,7 @@ for i = 1:N_iter
     u_sim = [ILC_Quadr.Quadr_update(y_sim); 0];
 
     % Simulate the system
-    [t_sim, x_sim] = ode45(@(t,x) oszillator_nonlinear(t, x, (u_sim), t_vec), t_vec, x0, opts);
+    [t_sim, x_sim] = ode45(@(t,x) oszillator_nonlinear_stribeck(t, x, (u_sim), t_vec), t_vec, x0, opts);
     y_sim = x_sim(:, 1);
 end
 % Calculate and log final error
@@ -87,7 +87,7 @@ args.y_label_cell = {'$y$', 'RMSE', '$u$', '$\eta$'};
 args.title_cell = {'', '', '', ''};
 args.legend_cell = {{'$y_d$', '$y_0$', '$y_5$', '$y_{10}$'}, {}, {'$u_0$', '$u_5$', '$u_{10}$'}, {},};
 
-args.filename = fullfile('05_Ergebnisse_Diskussion', 'Ergebnis_Osz_nonlinear_Modell.pdf');
+args.filename = fullfile('05_Ergebnisse_Diskussion', 'Ergebnis_Osz_nonlinear_stribeck_Modell.pdf');
 args.save_pdf = save_pdf;
 
 % Assign values (opts)
@@ -96,7 +96,7 @@ opts.fig_height = 10;
 opts.linewidth = 1.5;
 opts.y_scale = 'linear';
 opts.y_lim = {[], [], [], []};
-opts.x_lim = {[], [], [], [0, 15]};
+opts.x_lim = {[], [], [], [0, 20]};
 opts.marker = 'none';
 
 % Create Plot
