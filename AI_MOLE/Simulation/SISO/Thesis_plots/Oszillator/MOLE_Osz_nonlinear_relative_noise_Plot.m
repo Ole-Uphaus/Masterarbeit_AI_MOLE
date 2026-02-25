@@ -58,7 +58,6 @@ if ~isfile(data_name)
     sigma = 1;
     [r_vec, ~, ~] = Random_C2_trajectory_1D(2, t_vec, sigma);
 
-    % Noise
     % Noise Parameters
     sigma_v = 0.01;      % Measurement Noise 0.01
     fc_v = 20;
