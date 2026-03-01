@@ -78,7 +78,7 @@ args = struct();
 
 args.x_cell = {t_vec, t_vec};
 args.y_cell = {y_sim_train_cell, u_vec_train_cell};
-args.x_label_cell = {'$t$', '$t$'};
+args.x_label_cell = {'$t$ in $\mathrm{s}$', '$t$ in $\mathrm{s}$'};
 args.y_label_cell = {'$y_L$', '$u_L$'};
 args.title_cell = {'\textbf{a)}', '\textbf{b)}'};
 args.legend_cell = {{'$y_{L,tr}^{(1)}$', '$y_{L,tr}^{(2)}$'}, {'$u_{L,tr}^{(1)}$', '$u_{L,tr}^{(2)}$'}};
@@ -106,7 +106,7 @@ args = struct();
 
 args.x_cell = {t_vec};
 args.y_cell = {{u_vec_test1, u_vec_test2}};
-args.x_label_cell = {'$t$'};
+args.x_label_cell = {'$t$ in $\mathrm{s}$'};
 args.y_label_cell = {'$u_L$'};
 args.title_cell = {''};
 args.legend_cell = {{'$u_{L*}^{(1)}$', '$u_{L*}^{(2)}$'}};
@@ -189,7 +189,7 @@ function plot_tiled_GP_prediction(x_plot, y_cell, y_upper_cell, y_lower_cell, y_
     
     args.x_cell = {x_plot, x_plot, x_plot, x_plot};
     args.y_cell = y_cell;
-    args.x_label_cell = {'', '', '$t$', '$t$'};
+    args.x_label_cell = {'', '', '$t$ in $\mathrm{s}$', '$t$ in $\mathrm{s}$'};
     args.y_label_cell = {'$y_L$', '$u_L$', '$y_L$', '$u_L$'};
     args.title_cell = {'$\ell = 0.3$', '$\ell = 6$', '', ''};
     args.legend_cell = {{'3$\sigma$-Band', '$\hat{y}_{L*}^{(1)}$', '$y_{L*}^{(1)}$'}, {'$u_{L*}^{(1)}$'}, {'3$\sigma$-Band', '$\hat{y}_{L*}^{(2)}$', '$y_{L*}^{(2)}$'}, {'$u_{L*}^{(2)}$'}};
