@@ -45,7 +45,7 @@ if ~isfile(data_name)
         0];
 
     % Different sample times
-    max_samples = 1500;
+    max_samples = 1000;
     samples_vec = linspace(max_samples/10, max_samples, 10);
 
     % Create reference Trajectory
@@ -116,6 +116,10 @@ if ~isfile(data_name)
         tic;
         [~] = [SISO_MOLE.update_input(y_sim); 0];
         runtime_vec(i) = toc;
+
+        % Delete MOLE object
+        delete(SISO_MOLE);
+        clear SISO_MOLE;
     end
 
     %% Save Runtime Data
@@ -148,7 +152,7 @@ opts.fig_height = 6.5;
 opts.linewidth = 1.5;
 opts.y_scale = 'linear';
 opts.y_lim = {[]};
-opts.x_lim = {[]};
+opts.x_lim = {[0, 1000]};
 opts.marker = '.';
 
 % Create Plot
