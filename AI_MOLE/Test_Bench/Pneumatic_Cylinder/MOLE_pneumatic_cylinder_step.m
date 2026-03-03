@@ -21,17 +21,12 @@ addpath(Model_Path);
 
 %% Load MOLE and simulation/trial 
 % MOLE object
-date_string = '2026_01_27';
-run_filename = 'Run_02_serial.mat';
+date_string = '2026_03_03';
+run_filename = 'Run_01.mat';
 run_filepath = fullfile(pwd, 'Runs', date_string, run_filename);
 
 % Current Simulation/Trial
 sim_trial_filename = sprintf('Trial_%s.mat', date_string);
-
-% Extract architecture
-name = erase(run_filename, '.mat');
-parts = split(name, '_');
-architecture = parts{3};
 
 % Load files
 load(run_filepath);
@@ -118,21 +113,3 @@ xlabel('Zeit [s]');
 ylabel('F [N]');
 title('Input Signal');
 legend('Location', 'best');
-
-subplot(2,2,2);
-% plot(t_vec, v_vec, LineWidth=1, DisplayName='meas');
-grid on;
-xlabel('Zeit [s]'); 
-ylabel('x [m]');
-title('Noise');
-legend()
-
-figure;
-plot(t_vec_sys, u_vec_actuator, LineWidth=1); hold on;
-yline(9,  'r--', 'LineWidth', 1);
-yline(-9, 'r--', 'LineWidth', 1);
-grid on;
-xlabel('Zeit [s]'); 
-ylabel('F [N]');
-title('Approximate Actuator Input Signal');
-ylim([-10 10]);

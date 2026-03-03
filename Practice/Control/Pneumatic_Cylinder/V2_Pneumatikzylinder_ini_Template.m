@@ -69,7 +69,7 @@ a5s = double(solution.a5);
 t_vec = linspace(0, 1, 200);
 y_d_plot = a0s + a1s*t_vec + a2s*t_vec.^2 + a3s*t_vec.^3 + a4s*t_vec.^4 + a5s*t_vec.^5;
 
-plot(t_vec, y_d_plot)
+% plot(t_vec, y_d_plot)
 
 %% Entwurf Optimalregelung (LQR) des mechanischen Teilsystems
 % Sample Time
@@ -120,3 +120,4 @@ idx_u = find(~cellfun('isempty', SISO_MOLE.u_cell), 1, 'last');
 
 % Extract current input signal
 u_sim = SISO_MOLE.u_cell{idx_u};
+u_sim(end) = u_sim(end-1);
