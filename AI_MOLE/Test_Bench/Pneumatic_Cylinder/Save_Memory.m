@@ -24,21 +24,23 @@ for i = 1:numel(files)
     % Load full file
     load(file_path);
 
-    % Delete large Matrices
-    % GP
-    SISO_MOLE.GP_SISO.L_chol = [];
-    SISO_MOLE.GP_SISO.V_transp = [];
-    SISO_MOLE.GP_SISO.V = [];
-    SISO_MOLE.GP_SISO.GP = [];
-
-    % ILC
-    SISO_MOLE.ILC_SISO.W = [];
-    SISO_MOLE.ILC_SISO.S = [];
-    SISO_MOLE.ILC_SISO.R = [];
-    SISO_MOLE.ILC_SISO.L = [];
-    SISO_MOLE.ILC_SISO.Q = [];
-    SISO_MOLE.ILC_SISO.P = [];
-
-    % Resave variables
-    save(file_path, 'SISO_MOLE', 'ref_traj', 'init_update_timestamp');
+    if ~isempty(SISO_MOLE.GP_SISO.L_chol)
+        % Delete large Matrices
+        % GP
+        SISO_MOLE.GP_SISO.L_chol = [];
+        SISO_MOLE.GP_SISO.V_transp = [];
+        SISO_MOLE.GP_SISO.V = [];
+        SISO_MOLE.GP_SISO.GP = [];
+    
+        % ILC
+        SISO_MOLE.ILC_SISO.W = [];
+        SISO_MOLE.ILC_SISO.S = [];
+        SISO_MOLE.ILC_SISO.R = [];
+        SISO_MOLE.ILC_SISO.L = [];
+        SISO_MOLE.ILC_SISO.Q = [];
+        SISO_MOLE.ILC_SISO.P = [];
+    
+        % Resave variables
+        save(file_path, 'SISO_MOLE', 'ref_traj', 'init_update_timestamp');
+    end
 end
