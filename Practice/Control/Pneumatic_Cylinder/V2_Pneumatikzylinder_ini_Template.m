@@ -106,6 +106,16 @@ sys_disc_cont = ss(Ad_cont, bd, c_Td, dd, Ts);
 % Statische Verstärkung berechnen
 S_gain = 1 / dcgain(sys_disc_cont);
 
+%% Zustandsvariablenfilter für Rückfahrt
+% Parameter Solttrajektoriengenerierung
+p_1 = 10;
+
+% Enwert Schlittenposition
+x_end = 0.1;
+
+% Beginn Trajektorienwechsel
+T_change = 2.5;
+
 %% Choose run for Simulation
 % Run
 date_string = '2026_03_03';
