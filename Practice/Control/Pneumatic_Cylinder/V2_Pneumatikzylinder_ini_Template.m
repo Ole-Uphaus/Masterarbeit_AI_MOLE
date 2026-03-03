@@ -105,3 +105,18 @@ sys_disc_cont = ss(Ad_cont, bd, c_Td, dd, Ts);
 
 % Statische Verstärkung berechnen
 S_gain = 1 / dcgain(sys_disc_cont);
+
+%% Choose run for Simulation
+% Run
+date_string = '2026_03_03';
+run_filename = 'Run_01.mat';
+run_filepath = fullfile(pwd, '..', '..', '..', 'AI_MOLE', 'Test_Bench', 'Pneumatic_Cylinder', 'Runs', date_string, run_filename);
+
+% Load file
+load(run_filepath)
+
+% Get the latest u input
+idx_u = find(~cellfun('isempty', SISO_MOLE.u_cell), 1, 'last');
+
+% Extract current input signal
+u_sim = SISO_MOLE.u_cell{idx_u};

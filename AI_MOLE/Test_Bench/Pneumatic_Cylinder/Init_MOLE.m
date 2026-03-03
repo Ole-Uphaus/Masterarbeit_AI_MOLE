@@ -1,6 +1,6 @@
 % -------------------------------------------------------------
 % Autor:      Ole Uphaus
-% Datum:      17.12.2025
+% Datum:      03.03.2026
 % Beschreibung:
 % Dieses Skript dient dazu, ein neuen AI-MOLE Run zu initialisieren.
 % -------------------------------------------------------------
