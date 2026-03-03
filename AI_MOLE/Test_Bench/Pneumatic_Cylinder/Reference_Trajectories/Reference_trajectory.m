@@ -33,10 +33,16 @@ waypoints = [0.1, x_end];
 vel_bounds = [0, 0];
 acc_bounds = [0, 0];
 
-[phi2, phi2_p, phi2_pp] = quinticpolytraj( ...
+[phi2, phi2_p, phi2_pp, pp] = quinticpolytraj( ...
     waypoints, time_points, t_vec, ...
     'VelocityBoundaryCondition', vel_bounds, ...
     'AccelerationBoundaryCondition', acc_bounds);
+
+% 3rd Derivative
+c1 = pp.coefs(2, 1);
+c2 = pp.coefs(2, 2);
+c3 = pp.coefs(2, 3);
+phi2_ppp = 60*c1*t_vec.^2 + 24*c2*t_vec + 6*c3;
 
 %% Save reference trajectory
 if save_traj
@@ -55,6 +61,7 @@ if save_traj
     ref_traj.phi2 = phi2;
     ref_traj.phi2_p = phi2_p;
     ref_traj.phi2_pp = phi2_pp;
+    ref_traj.phi2_ppp = phi2_ppp;
     
     % Save data
     save(filepath, 'ref_traj');
@@ -80,3 +87,9 @@ plot(t_vec, phi2_pp, 'LineWidth', 1.5); grid on;
 ylabel('phi-pp (rad/s^2)')
 xlabel('t (s)')
 title('Beschleunigung')
+
+subplot(2,2,4)
+plot(t_vec, phi2_ppp, 'LineWidth', 1.5); grid on;
+ylabel('phi-ppp (rad/s^3)')
+xlabel('t (s)')
+title('Ruck')
