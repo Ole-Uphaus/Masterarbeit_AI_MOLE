@@ -42,7 +42,7 @@ params = struct();
 % Parameters
 params.m_delay = 1;
 params.N_iter = 10;
-params.H_trials = 3;
+params.H_trials = 10;
 
 % Choose weight initialisation Method ('Meindl', 'Stochastic', 'Heuristic',
 % 'Robust', 'Manual')
@@ -50,7 +50,7 @@ params.weight_init_method = 'Stochastic';
 
 % Choose nonlinearity damping method ('none', 'relative_1', 'relative_2', 'minimize')
 params.nonlin_damping = 'relative_2';
-params.beta = 0;
+params.beta = 2;
 
 % Initial input Trajectory (simple sin or static feed forward)
 u_init = S_gain .* r_vec;

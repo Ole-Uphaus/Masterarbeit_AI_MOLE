@@ -109,7 +109,7 @@ S_gain = 1 / dcgain(sys_disc_cont);
 %% Choose run for Simulation
 % Run
 date_string = '2026_03_03';
-run_filename = 'Run_01.mat';
+run_filename = 'Run_04.mat';
 run_filepath = fullfile(pwd, '..', '..', '..', 'AI_MOLE', 'Test_Bench', 'Pneumatic_Cylinder', 'Runs', date_string, run_filename);
 
 % Load file
