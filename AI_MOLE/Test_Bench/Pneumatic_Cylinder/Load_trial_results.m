@@ -17,7 +17,7 @@ close all
 base_dir = fullfile(pwd, '..', '..', '..', '..');
 
 % Find measurement folders
-folder_names = dir(fullfile(base_dir, 'Messwerte_*'));
+folder_names = dir(fullfile(base_dir, 'Messungen_*'));
 
 % Extract numbers of folders
 numbers  = nan(numel(folder_names), 1);
@@ -37,15 +37,23 @@ latest_folder_path = fullfile(base_dir, latest_folder_name);
 
 %% Merge and load measurement data
 % Use script to merge data
-run('C:\Users\Mitarbeiter\Desktop\MA_Uphaus\Run_Zusammenfueren.m')
+run('C:\Users\Pneumatik\Desktop\ILC_Uphaus\Run_Zusammenfueren.m')
 
 % Load measurement data
 load(fullfile(latest_folder_path, 'Messungen_gesamt.mat'));
 
+%% Detect Start Time
+% Reference starting Point
+bool_reference = Data_ges(:, 16);
+
+% Find first index with one
+idx_start = find(bool_reference == 1, 1);
+t_start = t_ges(idx_start);
+
 %% Separate relevant data part
-% ILC Time
-t_start = 5;
-t_end = 10;
+% ILC Time 
+delta_t = 1;    % Trajectory lasts 1s
+t_end = t_start + delta_t;
 
 % Cut out results vectors
 idx_ilc = (time_ges >= t_start & time_ges <= t_end);
@@ -70,11 +78,11 @@ data_vec_ILC_down = data_vec_ILC(idx_ilc_down, :);
 
 %% Save data
 % Output vector
-y_vec = data_vec_ILC_down(:, 3);
+y_vec = data_vec_ILC_down(:, 1);
 t_vec_meas = t_vec_ILC_down;
 
 % Timestamp of trial
-sim_trial_timestamp = datetime(TimeStamp, 'InputFormat', 'dd-MMM-yyyy HH:mm:ss');
+sim_trial_timestamp = datetime(TimeStamp, 'InputFormat', 'dd-MM-yyyy HH:mm:ss');
 
 % Save file
 date_string = datestr(sim_trial_timestamp, 'yyyy_mm_dd');
@@ -86,7 +94,7 @@ figure;
 set(gcf, 'Position', [100 100 1200 500]);
 
 subplot(1,2,1);   % 1 Zeile, 2 Spalten, erster Plot
-plot(time_ges, Data_ges(:, 3), LineWidth=1); hold on;
+plot(time_ges, Data_ges(:, 1), LineWidth=1); hold on;
 grid on;
 xlabel('Zeit [s]'); 
 ylabel('phi2 [rad]');
@@ -94,7 +102,7 @@ title('Full Run');
 legend('Location', 'best');
 
 subplot(1,2,2);   % 1 Zeile, 2 Spalten, erster Plot
-plot(t_vec_ILC, data_vec_ILC(:, 3), LineWidth=1, DisplayName='Original'); hold on;
+plot(t_vec_ILC, data_vec_ILC(:, 1), LineWidth=1, DisplayName='Original'); hold on;
 plot(t_vec_meas, y_vec, LineWidth=1, DisplayName='Downsampled'); hold on;
 grid on;
 xlabel('Zeit [s]'); 

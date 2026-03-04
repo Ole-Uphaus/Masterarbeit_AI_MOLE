@@ -21,7 +21,7 @@ addpath(Model_Path);
 
 %% Parameters
 % Choose reference trajectory
-traj_name = 'Trajectory_01.mat';
+traj_name = 'Trajectory_02.mat';
 
 %% Load reference Trajectory
 % File path

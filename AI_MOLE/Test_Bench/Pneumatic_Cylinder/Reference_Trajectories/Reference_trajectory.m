@@ -17,7 +17,7 @@ T_end = 1;
 t_vec = 0:Ts:T_end;
 
 % Endposition
-x_end = 0.4;
+x_end = 0.35;
 
 % Save trajectory
 save_traj = false;
@@ -27,7 +27,7 @@ save_traj = false;
 time_points = [0, T_end];
 
 % Waypoints
-waypoints = [0.1, x_end];
+waypoints = [0.013, x_end];
 
 % Velocity and acceleration boundaries
 vel_bounds = [0, 0];
