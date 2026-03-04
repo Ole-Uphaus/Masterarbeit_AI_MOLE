@@ -41,7 +41,7 @@ params = struct();
 
 % Parameters
 params.m_delay = 1;
-params.N_iter = 10;
+params.N_iter = 20;
 params.H_trials = 3;
 
 % Choose weight initialisation Method ('Meindl', 'Stochastic', 'Heuristic',
