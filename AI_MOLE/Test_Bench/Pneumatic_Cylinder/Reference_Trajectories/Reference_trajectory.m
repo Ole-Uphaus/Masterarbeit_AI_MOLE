@@ -27,7 +27,7 @@ save_traj = false;
 time_points = [0, T_end];
 
 % Waypoints
-waypoints = [0.013, x_end];
+waypoints = [0.031, x_end];
 
 % Velocity and acceleration boundaries
 vel_bounds = [0, 0];
