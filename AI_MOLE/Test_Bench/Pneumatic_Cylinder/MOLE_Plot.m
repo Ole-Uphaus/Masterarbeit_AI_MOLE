@@ -22,13 +22,13 @@ addpath(GP_Path);
 %% Load MOLE object
 % MOLE object
 date_string = '2026_03_04';
-run_filename = 'Run_04.mat';
+run_filename = 'Run_06.mat';
 run_filepath = fullfile(pwd, 'Runs', date_string, run_filename);
 
 load(run_filepath);
 
 % Iteration to plot
-plot_iter = 9;
+plot_iter = 20;
 
 %% Plot results
 figure;

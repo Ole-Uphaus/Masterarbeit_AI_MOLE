@@ -46,11 +46,11 @@ params.H_trials = 3;
 
 % Choose weight initialisation Method ('Meindl', 'Stochastic', 'Heuristic',
 % 'Robust', 'Manual')
-params.weight_init_method = 'Meindl';
+params.weight_init_method = 'Stochastic';
 
 % Choose nonlinearity damping method ('none', 'relative_1', 'relative_2', 'minimize')
-params.nonlin_damping = 'none';
-params.beta = 0;
+params.nonlin_damping = 'relative_2';
+params.beta = 1;
 
 % Initial input Trajectory (simple sin or static feed forward)
 u_init = S_gain .* r_vec;
