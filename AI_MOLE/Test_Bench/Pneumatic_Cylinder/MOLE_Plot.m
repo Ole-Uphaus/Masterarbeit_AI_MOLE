@@ -28,7 +28,7 @@ run_filepath = fullfile(pwd, 'Runs', date_string, run_filename);
 load(run_filepath);
 
 % Iteration to plot
-plot_iter = 10;
+plot_iter = 9;
 
 %% Plot results
 figure;
