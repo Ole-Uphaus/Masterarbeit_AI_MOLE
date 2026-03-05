@@ -12,22 +12,22 @@ close all
 
 %% Trajectory Parameters
 % Time
-Ts = 0.01;
-T_end = 1;
+Ts = 0.001;
+T_end = 0.4;
 t_vec = 0:Ts:T_end;
 
 % Endposition
 x_end = 0.35;
 
 % Save trajectory
-save_traj = false;
+save_traj = true;
 
 %% Reference trajectory
 % Time points
 time_points = [0, T_end];
 
 % Waypoints
-waypoints = [0.031, x_end];
+waypoints = [0.0315, x_end];
 
 % Velocity and acceleration boundaries
 vel_bounds = [0, 0];
