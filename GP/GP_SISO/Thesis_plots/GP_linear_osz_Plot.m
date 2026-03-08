@@ -79,7 +79,7 @@ args = struct();
 args.x_cell = {t_vec, t_vec};
 args.y_cell = {y_sim_train_cell, u_vec_train_cell};
 args.x_label_cell = {'$t$ in $\mathrm{s}$', '$t$ in $\mathrm{s}$'};
-args.y_label_cell = {'$y_L$', '$u_L$'};
+args.y_label_cell = {'$y_L$ in $\mathrm{m}$', '$u_L$ in $\mathrm{N}$'};
 args.title_cell = {'\textbf{a)}', '\textbf{b)}'};
 args.legend_cell = {{'$y_{L,tr}^{(1)}$', '$y_{L,tr}^{(2)}$'}, {'$u_{L,tr}^{(1)}$', '$u_{L,tr}^{(2)}$'}};
 
@@ -107,7 +107,7 @@ args = struct();
 args.x_cell = {t_vec};
 args.y_cell = {{u_vec_test1, u_vec_test2}};
 args.x_label_cell = {'$t$ in $\mathrm{s}$'};
-args.y_label_cell = {'$u_L$'};
+args.y_label_cell = {'$u_L$ in $\mathrm{N}$'};
 args.title_cell = {''};
 args.legend_cell = {{'$u_{L*}^{(1)}$', '$u_{L*}^{(2)}$'}};
 
@@ -136,24 +136,14 @@ GP_IO = GP_SISO_IO();
 GP_IO.train_GP_model({y_sim_train_cell{1}}, {u_vec_train_cell{1}});
 
 % Predict new Trajectory with full covriance matrix (for sinus input)
-[y_pred_test_sin, Cov_y_test] = GP_IO.predict_trajectory_covariance(u_vec_test1);
-y_pred_test_upper_sin = y_pred_test_sin + 3*sqrt(diag(Cov_y_test));
-y_pred_test_lower_sin = y_pred_test_sin - 3*sqrt(diag(Cov_y_test));
+[y_pred_test_sin_1, Cov_y_test] = GP_IO.predict_trajectory_covariance(u_vec_test1);
+y_pred_test_upper_sin_1 = y_pred_test_sin_1 + 3*sqrt(diag(Cov_y_test));
+y_pred_test_lower_sin_1 = y_pred_test_sin_1 - 3*sqrt(diag(Cov_y_test));
 
 % Predict new Trajectory with full covriance matrix (for step input)
-[y_pred_test_step, Cov_y_test] = GP_IO.predict_trajectory_covariance(u_vec_test2);
-y_pred_test_upper_step = y_pred_test_step + 3*sqrt(diag(Cov_y_test));
-y_pred_test_lower_step = y_pred_test_step - 3*sqrt(diag(Cov_y_test));
-
-%% Plot Predictions
-% Assign Values
-y_cell = {{y_pred_test_sin, y_sim_test1}, {u_vec_test1}, {y_pred_test_step, y_sim_test2}, {u_vec_test2}};
-y_upper_cell = {y_pred_test_upper_sin, [], y_pred_test_upper_step, []};
-y_lower_cell = {y_pred_test_lower_sin, [], y_pred_test_lower_step, []};
-y_lim = {[], [-2.2, 2.2], [], [-0.2, 2.2]};
-
-filename = fullfile('05_Ergebnisse_Diskussion', 'GP_Praediktion_linear_1u.pdf');
-plot_tiled_GP_prediction(t_vec(:), y_cell, y_upper_cell, y_lower_cell, y_lim, filename, save_pdf)
+[y_pred_test_step_1, Cov_y_test] = GP_IO.predict_trajectory_covariance(u_vec_test2);
+y_pred_test_upper_step_1 = y_pred_test_step_1 + 3*sqrt(diag(Cov_y_test));
+y_pred_test_lower_step_1 = y_pred_test_step_1 - 3*sqrt(diag(Cov_y_test));
 
 %% Predict System Dynamics (with two training trajectory)
 % Init Gaussian Process
@@ -163,23 +153,23 @@ GP_IO = GP_SISO_IO();
 GP_IO.train_GP_model(y_sim_train_cell, u_vec_train_cell);
 
 % Predict new Trajectory with full covriance matrix (for sinus input)
-[y_pred_test_sin, Cov_y_test] = GP_IO.predict_trajectory_covariance(u_vec_test1);
-y_pred_test_upper_sin = y_pred_test_sin + 3*sqrt(diag(Cov_y_test));
-y_pred_test_lower_sin = y_pred_test_sin - 3*sqrt(diag(Cov_y_test));
+[y_pred_test_sin_2, Cov_y_test] = GP_IO.predict_trajectory_covariance(u_vec_test1);
+y_pred_test_upper_sin_2 = y_pred_test_sin_2 + 3*sqrt(diag(Cov_y_test));
+y_pred_test_lower_sin_2 = y_pred_test_sin_2 - 3*sqrt(diag(Cov_y_test));
 
 % Predict new Trajectory with full covriance matrix (for step input)
-[y_pred_test_step, Cov_y_test] = GP_IO.predict_trajectory_covariance(u_vec_test2);
-y_pred_test_upper_step = y_pred_test_step + 3*sqrt(diag(Cov_y_test));
-y_pred_test_lower_step = y_pred_test_step - 3*sqrt(diag(Cov_y_test));
+[y_pred_test_step_2, Cov_y_test] = GP_IO.predict_trajectory_covariance(u_vec_test2);
+y_pred_test_upper_step_2 = y_pred_test_step_2 + 3*sqrt(diag(Cov_y_test));
+y_pred_test_lower_step_2 = y_pred_test_step_2 - 3*sqrt(diag(Cov_y_test));
 
 %% Plot Predictions
 % Assign Values
-y_cell = {{y_pred_test_sin, y_sim_test1}, {u_vec_test1}, {y_pred_test_step, y_sim_test2}, {u_vec_test2}};
-y_upper_cell = {y_pred_test_upper_sin, [], y_pred_test_upper_step, []};
-y_lower_cell = {y_pred_test_lower_sin, [], y_pred_test_lower_step, []};
-y_lim = {[-2, 1.3], [-2.2, 2.2], [], [-0.2, 2.2]};
+y_cell = {{y_pred_test_sin_1, y_sim_test1}, {y_pred_test_step_1, y_sim_test2}, {y_pred_test_sin_2, y_sim_test1}, {y_pred_test_step_2, y_sim_test2}};
+y_upper_cell = {y_pred_test_upper_sin_1, y_pred_test_upper_step_1, y_pred_test_upper_sin_2, y_pred_test_upper_step_2};
+y_lower_cell = {y_pred_test_lower_sin_1, y_pred_test_lower_step_1, y_pred_test_lower_sin_2, y_pred_test_lower_step_2};
+y_lim = {[], [], [], []};
 
-filename = fullfile('05_Ergebnisse_Diskussion', 'GP_Praediktion_linear_2u.pdf');
+filename = fullfile('05_Ergebnisse_Diskussion', 'GP_Praediktion_linear.pdf');
 plot_tiled_GP_prediction(t_vec(:), y_cell, y_upper_cell, y_lower_cell, y_lim, filename, save_pdf)
 
 %% Local Functions
@@ -191,8 +181,8 @@ function plot_tiled_GP_prediction(x_plot, y_cell, y_upper_cell, y_lower_cell, y_
     args.y_cell = y_cell;
     args.x_label_cell = {'', '', '$t$ in $\mathrm{s}$', '$t$ in $\mathrm{s}$'};
     args.y_label_cell = {'$y_L$', '$u_L$', '$y_L$', '$u_L$'};
-    args.title_cell = {'$\ell = 0.3$', '$\ell = 6$', '', ''};
-    args.legend_cell = {{'3$\sigma$-Band', '$\hat{y}_{L*}^{(1)}$', '$y_{L*}^{(1)}$'}, {'$u_{L*}^{(1)}$'}, {'3$\sigma$-Band', '$\hat{y}_{L*}^{(2)}$', '$y_{L*}^{(2)}$'}, {'$u_{L*}^{(2)}$'}};
+    args.title_cell = {'', '', '', ''};
+    args.legend_cell = {{'3$\sigma$-Band', '$\hat{y}_{L*}^{(1)}$', '$y_{L*}^{(1)}$'}, {'3$\sigma$-Band', '$\hat{y}_{L*}^{(2)}$', '$y_{L*}^{(2)}$'}, {'3$\sigma$-Band', '$\hat{y}_{L*}^{(1)}$', '$y_{L*}^{(1)}$'}, {'3$\sigma$-Band', '$\hat{y}_{L*}^{(2)}$', '$y_{L*}^{(2)}$'}};
     
     args.filename = filename;
     args.save_pdf = save_pdf;
@@ -207,13 +197,13 @@ function plot_tiled_GP_prediction(x_plot, y_cell, y_upper_cell, y_lower_cell, y_
     opts.marker = 'none';
     
     % Uncertainty
-    x_fill_cell = {x_plot, [], x_plot, []};
+    x_fill_cell = {x_plot, x_plot, x_plot, x_plot};
 
     % Training data
     x_train_cell = cell(4, 1);
     y_train_cell = cell(4, 1);
 
-    for i = 1:2
+    for i = 1:4
         x_train_cell{i} = [];
         y_train_cell{i} = [];
     end
