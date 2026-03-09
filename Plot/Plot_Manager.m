@@ -140,7 +140,7 @@ classdef Plot_Manager < handle
             
             ax.Title.String = obj.title_cell{i};
             ax.Title.Interpreter = 'latex';
-            ax.Title.FontSize = 12;
+            ax.Title.FontSize = 11;
 
             % Legend
             if ~isempty(obj.legend_cell{i})
