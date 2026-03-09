@@ -139,12 +139,12 @@ args = struct();
 
 args.x_cell = {};
 args.y_cell = {};
-args.x_label_cell = {'', '', '$t$', 'Iteration'};
-args.y_label_cell = {'$y$', 'RMSE', '$u$', '$\eta$'};
+args.x_label_cell = {'', '', '$t$ in $\mathrm{s}$', 'Iteration'};
+args.y_label_cell = {'$y_L$ in $\mathrm{m}$', 'RMSE in $\mathrm{m}$', '$u_L$ in $\mathrm{N}$', '$\eta$'};
 args.title_cell = {'', '', '', ''};
-args.legend_cell = {{'$y_d$', '$y_0$', '$y_{10}$', '$y_{20}$'}, {}, {'$u_0$', '$u_{10}$', '$u_{20}$'}, {},};
+args.legend_cell = {{'$y_{L,d}$', '$y_{L,0}$', '$y_{L,5}$', '$y_{L,10}$'}, {}, {'$u_{L,0}$', '$u_{L,5}$', '$u_{L,10}$'}, {},};
 
-args.filename = fullfile('05_Ergebnisse_Diskussion', 'Ergebnis_Osz_nonlinear_stribeck_minimize.pdf');
+args.filename = fullfile('05_Ergebnisse_Diskussion', 'Ergebnis_kein_Plot.pdf');
 args.save_pdf = save_pdf;
 
 % Assign values (opts)
@@ -153,9 +153,10 @@ opts.fig_height = 10;
 opts.linewidth = 1.5;
 opts.y_scale = 'linear';
 opts.y_lim = {[], [], [], []};
-opts.x_lim = {[], [], [], [0, 20]};
+opts.x_lim = {[], [], [], [0, 10]};
 opts.marker = 'none';
 
 % Create Plot
 plot = Plot_Manager(args);
-plot.tiled_mole_results_plot(opts, SISO_MOLE, t_vec);
+log_scale = true;   % Set true for log error plot
+plot.tiled_mole_results_plot(opts, SISO_MOLE, t_vec, log_scale);

@@ -409,7 +409,7 @@ classdef Plot_Manager < handle
             obj.export_plot(fig, opts)
         end
         
-        function tiled_mole_results_plot(obj, opts, SISO_MOLE, t_vec)
+        function tiled_mole_results_plot(obj, opts, SISO_MOLE, t_vec, log_scale)
             %tiled_mole_results_plot create standard AI-MOLE results plot
             %for master thesis
 
@@ -443,7 +443,7 @@ classdef Plot_Manager < handle
                 ax = nexttile(tiled);
 
                 % Set the y-scale
-                if i == 2
+                if (i == 2) && log_scale
                     opts.y_scale = 'log';
                     ax.YTick = [1e-7 1e-6 1e-5 1e-4 1e-3 1e-2 1e-1 1e0 1e1 1e2 1e3 1e4];  
                 else
@@ -478,7 +478,7 @@ classdef Plot_Manager < handle
             obj.export_plot(fig, opts)
         end
     
-        function tiled_ilc_results_plot(obj, opts, ILC_SISO, t_vec)
+        function tiled_ilc_results_plot(obj, opts, ILC_SISO, t_vec, log_scale)
             %tiled_mole_results_plot create standard AI-MOLE results plot
             %for master thesis
 
@@ -513,7 +513,7 @@ classdef Plot_Manager < handle
                 ax = nexttile(tiled);
 
                 % Set the y-scale
-                if i == 2
+                if (i == 2) && log_scale
                     opts.y_scale = 'log';
                     ax.YTick = [1e-7 1e-6 1e-5 1e-4 1e-3 1e-2 1e-1 1e0 1e1 1e2 1e3 1e4];  
                 else
