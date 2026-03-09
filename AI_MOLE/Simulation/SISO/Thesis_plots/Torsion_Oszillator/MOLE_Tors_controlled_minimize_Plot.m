@@ -64,8 +64,8 @@ if ~isfile(data_name)
     x0 = [0; 0; 0; 0];
     
     % Initial input Trajectory
-    S = 3.316624790355372;
-    u_init = S .* r_vec;
+    sigma_I = 0.1;
+    u_init = sigma_I*sin(2*pi/T_end.*t_vec');
     
     %% Initialize AI-MOLE
     
@@ -152,7 +152,7 @@ args.save_pdf = save_pdf;
 opts = struct();
 opts.fig_height = 10;
 opts.linewidth = 1.5;
-opts.y_scale = 'linear';
+opts.y_scale = {'linear', 'log', 'linear', 'linear'};
 opts.y_lim = {[], [], [], []};
 opts.x_lim = {[], [], [], [0, 10]};
 opts.marker = 'none';
