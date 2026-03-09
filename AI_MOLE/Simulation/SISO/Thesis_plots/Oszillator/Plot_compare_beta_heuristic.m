@@ -24,35 +24,44 @@ addpath(MOLE_Path);
 addpath(Plot_Path);
 addpath(GP_path);
 
+%% General
+save_pdf = false;
+
 %% Load Results
 % Compare Heuristic, stochastic, model-based
 data_heuristic = load('MOLE_Osz_linear_Meindl_Plot.mat');
 data_stochastic = load('MOLE_Osz_linear_relative_Plot.mat');
 
+% Compare impact of beta
+data_varbeta = load('MOLE_Osz_linear_relative_beta_Plot.mat');
+
 %% Plot
+iter_vec = 0:data_heuristic.SISO_MOLE.N_iter;
+
 % Assign values (args)
 args = struct();
 
-args.x_cell = {};
-args.y_cell = {};
-args.x_label_cell = {'', '', '$t$ in $\mathrm{s}$', 'Iteration'};
-args.y_label_cell = {'$y_L$ in $\mathrm{m}$', 'RMSE in $\mathrm{m}$', '$u_L$ in $\mathrm{N}$', '$\eta$'};
-args.title_cell = {'', '', '', ''};
-args.legend_cell = {{'$y_{L,d}$', '$y_{L,0}$', '$y_{L,5}$', '$y_{L,10}$'}, {}, {'$u_{L,0}$', '$u_{L,5}$', '$u_{L,10}$'}, {},};
+args.x_cell = {iter_vec, iter_vec};
+args.y_cell = {{data_heuristic.SISO_MOLE.ILC_SISO.RMSE_log, data_stochastic.SISO_MOLE.ILC_SISO.RMSE_log}, 
+    {data_varbeta.SISO_MOLE_Cell{1, 1}.ILC_SISO.RMSE_log, data_stochastic.SISO_MOLE.ILC_SISO.RMSE_log, data_varbeta.SISO_MOLE_Cell{2, 1}.ILC_SISO.RMSE_log, data_varbeta.SISO_MOLE_Cell{3, 1}.ILC_SISO.RMSE_log}};
+args.x_label_cell = {'Iteration', 'Iteration'};
+args.y_label_cell = {'RMSE in $\mathrm{m}$', ''};
+args.title_cell = {'\textbf{(a)}', '\textbf{(b)}'};
+args.legend_cell = {{'MOLE', 'MOLEs'}, {'$\beta = 0$', '$\beta = 0{,}5$', '$\beta = 2$', '$\beta = 5$'}};
 
 args.filename = fullfile('05_Ergebnisse_Diskussion', 'Ergebnis_Osz_linear_relative.pdf');
 args.save_pdf = save_pdf;
 
 % Assign values (opts)
 opts = struct();
-opts.fig_height = 10;
+opts.fig_height = 6.5;
 opts.linewidth = 1.5;
-opts.y_scale = 'linear';
-opts.y_lim = {[], [], [], []};
-opts.x_lim = {[], [], [], [0, 10]};
+opts.y_scale = 'log';
+opts.y_lim = {[], []};
+opts.x_lim = {[], []};
 opts.marker = 'none';
 
 % Create Plot
 plot = Plot_Manager(args);
-log_scale = true;   % Set true for log error plot
-plot.tiled_mole_results_plot(opts, SISO_MOLE, t_vec, log_scale);
+orientation = [1, 2];
+plot.tiled_plot(opts, orientation);
