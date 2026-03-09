@@ -64,7 +64,7 @@ opts.fig_height = 10;
 opts.linewidth = 1.5;
 opts.y_scale = {'log', 'linear', 'log', 'linear'};
 opts.y_lim = {[], [0, 1], [], [0, 1]};
-opts.x_lim = {[], [], [], []};
+opts.x_lim = {[], [0, 15], [], [0, 20]};
 opts.marker = {'none', '.', 'none', '.'};
 
 % Create Plot
