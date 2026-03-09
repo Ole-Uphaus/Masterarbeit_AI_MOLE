@@ -80,7 +80,7 @@ args.x_cell = {t_vec, t_vec};
 args.y_cell = {y_sim_train_cell, u_vec_train_cell};
 args.x_label_cell = {'$t$ in $\mathrm{s}$', '$t$ in $\mathrm{s}$'};
 args.y_label_cell = {'$y_L$ in $\mathrm{m}$', '$u_L$ in $\mathrm{N}$'};
-args.title_cell = {'\textbf{a)}', '\textbf{b)}'};
+args.title_cell = {'\textbf{(a)}', '\textbf{(b)}'};
 args.legend_cell = {{'$y_{L,tr}^{(1)}$', '$y_{L,tr}^{(2)}$'}, {'$u_{L,tr}^{(1)}$', '$u_{L,tr}^{(2)}$'}};
 
 args.filename = fullfile('04_Simulation_Experiment', 'Trainingsdaten_GP_IO.pdf');
@@ -180,8 +180,8 @@ function plot_tiled_GP_prediction(x_plot, y_cell, y_upper_cell, y_lower_cell, y_
     args.x_cell = {x_plot, x_plot, x_plot, x_plot};
     args.y_cell = y_cell;
     args.x_label_cell = {'', '', '$t$ in $\mathrm{s}$', '$t$ in $\mathrm{s}$'};
-    args.y_label_cell = {'$y_L$', '$u_L$', '$y_L$', '$u_L$'};
-    args.title_cell = {'', '', '', ''};
+    args.y_label_cell = {'$y_L$ in $\mathrm{m}$', '', '$y_L$ in $\mathrm{m}$', ''};
+    args.title_cell = {'\textbf{(a)}', '\textbf{(b)}', '\textbf{(c)}', '\textbf{(d)}'};
     args.legend_cell = {{'3$\sigma$-Band', '$\hat{y}_{L*}^{(1)}$', '$y_{L*}^{(1)}$'}, {'3$\sigma$-Band', '$\hat{y}_{L*}^{(2)}$', '$y_{L*}^{(2)}$'}, {'3$\sigma$-Band', '$\hat{y}_{L*}^{(1)}$', '$y_{L*}^{(1)}$'}, {'3$\sigma$-Band', '$\hat{y}_{L*}^{(2)}$', '$y_{L*}^{(2)}$'}};
     
     args.filename = filename;
