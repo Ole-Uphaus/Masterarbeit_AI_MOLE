@@ -31,6 +31,7 @@ save_pdf = false;
 % Compare Heuristic, stochastic, model-based
 data_heuristic = load('MOLE_Osz_linear_Meindl_Plot.mat');
 data_stochastic = load('MOLE_Osz_linear_relative_Plot.mat');
+data_modelbased = load(fullfile(ILC_path, 'Thesis_plots' ,'Oszillator', 'NOILC_Osz_linear_Plot.mat'));
 
 % Compare impact of beta
 data_varbeta = load('MOLE_Osz_linear_relative_beta_Plot.mat');
@@ -42,12 +43,12 @@ iter_vec = 0:data_heuristic.SISO_MOLE.N_iter;
 args = struct();
 
 args.x_cell = {iter_vec, iter_vec};
-args.y_cell = {{data_heuristic.SISO_MOLE.ILC_SISO.RMSE_log, data_stochastic.SISO_MOLE.ILC_SISO.RMSE_log}, 
+args.y_cell = {{data_heuristic.SISO_MOLE.ILC_SISO.RMSE_log, data_stochastic.SISO_MOLE.ILC_SISO.RMSE_log, data_modelbased.ILC_Quadr.RMSE_log}, 
     {data_varbeta.SISO_MOLE_Cell{1, 1}.ILC_SISO.RMSE_log, data_stochastic.SISO_MOLE.ILC_SISO.RMSE_log, data_varbeta.SISO_MOLE_Cell{2, 1}.ILC_SISO.RMSE_log, data_varbeta.SISO_MOLE_Cell{3, 1}.ILC_SISO.RMSE_log}};
 args.x_label_cell = {'Iteration', 'Iteration'};
 args.y_label_cell = {'RMSE in $\mathrm{m}$', ''};
 args.title_cell = {'\textbf{(a)}', '\textbf{(b)}'};
-args.legend_cell = {{'MOLE', 'MOLEs'}, {'$\beta = 0$', '$\beta = 0{,}5$', '$\beta = 2$', '$\beta = 5$'}};
+args.legend_cell = {{'MOLE', 'MOLEs', 'NOILC'}, {'$\beta = 0$', '$\beta = 0{,}5$', '$\beta = 2$', '$\beta = 5$'}};
 
 args.filename = fullfile('05_Ergebnisse_Diskussion', 'Ergebnis_Osz_linear_relative.pdf');
 args.save_pdf = save_pdf;
