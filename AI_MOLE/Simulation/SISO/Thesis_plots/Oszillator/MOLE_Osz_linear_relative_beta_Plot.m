@@ -166,5 +166,4 @@ opts.marker = 'none';
 
 % Create Plot
 plot = Plot_Manager(args);
-log_scale = true;   % Set true for log error plot
-plot.tiled_mole_results_plot(opts, SISO_MOLE_Cell{3}, t_vec, log_scale);
+plot.tiled_mole_results_plot(opts, SISO_MOLE_Cell{3}, t_vec);

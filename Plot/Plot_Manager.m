@@ -419,7 +419,7 @@ classdef Plot_Manager < handle
             obj.export_plot(fig, opts)
         end
         
-        function tiled_mole_results_plot(obj, opts, SISO_MOLE, t_vec, log_scale)
+        function tiled_mole_results_plot(obj, opts, SISO_MOLE, t_vec)
             %tiled_mole_results_plot create standard AI-MOLE results plot
             %for master thesis
 
