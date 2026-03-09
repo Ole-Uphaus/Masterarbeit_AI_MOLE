@@ -50,7 +50,7 @@ args.y_label_cell = {'RMSE in $\mathrm{m}$', ''};
 args.title_cell = {'\textbf{(a)}', '\textbf{(b)}'};
 args.legend_cell = {{'MOLE', 'MOLEs', 'NOILC'}, {'$\beta = 0$', '$\beta = 0{,}5$', '$\beta = 2$', '$\beta = 5$'}};
 
-args.filename = fullfile('05_Ergebnisse_Diskussion', 'Ergebnis_Osz_linear_relative.pdf');
+args.filename = fullfile('05_Ergebnisse_Diskussion', 'Ergebnis_Osz_linear_vergleich.pdf');
 args.save_pdf = save_pdf;
 
 % Assign values (opts)
@@ -60,7 +60,7 @@ opts.linewidth = 1.5;
 opts.y_scale = 'log';
 opts.y_lim = {[], []};
 opts.x_lim = {[], []};
-opts.marker = 'none';
+opts.marker = {'none', 'none'};
 
 % Create Plot
 plot = Plot_Manager(args);
