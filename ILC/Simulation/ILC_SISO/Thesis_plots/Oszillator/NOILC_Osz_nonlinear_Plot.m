@@ -23,58 +23,86 @@ addpath(Plot_Path);
 %% General
 save_pdf = false;
 
-%% Reference Trajectory
-% Parameters
-x_max = 0.5;
-T_end = 5;
-Ts = 0.01;
+%% Check if .mat-File exists
+% Geth Name of current script
+[~, script_name, ~] = fileparts(mfilename('fullpath'));
 
-t_vec = 0:Ts:T_end;
+% Name of Data file
+data_name = [script_name '.mat'];
 
-% Trajectory (no delay - delay is applied later)
-sigma = 1;
-[r_vec, ~, ~] = Random_C2_trajectory_1D(2, t_vec, sigma);
-u_init = zeros(size(r_vec, 1), 1);
+% Evaluate AI-MOLE only when no data file exists
+if ~isfile(data_name)
 
-%% ILC quadratic optimal design
-% Lifted system dynamics
-N = size(t_vec, 2);
-m_delay = 1;
-
-% Parameters
-N_iter = 15;
-x0 = [0;
-    0]; 
-W = eye(N - m_delay);
-S = 0.00007*eye(N - m_delay);
-R = 0*eye(N - m_delay);
-
-% Initialisation
-ILC_Quadr = ILC_SISO(r_vec, m_delay, u_init, N_iter);
-
-% Solver settings
-opts = odeset( ...
-    'RelTol', 1e-6, ...         % Tolerance
-    'AbsTol', [1e-8 1e-8], ...  % Tolerance
-    'MaxStep', Ts/5, ...        % Use smaller step size for better Results
-    'InitialStep', Ts/20);
-
-% Update Loop
-u_sim = [ILC_Quadr.u_vec; 0];
-[t_sim, x_sim] = ode45(@(t,x) oszillator_nonlinear(t, x, (u_sim), t_vec), t_vec, x0, opts);
-y_sim = x_sim(:, 1);
-for i = 1:N_iter
-    % Update input
-    P = Lifted_dynamics_nonlinear_SISO(@(x) oszillator_linearized_discrete(x, Ts), N, m_delay, x_sim);
-    ILC_Quadr.init_Quadr_type(W, S, R, P);
-    u_sim = [ILC_Quadr.Quadr_update(y_sim); 0];
-
-    % Simulate the system
+    %% Reference Trajectory
+    % Parameters
+    x_max = 0.5;
+    T_end = 5;
+    Ts = 0.01;
+    
+    t_vec = 0:Ts:T_end;
+    
+    % Trajectory (no delay - delay is applied later)
+    sigma = 1;
+    [r_vec, ~, ~] = Random_C2_trajectory_1D(2, t_vec, sigma);
+    u_init = zeros(size(r_vec, 1), 1);
+    
+    %% ILC quadratic optimal design
+    % Lifted system dynamics
+    N = size(t_vec, 2);
+    m_delay = 1;
+    
+    % Parameters
+    N_iter = 15;
+    x0 = [0;
+        0]; 
+    W = eye(N - m_delay);
+    S = 0.00007*eye(N - m_delay);
+    R = 0*eye(N - m_delay);
+    
+    % Initialisation
+    ILC_Quadr = ILC_SISO(r_vec, m_delay, u_init, N_iter);
+    
+    % Solver settings
+    opts = odeset( ...
+        'RelTol', 1e-6, ...         % Tolerance
+        'AbsTol', [1e-8 1e-8], ...  % Tolerance
+        'MaxStep', Ts/5, ...        % Use smaller step size for better Results
+        'InitialStep', Ts/20);
+    
+    % Update Loop
+    u_sim = [ILC_Quadr.u_vec; 0];
     [t_sim, x_sim] = ode45(@(t,x) oszillator_nonlinear(t, x, (u_sim), t_vec), t_vec, x0, opts);
     y_sim = x_sim(:, 1);
+    for i = 1:N_iter
+        % Update input
+        P = Lifted_dynamics_nonlinear_SISO(@(x) oszillator_linearized_discrete(x, Ts), N, m_delay, x_sim);
+        ILC_Quadr.init_Quadr_type(W, S, R, P);
+        u_sim = [ILC_Quadr.Quadr_update(y_sim); 0];
+    
+        % Simulate the system
+        [t_sim, x_sim] = ode45(@(t,x) oszillator_nonlinear(t, x, (u_sim), t_vec), t_vec, x0, opts);
+        y_sim = x_sim(:, 1);
+    end
+    % Calculate and log final error
+    ILC_Quadr.calculate_final_error(y_sim);
+
+    %% Save AI-MOLE Data
+    % Delete large Matrices
+    ILC_Quadr.W = [];
+    ILC_Quadr.S = [];
+    ILC_Quadr.R = [];
+    ILC_Quadr.L = [];
+    ILC_Quadr.Q = [];
+    ILC_Quadr.P = [];
+
+    % Save Results
+    save(data_name, 'ILC_Quadr', 't_vec');
+
+else
+    %% Load results
+    load(data_name);
+
 end
-% Calculate and log final error
-ILC_Quadr.calculate_final_error(y_sim);
 
 %% Plot
 % Assign values (args)
