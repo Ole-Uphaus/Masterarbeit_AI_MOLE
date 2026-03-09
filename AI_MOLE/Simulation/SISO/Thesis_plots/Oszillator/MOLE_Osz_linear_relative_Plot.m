@@ -151,12 +151,11 @@ args.save_pdf = save_pdf;
 opts = struct();
 opts.fig_height = 10;
 opts.linewidth = 1.5;
-opts.y_scale = 'linear';
+opts.y_scale = {'linear', 'log', 'linear', 'linear', };
 opts.y_lim = {[], [], [], []};
 opts.x_lim = {[], [], [], [0, 10]};
 opts.marker = 'none';
 
 % Create Plot
 plot = Plot_Manager(args);
-log_scale = true;   % Set true for log error plot
-plot.tiled_mole_results_plot(opts, SISO_MOLE, t_vec, log_scale);
+plot.tiled_mole_results_plot(opts, SISO_MOLE, t_vec);

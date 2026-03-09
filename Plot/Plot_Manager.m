@@ -109,7 +109,17 @@ classdef Plot_Manager < handle
             ax.YGrid = 'on';
 
             % Set y scale
-            ax.YScale = opts.y_scale;
+            if iscell(opts.y_scale)
+                ax.YScale = opts.y_scale{i};
+                if strcmp(opts.y_scale{i}, 'log')
+                    ax.YTick = [1e-7 1e-6 1e-5 1e-4 1e-3 1e-2 1e-1 1e0 1e1 1e2 1e3 1e4];
+                end
+            else
+                ax.YScale = opts.y_scale;
+                if strcmp(opts.y_scale, 'log')
+                    ax.YTick = [1e-7 1e-6 1e-5 1e-4 1e-3 1e-2 1e-1 1e0 1e1 1e2 1e3 1e4];
+                end
+            end
 
             % Set y limit
             if ~isempty(opts.y_lim{i})
@@ -442,14 +452,6 @@ classdef Plot_Manager < handle
                 % Get ax object
                 ax = nexttile(tiled);
 
-                % Set the y-scale
-                if (i == 2) && log_scale
-                    opts.y_scale = 'log';
-                    ax.YTick = [1e-7 1e-6 1e-5 1e-4 1e-3 1e-2 1e-1 1e0 1e1 1e2 1e3 1e4];  
-                else
-                    opts.y_scale = 'linear';
-                end
-
                 % Set Marker
                 if i == 4
                     opts.marker = '.';
@@ -478,7 +480,7 @@ classdef Plot_Manager < handle
             obj.export_plot(fig, opts)
         end
     
-        function tiled_ilc_results_plot(obj, opts, ILC_SISO, t_vec, log_scale)
+        function tiled_ilc_results_plot(obj, opts, ILC_SISO, t_vec)
             %tiled_mole_results_plot create standard AI-MOLE results plot
             %for master thesis
 
@@ -511,14 +513,6 @@ classdef Plot_Manager < handle
             for i = 1:4
                 % Get ax object
                 ax = nexttile(tiled);
-
-                % Set the y-scale
-                if (i == 2) && log_scale
-                    opts.y_scale = 'log';
-                    ax.YTick = [1e-7 1e-6 1e-5 1e-4 1e-3 1e-2 1e-1 1e0 1e1 1e2 1e3 1e4];  
-                else
-                    opts.y_scale = 'linear';
-                end
 
                 % Set Marker
                 if i == 4
