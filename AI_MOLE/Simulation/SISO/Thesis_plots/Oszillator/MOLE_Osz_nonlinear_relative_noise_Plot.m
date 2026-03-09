@@ -151,7 +151,7 @@ args.y_label_cell = {'$y_L$ in $\mathrm{m}$', 'RMSE in $\mathrm{m}$', '$u_L$ in 
 args.title_cell = {'', '', '', ''};
 args.legend_cell = {{'$y_{L,d}$', '$y_{L,0}$', '$y_{L,5}$', '$y_{L,10}$'}, {}, {'$u_{L,0}$', '$u_{L,5}$', '$u_{L,10}$'}, {},};
 
-args.filename = fullfile('05_Ergebnisse_Diskussion', 'Ergebnis_kein_Plot.pdf');
+args.filename = fullfile('05_Ergebnisse_Diskussion', 'Ergebnis_Osz_nonlinear_relative_noise.pdf');
 args.save_pdf = save_pdf;
 
 % Assign values (opts)
