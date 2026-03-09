@@ -140,19 +140,19 @@ args = struct();
 
 args.x_cell = {};
 args.y_cell = {};
-args.x_label_cell = {'', '', '$t$', 'Iteration'};
-args.y_label_cell = {'$y$', 'RMSE', '$u$', '$\eta$'};
+args.x_label_cell = {'', '', '$t$ in $\mathrm{s}$', 'Iteration'};
+args.y_label_cell = {'$y_T$ in $\mathrm{rad}$', 'RMSE in $\mathrm{rad}$', '$u_T$ in $\mathrm{Nm}$', '$\eta$'};
 args.title_cell = {'', '', '', ''};
-args.legend_cell = {{'$y_d$', '$y_0$', '$y_5$', '$y_{10}$'}, {}, {'$u_0$', '$u_5$', '$u_{10}$'}, {},};
+args.legend_cell = {{'$y_{T,d}$', '$y_{T,0}$', '$y_{T,5}$', '$y_{T,10}$'}, {}, {'$u_{T,0}$', '$u_{T,5}$', '$u_{T,10}$'}, {},};
 
-args.filename = fullfile('05_Ergebnisse_Diskussion', 'Ergebnis_Torsion_uncontrolled_relative.pdf');
+args.filename = fullfile('05_Ergebnisse_Diskussion', 'Ergebnis_Tors_Sim_ungeregelt_relative.pdf');
 args.save_pdf = save_pdf;
 
 % Assign values (opts)
 opts = struct();
 opts.fig_height = 10;
 opts.linewidth = 1.5;
-opts.y_scale = 'linear';
+opts.y_scale = {'linear', 'log', 'linear', 'linear'};
 opts.y_lim = {[], [], [], []};
 opts.x_lim = {[], [], [], [0, 10]};
 opts.marker = 'none';
