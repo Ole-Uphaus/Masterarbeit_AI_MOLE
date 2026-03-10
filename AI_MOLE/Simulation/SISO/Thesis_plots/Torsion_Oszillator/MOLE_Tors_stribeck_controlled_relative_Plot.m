@@ -60,12 +60,12 @@ if ~isfile(data_name)
     
     %% System Model
     % Choose system model
-    dynamic_model = @torsion_oszillator_linear_LQR;
+    dynamic_model = @torsion_oszillator_linear_LQR_stribeck;
     x0 = [0; 0; 0; 0];
     
     % Initial input Trajectory
-    S = 3.316624790355372;
-    u_init = S .* r_vec;
+    sigma_I = 20;
+    u_init = sigma_I*sin(2*pi/T_end.*t_vec');
     
     %% Initialize AI-MOLE
     
@@ -145,14 +145,14 @@ args.y_label_cell = {'$y$', 'RMSE', '$u$', '$\eta$'};
 args.title_cell = {'', '', '', ''};
 args.legend_cell = {{'$y_d$', '$y_0$', '$y_5$', '$y_{10}$'}, {}, {'$u_0$', '$u_5$', '$u_{10}$'}, {},};
 
-args.filename = fullfile('05_Ergebnisse_Diskussion', 'Ergebnis_Torsion_controlled_ff_relative.pdf');
+args.filename = fullfile('05_Ergebnisse_Diskussion', 'Ergebnis_Torsion_Stribeck_controlled_ff_relative.pdf');
 args.save_pdf = save_pdf;
 
 % Assign values (opts)
 opts = struct();
 opts.fig_height = 10;
 opts.linewidth = 1.5;
-opts.y_scale = {'linear', 'log', 'linear', 'linear'};
+opts.y_scale = 'linear';
 opts.y_lim = {[], [], [], []};
 opts.x_lim = {[], [], [], [0, 10]};
 opts.marker = 'none';
