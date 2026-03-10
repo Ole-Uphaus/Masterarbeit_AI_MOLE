@@ -32,6 +32,10 @@ save_pdf = false;
 data_stribeck_controlled = load('MOLE_Tors_stribeck_controlled_relative_Plot.mat');
 data_stribeck_controlled_ff = load('MOLE_Tors_stribeck_controlled_ff_relative_Plot.mat');
 
+% Set last input value to the before value
+data_stribeck_controlled.SISO_MOLE.u_cell{end}(end) = data_stribeck_controlled.SISO_MOLE.u_cell{end}(end-1);
+data_stribeck_controlled_ff.SISO_MOLE.u_cell{end}(end) = data_stribeck_controlled_ff.SISO_MOLE.u_cell{end}(end-1);
+
 %% Plot
 iter_vec = 0:data_stribeck_controlled.SISO_MOLE.N_iter;
 
