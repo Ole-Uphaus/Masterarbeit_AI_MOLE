@@ -57,7 +57,7 @@ args.save_pdf = save_pdf;
 
 % Assign values (opts)
 opts = struct();
-opts.fig_height = 11;
+opts.fig_height = 11.5;
 opts.linewidth = 1.5;
 opts.y_scale = {'log', 'linear', 'log', 'linear'};
 opts.y_lim = {[], [], [], []};
