@@ -159,8 +159,8 @@ opts = struct();
 opts.fig_height = 10;
 opts.linewidth = 1.5;
 opts.y_scale = {'linear', 'log', 'linear', 'linear'};
-opts.y_lim = {[], [], [], []};
-opts.x_lim = {[], [], [], [0, 10]};
+opts.y_lim = {[], [], [], [0, 1]};
+opts.x_lim = {[], [], [], [0, 15]};
 opts.marker = 'none';
 
 % Create Plot
