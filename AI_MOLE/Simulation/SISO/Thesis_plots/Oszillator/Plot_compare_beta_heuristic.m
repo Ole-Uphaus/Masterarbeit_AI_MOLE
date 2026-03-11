@@ -48,7 +48,7 @@ args.y_cell = {{data_heuristic.SISO_MOLE.ILC_SISO.RMSE_log, data_stochastic.SISO
 args.x_label_cell = {'Iteration', 'Iteration'};
 args.y_label_cell = {'RMSE in $\mathrm{m}$', ''};
 args.title_cell = {'\textbf{(a)}', '\textbf{(b)}'};
-args.legend_cell = {{'MOLE', 'MOLEs', 'NOILC'}, {'$\beta = 0$', '$\beta = 0{,}5$', '$\beta = 2$', '$\beta = 5$'}};
+args.legend_cell = {{'MOLE', 'MOLEs', 'NOILC'}, {'$\beta_{rel} = 0$', '$\beta_{rel} = 0{,}5$', '$\beta_{rel} = 2$', '$\beta_{rel} = 5$'}};
 
 args.filename = fullfile('05_Ergebnisse_Diskussion', 'Ergebnis_Osz_linear_vergleich.pdf');
 args.save_pdf = save_pdf;
