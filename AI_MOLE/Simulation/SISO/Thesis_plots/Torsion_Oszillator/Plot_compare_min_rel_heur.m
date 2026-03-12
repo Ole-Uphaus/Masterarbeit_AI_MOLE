@@ -45,7 +45,7 @@ args.y_cell = {{data_controlled_heuristic.SISO_MOLE.ILC_SISO.RMSE_log, data_cont
 args.x_label_cell = {'Iteration', 'Iteration'};
 args.y_label_cell = {'RMSE in $\mathrm{rad}$', '$\eta$'};
 args.title_cell = {'\textbf{(a)}', '\textbf{(b)}'};
-args.legend_cell = {{'MOLE', 'rel', 'min'}, {'MOLE', 'rel', 'min'}};
+args.legend_cell = {{'MOLE', 'REL', 'MIN'}, {'MOLE', 'REL', 'MIN'}};
 
 args.filename = fullfile('05_Ergebnisse_Diskussion', 'Ergebnis_Tors_Sim_vergleich_min_rel.pdf');
 args.save_pdf = save_pdf;
