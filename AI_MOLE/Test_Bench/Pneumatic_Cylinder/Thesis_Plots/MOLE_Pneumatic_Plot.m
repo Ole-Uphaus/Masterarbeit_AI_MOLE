@@ -38,9 +38,9 @@ args = struct();
 args.x_cell = {};
 args.y_cell = {};
 args.x_label_cell = {'', '', '$t$ in $\mathrm{s}$', 'Iteration'};
-args.y_label_cell = {'$y_Z$ in $\mathrm{m}$', 'RMSE in $\mathrm{m}$', '$u_Z$ in $\mathrm{N}$', '$\eta$'};
+args.y_label_cell = {'$y_Z$ in $\mathrm{m}$', 'RMSE in $\mathrm{m}$', '$u_{Z,V}$ in $\mathrm{N}$', '$\eta$'};
 args.title_cell = {'', '', '', ''};
-args.legend_cell = {{'$y_{Z,d}$', '$y_{Z,0}$', '$y_{Z,10}$', '$y_{Z,20}$'}, {}, {'$u_{Z,0}$', '$u_{Z,10}$', '$u_{Z,20}$'}, {},};
+args.legend_cell = {{'$y_{Z,d}$', '$y_{Z,0}$', '$y_{Z,10}$', '$y_{Z,20}$'}, {}, {'$u_{Z,V0}$', '$u_{Z,V10}$', '$u_{Z,V20}$'}, {},};
 
 args.filename = fullfile('05_Ergebnisse_Diskussion', 'Ergebnis_Pneumatk_MOLE.pdf');
 args.save_pdf = save_pdf;
@@ -50,7 +50,7 @@ opts = struct();
 opts.fig_height = 10;
 opts.linewidth = 1.5;
 opts.y_scale = {'linear', 'linear', 'linear', 'linear'};
-opts.y_lim = {[], [], [], []};
+opts.y_lim = {[], [], [], [0, 1]};
 opts.x_lim = {[], [], [], [0, 10]};
 opts.marker = 'none';
 

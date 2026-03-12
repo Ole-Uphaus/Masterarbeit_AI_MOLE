@@ -49,7 +49,7 @@ args.y_cell = {{data_tors_meindl.SISO_MOLE.ILC_SISO.RMSE_log, data_tors_relative
 args.x_label_cell = {'Iteration', 'Iteration'};
 args.y_label_cell = {'RMSE in $\mathrm{rad}$', ''};
 args.title_cell = {'\textbf{(a)}', '\textbf{(b)}'};
-args.legend_cell = {{'MOLE', 'rel', 'min'}, {'$T_s^{mole} = 0{,}01\,\mathrm{s}$', '$T_s^{mole} = 0{,}05\,\mathrm{s}$', '$T_s^{mole} = 0{,}1\,\mathrm{s}$'}};
+args.legend_cell = {{'MOLE', 'REL', 'MIN'}, {'$T_s^{mole} = 0{,}01\,\mathrm{s}$', '$T_s^{mole} = 0{,}05\,\mathrm{s}$', '$T_s^{mole} = 0{,}1\,\mathrm{s}$'}};
 
 args.filename = fullfile('05_Ergebnisse_Diskussion', 'Ergebnis_Tors_Pruef_vergleich_alg_Ts.pdf');
 args.save_pdf = save_pdf;

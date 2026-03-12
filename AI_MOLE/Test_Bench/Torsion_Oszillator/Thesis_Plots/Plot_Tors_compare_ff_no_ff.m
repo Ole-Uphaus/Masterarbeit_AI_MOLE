@@ -53,7 +53,7 @@ args.x_cell = {data_tors_modelbased_ff.ref_traj.t_vec, iter_vec};
 args.y_cell = {{data_tors_mole_ff.SISO_MOLE.u_cell{end}, data_tors_mole_no_ff.SISO_MOLE.u_cell{11}, data_tors_modelbased_ff.ILC_Quadr.u_cell{end}, data_tors_modelbased_no_ff.ILC_Quadr.u_cell{end}}, 
     {data_tors_mole_ff.SISO_MOLE.ILC_SISO.RMSE_log, data_tors_mole_no_ff.SISO_MOLE.ILC_SISO.RMSE_log(1:11), data_tors_modelbased_ff.ILC_Quadr.RMSE_log, data_tors_modelbased_no_ff.ILC_Quadr.RMSE_log}};
 args.x_label_cell = {'$t$ in $\mathrm{s}$', 'Iteration'};
-args.y_label_cell = {'$u_{T,V}$ in $\mathrm{Nm}$', 'RMSE in $\mathrm{rad}$'};
+args.y_label_cell = {'$u_{T,V10}$ in $\mathrm{Nm}$', 'RMSE in $\mathrm{rad}$'};
 args.title_cell = {'\textbf{(a)}', '\textbf{(b)}'};
 args.legend_cell = {{}, {'MOLEsff', 'MOLEs', 'NOILCff', 'NOILC'}};
 
