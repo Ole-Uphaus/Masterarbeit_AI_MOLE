@@ -142,7 +142,7 @@ args.x_cell = {};
 args.y_cell = {};
 args.x_label_cell = {'', '', '$t$ in $\mathrm{s}$', 'Iteration'};
 args.y_label_cell = {'$y_T$ in $\mathrm{rad}$', 'RMSE in $\mathrm{rad}$', '$u_T$ in $\mathrm{Nm}$', '$\eta$'};
-args.title_cell = {'', '', '', ''};
+args.title_cell = {'\textbf{(a)}', '\textbf{(b)}', '\textbf{(c)}', '\textbf{(d)}'};
 args.legend_cell = {{'$y_{T,d}$', '$y_{T,0}$', '$y_{T,5}$', '$y_{T,10}$'}, {}, {'$u_{T,0}$', '$u_{T,5}$', '$u_{T,10}$'}, {},};
 
 args.filename = fullfile('05_Ergebnisse_Diskussion', 'Ergebnis_Tors_Sim_ungeregelt_relative.pdf');
