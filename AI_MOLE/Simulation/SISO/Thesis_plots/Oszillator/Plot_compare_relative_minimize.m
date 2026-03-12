@@ -53,7 +53,7 @@ args.y_cell = {{data_nonlin_relative.SISO_MOLE.ILC_SISO.RMSE_log, data_nonlin_mi
 args.x_label_cell = {'', '', 'Iteration', 'Iteration'};
 args.y_label_cell = {'RMSE in $\mathrm{m}$', '$\eta$', 'RMSE in $\mathrm{m}$', '$\eta$'};
 args.title_cell = {'\textbf{(a)}', '\textbf{(b)}', '\textbf{(c)}', '\textbf{(d)}'};
-args.legend_cell = {{'rel', 'min', 'NOILC'}, {'rel', 'min'}, {'rel', 'min', 'NOILC'}, {'rel', 'min'}};
+args.legend_cell = {{'REL', 'MIN', 'NOILC'}, {'REL', 'MIN'}, {'REL', 'MIN', 'NOILC'}, {'REL', 'MIN'}};
 
 args.filename = fullfile('05_Ergebnisse_Diskussion', 'Ergebnis_Osz_nichtlin_vergleich.pdf');
 args.save_pdf = save_pdf;

@@ -49,7 +49,7 @@ args.y_cell = {
 args.x_label_cell = {'Iteration', 'Iteration'};
 args.y_label_cell = {'RMSE in $\mathrm{m}$', '$\eta$'};
 args.title_cell = {'\textbf{(a)}', '\textbf{(b)}'};
-args.legend_cell = {{'$\beta_{rel} = 0$', '$\beta_{rel} = 0{,}5$', '$\beta_{rel} = 2$', '$\beta_{rel} = 5$'}, {'$\beta_{rel} = 0$', '$\beta_{rel} = 0{,}5$', '$\beta_{rel} = 2$', '$\beta_{rel} = 5$'},};
+args.legend_cell = {{'$\beta_{REL} = 0$', '$\beta_{REL} = 0{,}5$', '$\beta_{REL} = 2$', '$\beta_{REL} = 5$'}, {'$\beta_{REL} = 0$', '$\beta_{REL} = 0{,}5$', '$\beta_{REL} = 2$', '$\beta_{REL} = 5$'},};
 
 args.filename = fullfile('05_Ergebnisse_Diskussion', 'Ergebnis_Osz_linear_vergleich_beta.pdf');
 args.save_pdf = save_pdf;
