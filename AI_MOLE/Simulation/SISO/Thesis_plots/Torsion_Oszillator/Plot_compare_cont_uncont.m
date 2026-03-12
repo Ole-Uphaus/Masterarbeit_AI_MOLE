@@ -42,7 +42,7 @@ args.x_cell = {data_stribeck_controlled.t_vec, iter_vec};
 args.y_cell = {{data_stribeck_controlled.SISO_MOLE.ILC_SISO.r_vec, data_stribeck_controlled.SISO_MOLE.y_cell{end}, data_stribeck_uncontrolled.SISO_MOLE.y_cell{end}}, 
     {data_stribeck_controlled.SISO_MOLE.ILC_SISO.RMSE_log, data_stribeck_uncontrolled.SISO_MOLE.ILC_SISO.RMSE_log}};
 args.x_label_cell = {'$t$ in $\mathrm{s}$', 'Iteration'};
-args.y_label_cell = {'$y_T$ in $\mathrm{rad}$', 'RMSE in $\mathrm{rad}$'};
+args.y_label_cell = {'$y_{T,10}$ in $\mathrm{rad}$', 'RMSE in $\mathrm{rad}$'};
 args.title_cell = {'\textbf{(a)}', '\textbf{(b)}'};
 args.legend_cell = {{'Soll', 'LQR', 'ungeregelt'}, {'LQR', 'ungeregelt'}};
 
