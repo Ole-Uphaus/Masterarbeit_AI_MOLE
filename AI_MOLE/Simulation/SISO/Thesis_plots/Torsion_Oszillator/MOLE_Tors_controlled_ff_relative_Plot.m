@@ -93,14 +93,14 @@ if ~isfile(data_name)
     u_sim = u_init;
     
     [t_sim, x_sim] = ode45(@(t,x) dynamic_model(t, x, u_sim, t_vec), t_vec, x0, opts);
-    y_sim = x_sim(:, 1);
+    y_sim = x_sim(:, 3);
     for i = 1:params.N_iter
         % Update input
         u_sim = [SISO_MOLE.update_input(y_sim); 0];
     
         % Simulate the system
         [t_sim, x_sim] = ode45(@(t,x) dynamic_model(t, x, u_sim, t_vec), t_vec, x0, opts);
-        y_sim = x_sim(:, 1);
+        y_sim = x_sim(:, 3);
     end
     SISO_MOLE.save_final_trajectory(y_sim);
     y_sim_quadratic = y_sim;
