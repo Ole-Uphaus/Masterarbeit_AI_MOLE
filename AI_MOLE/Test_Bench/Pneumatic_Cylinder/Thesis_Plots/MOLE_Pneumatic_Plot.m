@@ -39,7 +39,7 @@ args.x_cell = {};
 args.y_cell = {};
 args.x_label_cell = {'', '', '$t$ in $\mathrm{s}$', 'Iteration'};
 args.y_label_cell = {'$y_Z$ in $\mathrm{m}$', 'RMSE in $\mathrm{m}$', '$u_{Z,V}$ in $\mathrm{N}$', '$\eta$'};
-args.title_cell = {'', '', '', ''};
+args.title_cell = {'\textbf{(a)}', '\textbf{(b)}', '\textbf{(c)}', '\textbf{(d)}'};
 args.legend_cell = {{'$y_{Z,d}$', '$y_{Z,0}$', '$y_{Z,10}$', '$y_{Z,20}$'}, {}, {'$u_{Z,V0}$', '$u_{Z,V10}$', '$u_{Z,V20}$'}, {},};
 
 args.filename = fullfile('05_Ergebnisse_Diskussion', 'Ergebnis_Pneumatk_MOLE.pdf');
